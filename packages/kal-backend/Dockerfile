@@ -16,16 +16,20 @@ COPY tsconfig.json ./
 RUN pnpm --filter kal-shared build || true
 RUN pnpm --filter kal-backend build
 
-FROM node:20-alpine AS runner
+FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Copy package files and install production deps
-COPY packages/kal-backend/package.json ./
-RUN npm install --omit=dev
+# Copy everything needed from builder (including node_modules)
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/kal-backend/dist ./packages/kal-backend/dist
+COPY --from=builder /app/packages/kal-backend/package.json ./packages/kal-backend/
+COPY --from=builder /app/packages/kal-backend/node_modules ./packages/kal-backend/node_modules
+COPY --from=builder /app/packages/kal-shared ./packages/kal-shared
 
-# Copy built files
-COPY --from=builder /app/packages/kal-backend/dist ./dist
-
+WORKDIR /app/packages/kal-backend
 EXPOSE 4000
 CMD ["node", "dist/index.js"]
