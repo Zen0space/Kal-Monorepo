@@ -1,6 +1,6 @@
 import { inferAsyncReturnType } from "@trpc/server";
 import { CreateExpressContextOptions } from "@trpc/server/adapters/express";
-import { getDB } from "./db";
+import { getDB } from "./db.js";
 
 export async function createContext({ req }: CreateExpressContextOptions) {
   // TODO: Add Logto authentication

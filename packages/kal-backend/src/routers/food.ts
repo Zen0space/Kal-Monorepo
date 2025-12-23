@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ObjectId } from "mongodb";
-import { router, publicProcedure, protectedProcedure } from "../lib/trpc";
+import { router, publicProcedure, protectedProcedure } from "../lib/trpc.js";
 import { CreateFoodEntrySchema, GetEntriesSchema, DeleteEntrySchema } from "kal-shared";
 
 export const foodRouter = router({

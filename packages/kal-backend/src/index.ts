@@ -2,9 +2,9 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { appRouter } from "./routers";
-import { createContext } from "./lib/context";
-import { connectDB } from "./lib/db";
+import { appRouter } from "./routers/index.js";
+import { createContext } from "./lib/context.js";
+import { connectDB } from "./lib/db.js";
 
 const PORT = process.env.BACKEND_PORT || 4000;
 

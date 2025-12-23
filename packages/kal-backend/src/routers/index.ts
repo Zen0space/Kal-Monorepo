@@ -1,5 +1,5 @@
-import { router } from "../lib/trpc";
-import { foodRouter } from "./food";
+import { router } from "../lib/trpc.js";
+import { foodRouter } from "./food.js";
 
 export const appRouter = router({
   food: foodRouter,
