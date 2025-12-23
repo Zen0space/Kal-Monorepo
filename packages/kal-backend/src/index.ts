@@ -6,7 +6,7 @@ import { appRouter } from "./routers/index.js";
 import { createContext } from "./lib/context.js";
 import { connectDB } from "./lib/db.js";
 
-const PORT = process.env.BACKEND_PORT || 4000;
+const PORT = process.env.BACKEND_PORT || 3000;
 
 async function main() {
   // Connect to MongoDB

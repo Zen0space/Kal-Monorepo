@@ -31,5 +31,5 @@ COPY --from=builder /app/packages/kal-backend/node_modules ./packages/kal-backen
 COPY --from=builder /app/packages/kal-shared ./packages/kal-shared
 
 WORKDIR /app/packages/kal-backend
-EXPOSE 4000
+EXPOSE 3000
 CMD ["node", "dist/index.js"]
