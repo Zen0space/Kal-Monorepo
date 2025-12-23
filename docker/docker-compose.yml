@@ -1,0 +1,59 @@
+name: kal-monorepo
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: kal-mongodb
+    ports:
+      - "${MONGODB_PORT:-27017}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE}
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - kal-network
+
+  postgres:
+    image: postgres:14-alpine
+    container_name: kal-postgres
+    environment:
+      POSTGRES_USER: ${LOGTO_DB_USER}
+      POSTGRES_PASSWORD: ${LOGTO_DB_PASSWORD}
+      POSTGRES_DB: ${LOGTO_DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - kal-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${LOGTO_DB_USER:-logto} -d ${LOGTO_DB_NAME:-logto}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  logto:
+    image: svhd/logto:latest
+    container_name: kal-logto
+    entrypoint: ["sh", "-c", "npm run cli db seed -- --swe && npm start"]
+    ports:
+      - "${LOGTO_PORT:-3301}:3001"
+      - "${LOGTO_ADMIN_PORT:-3302}:3002"
+    environment:
+      - TRUST_PROXY_HEADER=1
+      - DB_URL=postgres://${LOGTO_DB_USER}:${LOGTO_DB_PASSWORD}@postgres:5432/${LOGTO_DB_NAME}
+      - ENDPOINT=${LOGTO_ENDPOINT}
+      - ADMIN_ENDPOINT=${LOGTO_ADMIN_ENDPOINT}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - kal-network
+
+volumes:
+  mongodb_data:
+  postgres_data:
+
+networks:
+  kal-network:
+    driver: bridge

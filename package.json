@@ -1,0 +1,21 @@
+{
+  "name": "kal-monorepo",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "clean": "turbo clean",
+    "docker:up": "docker compose --env-file .env -f docker/docker-compose.yml up -d",
+    "docker:down": "docker compose --env-file .env -f docker/docker-compose.yml down",
+    "docker:logs": "docker compose -f docker/docker-compose.yml logs -f",
+    "db:migrate": "pnpm --filter kal-db run migrate",
+    "db:seed": "pnpm --filter kal-db run seed"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  }
+}
