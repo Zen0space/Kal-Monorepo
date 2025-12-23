@@ -30,20 +30,19 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Copy everything needed to run
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/kal-frontend/node_modules ./packages/kal-frontend/node_modules
+COPY --from=builder /app/packages/kal-frontend/.next ./packages/kal-frontend/.next
+COPY --from=builder /app/packages/kal-frontend/public ./packages/kal-frontend/public
+COPY --from=builder /app/packages/kal-frontend/package.json ./packages/kal-frontend/
+COPY --from=builder /app/packages/kal-frontend/next.config.mjs ./packages/kal-frontend/
 
-# For monorepo, standalone output is in .next/standalone with full path structure
-COPY --from=builder /app/packages/kal-frontend/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/packages/kal-frontend/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/packages/kal-frontend/.next/static ./packages/kal-frontend/.next/static
-
-USER nextjs
+WORKDIR /app/packages/kal-frontend
 
 EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# The server.js is at packages/kal-frontend/server.js in standalone mode for monorepos
-CMD ["node", "packages/kal-frontend/server.js"]
+CMD ["pnpm", "start"]
