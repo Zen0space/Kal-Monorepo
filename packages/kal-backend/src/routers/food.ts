@@ -36,7 +36,57 @@ export const foodRouter = router({
       carbs: food.carbs,
       fat: food.fat,
       serving: food.serving,
+      category: food.category,
     }));
+  }),
+
+  // Get all foods with pagination (public)
+  allPaginated: publicProcedure
+    .input(
+      z.object({
+        cursor: z.number().default(0),
+        limit: z.number().default(10),
+        category: z.string().optional(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const query = input.category ? { category: input.category } : {};
+
+      const [foods, total] = await Promise.all([
+        ctx.db
+          .collection("foods")
+          .find(query)
+          .skip(input.cursor)
+          .limit(input.limit)
+          .toArray(),
+        ctx.db.collection("foods").countDocuments(query),
+      ]);
+
+      return {
+        items: foods.map((food) => ({
+          _id: food._id.toString(),
+          name: food.name,
+          calories: food.calories,
+          protein: food.protein,
+          carbs: food.carbs,
+          fat: food.fat,
+          serving: food.serving,
+          category: food.category,
+        })),
+        nextCursor:
+          input.cursor + foods.length < total
+            ? input.cursor + input.limit
+            : null,
+        total,
+      };
+    }),
+
+  // Get all categories (public)
+  categories: publicProcedure.query(async ({ ctx }) => {
+    const categories = await ctx.db
+      .collection("foods")
+      .distinct("category");
+    return categories.filter(Boolean).sort();
   }),
 
   // Add a food entry
