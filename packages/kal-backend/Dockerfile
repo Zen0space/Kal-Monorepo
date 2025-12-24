@@ -6,10 +6,12 @@ WORKDIR /app
 COPY pnpm-workspace.yaml ./
 COPY package.json pnpm-lock.yaml ./
 COPY packages/kal-shared/package.json ./packages/kal-shared/
+COPY packages/kal-db/package.json ./packages/kal-db/
 COPY packages/kal-backend/package.json ./packages/kal-backend/
 RUN pnpm install --frozen-lockfile
 
 COPY packages/kal-shared ./packages/kal-shared
+COPY packages/kal-db ./packages/kal-db
 COPY packages/kal-backend ./packages/kal-backend
 COPY tsconfig.json ./
 
@@ -30,6 +32,14 @@ COPY --from=builder /app/packages/kal-backend/package.json ./packages/kal-backen
 COPY --from=builder /app/packages/kal-backend/node_modules ./packages/kal-backend/node_modules
 COPY --from=builder /app/packages/kal-shared ./packages/kal-shared
 
+# Copy kal-db for migrations
+COPY --from=builder /app/packages/kal-db ./packages/kal-db
+
+# Copy entrypoint script
+COPY packages/kal-backend/scripts/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 WORKDIR /app/packages/kal-backend
 EXPOSE 3000
-CMD ["node", "dist/index.js"]
+CMD ["/entrypoint.sh"]
+
