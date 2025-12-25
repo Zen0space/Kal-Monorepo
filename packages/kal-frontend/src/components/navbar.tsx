@@ -2,10 +2,11 @@ import { getLogtoContext, signIn, signOut } from '@logto/next/server-actions';
 
 import SignIn from '@/components/sign-in';
 import SignOut from '@/components/sign-out';
-import { logtoConfig } from '@/lib/logto';
+import { getLogtoConfig } from '@/lib/logto';
 
 export default async function Navbar() {
-  const { isAuthenticated, claims } = await getLogtoContext(logtoConfig);
+  const config = getLogtoConfig();
+  const { isAuthenticated, claims } = await getLogtoContext(config);
 
   return (
     <nav className="navbar">
@@ -20,7 +21,7 @@ export default async function Navbar() {
             <SignOut
               onSignOut={async () => {
                 'use server';
-                await signOut(logtoConfig);
+                await signOut(config);
               }}
             />
           </div>
@@ -28,7 +29,7 @@ export default async function Navbar() {
           <SignIn
             onSignIn={async () => {
               'use server';
-              await signIn(logtoConfig);
+              await signIn(config);
             }}
           />
         )}

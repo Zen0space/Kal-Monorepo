@@ -2,7 +2,7 @@ import { getLogtoContext, signIn, signOut } from '@logto/next/server-actions';
 
 import APIDocsClient from './client';
 
-import { logtoConfig } from '@/lib/logto';
+import { getLogtoConfig } from '@/lib/logto';
 
 // cURL examples - only sent to client when authenticated
 const curlExamples = [
@@ -34,7 +34,8 @@ const curlExamples = [
 ];
 
 export default async function APIDocsPage() {
-  const { isAuthenticated, claims } = await getLogtoContext(logtoConfig);
+  const config = getLogtoConfig();
+  const { isAuthenticated, claims } = await getLogtoContext(config);
   
   // Only pass curl examples when user is authenticated
   // This prevents users from viewing the data via DevTools inspect
@@ -49,11 +50,11 @@ export default async function APIDocsPage() {
       curlExamples={safeCurlExamples}
       onSignIn={async () => {
         'use server';
-        await signIn(logtoConfig);
+        await signIn(config);
       }}
       onSignOut={async () => {
         'use server';
-        await signOut(logtoConfig);
+        await signOut(config);
       }}
     />
   );

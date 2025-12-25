@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import LoginSuccessClient from "./client";
 
-import { logtoConfig } from "@/lib/logto";
+import { getLogtoConfig } from "@/lib/logto";
 
 export const metadata = {
   title: "Login Successful - Kal",
@@ -11,7 +11,8 @@ export const metadata = {
 };
 
 export default async function LoginSuccessPage() {
-  const { isAuthenticated, claims } = await getLogtoContext(logtoConfig);
+  const config = getLogtoConfig();
+  const { isAuthenticated, claims } = await getLogtoContext(config);
 
   // If not authenticated, redirect to home
   if (!isAuthenticated) {
