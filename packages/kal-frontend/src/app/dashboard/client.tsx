@@ -29,12 +29,12 @@ export default function DashboardClient({ logtoId, email, name }: DashboardClien
   return (
     <>
       <AuthUpdater logtoId={logtoId} email={email} name={name} />
-      <DashboardContentWrapper expectedLogtoId={logtoId} />
+      <DashboardContentWrapper expectedLogtoId={logtoId} nameProp={name} />
     </>
   );
 }
 
-function DashboardContentWrapper({ expectedLogtoId }: { expectedLogtoId?: string }) {
+function DashboardContentWrapper({ expectedLogtoId, nameProp }: { expectedLogtoId?: string; nameProp?: string | null }) {
   const { logtoId } = useAuth();
   
   // Wait until context is updated with the Logto ID
@@ -46,10 +46,10 @@ function DashboardContentWrapper({ expectedLogtoId }: { expectedLogtoId?: string
     );
   }
 
-  return <DashboardContent />;
+  return <DashboardContent nameProp={nameProp} />;
 }
 
-function DashboardContent() {
+function DashboardContent({ nameProp }: { nameProp?: string | null }) {
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
   const [newKeyExpiration, setNewKeyExpiration] = useState<"1_week" | "1_month" | "never">("1_month");
@@ -116,6 +116,9 @@ function DashboardContent() {
   const dailyRemaining = Math.max(0, limits.dailyLimit - dailyUsed);
   const dailyPercentage = Math.min(100, (dailyUsed / limits.dailyLimit) * 100);
 
+  // Use userInfo from backend, or fall back to prop from Logto claims
+  const displayName = userInfo?.name || nameProp || "Developer";
+
   return (
     <div className="dashboard-content">
       {/* Usage Stats Section */}
@@ -128,7 +131,7 @@ function DashboardContent() {
             </div>
             <div className="profile-info">
               <p className="profile-name">
-                {isLoadingUser ? "Loading..." : userInfo?.name || "Developer"}
+                {isLoadingUser ? "Loading..." : displayName}
               </p>
               <p className="profile-email">{userInfo?.email}</p>
             </div>
