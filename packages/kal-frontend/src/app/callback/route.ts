@@ -18,6 +18,8 @@ export async function GET(request: NextRequest) {
     
     // In production, return a more helpful error page
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const secret = config.appSecret || '';
+    
     return NextResponse.json(
       { 
         error: "Authentication callback failed",
@@ -28,7 +30,9 @@ export async function GET(request: NextRequest) {
           appId: config.appId,
           baseUrl: config.baseUrl,
           hasAppSecret: !!config.appSecret,
-          appSecretLength: config.appSecret?.length || 0,
+          appSecretLength: secret.length,
+          // Show first and last char of secret to verify it's correct (safe - not full secret)
+          appSecretHint: secret.length > 2 ? `${secret[0]}...${secret[secret.length - 1]}` : 'too short',
         },
       },
       { status: 500 }
