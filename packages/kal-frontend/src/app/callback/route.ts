@@ -20,6 +20,13 @@ export async function GET(request: NextRequest) {
         error: "Authentication callback failed",
         message: errorMessage,
         hint: "Check that LOGTO_APP_SECRET, NEXT_PUBLIC_LOGTO_ENDPOINT, and SESSION_SECRET are correctly set in production.",
+        debug: {
+          endpoint: logtoConfig.endpoint,
+          appId: logtoConfig.appId,
+          baseUrl: logtoConfig.baseUrl,
+          hasAppSecret: !!logtoConfig.appSecret,
+          appSecretLength: logtoConfig.appSecret?.length || 0,
+        },
       },
       { status: 500 }
     );
