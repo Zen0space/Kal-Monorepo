@@ -1,4 +1,5 @@
-import { MongoClient, Db } from "mongodb";
+import type { Db } from "mongodb";
+import { MongoClient } from "mongodb";
 
 // Support both individual env vars and a full DATABASE_URL
 const getDatabaseUri = () => {

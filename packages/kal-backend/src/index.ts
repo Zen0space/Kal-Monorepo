@@ -1,11 +1,16 @@
 import "dotenv/config";
-import express from "express";
-import cors from "cors";
+import { handleAuthRoutes } from "@logto/express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { appRouter } from "./routers/index.js";
-import { apiRouter } from "./routers/api.js";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import express from "express";
+import session from "express-session";
+
 import { createContext } from "./lib/context.js";
 import { connectDB } from "./lib/db.js";
+import { logtoConfig, validateLogtoConfig } from "./lib/logto.js";
+import { apiRouter } from "./routers/api.js";
+import { appRouter } from "./routers/index.js";
 
 const PORT = process.env.BACKEND_PORT || 3000;
 
@@ -87,9 +92,35 @@ async function main() {
 
   const app = express();
 
-  // Middleware
-  app.use(cors());
+  // Core middleware
+  app.use(
+    cors({
+      origin: [
+        "http://localhost:3000",
+        process.env.NEXT_PUBLIC_APP_URL,
+        process.env.FRONTEND_URL,
+      ].filter((url): url is string => !!url),
+      credentials: true,
+    })
+  );
   app.use(express.json());
+  app.use(cookieParser());
+
+  // Session middleware (required for Logto)
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || "dev-secret-change-in-production",
+      cookie: { maxAge: 14 * 24 * 60 * 60 * 1000 }, // 14 days
+      resave: false,
+      saveUninitialized: false,
+    })
+  );
+
+  // Logto auth routes (if configured)
+  if (validateLogtoConfig()) {
+    app.use(handleAuthRoutes(logtoConfig));
+    console.log("✅ Logto auth routes registered");
+  }
 
   // Health check
   app.get("/health", (_, res) => {

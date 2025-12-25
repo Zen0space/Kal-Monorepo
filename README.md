@@ -212,9 +212,13 @@ The app is deployed using [Coolify](https://coolify.io/) to a self-hosted server
 1. Fork the repository
 2. Create branch from `dev` (not `main`)
 3. Make your changes
-4. Run `pnpm typecheck` to verify
-5. Submit PR to `dev` branch
-6. Wait for review
+4. **Run `pnpm lint:fix` to auto-fix issues**
+5. Run `pnpm typecheck` to verify types
+6. Submit PR to `dev` branch
+7. Wait for review
+
+> [!TIP]
+> See [docs/linting.md](docs/linting.md) for full linting guide.
 
 ### Commit Convention
 

@@ -1,15 +1,17 @@
-import { z } from "zod";
-import { ObjectId } from "mongodb";
-import { router, publicProcedure, protectedProcedure } from "../lib/trpc.js";
 import { CreateFoodEntrySchema, GetEntriesSchema, DeleteEntrySchema } from "kal-shared";
+import { ObjectId } from "mongodb";
+import { z } from "zod";
+
+import { router, publicProcedure, protectedProcedure } from "../lib/trpc.js";
+
 
 export const foodRouter = router({
-  // Search foods database (public)
+  // Search natural foods database (public)
   search: publicProcedure
     .input(z.object({ query: z.string().min(1) }))
     .query(async ({ input, ctx }) => {
       const foods = await ctx.db
-        .collection("foods")
+        .collection("natural_foods")
         .find({ name: { $regex: input.query, $options: "i" } })
         .limit(20)
         .toArray();
@@ -25,9 +27,9 @@ export const foodRouter = router({
       }));
     }),
 
-  // Get all foods (public)
+  // Get all natural foods (public)
   all: publicProcedure.query(async ({ ctx }) => {
-    const foods = await ctx.db.collection("foods").find({}).toArray();
+    const foods = await ctx.db.collection("natural_foods").find({}).toArray();
     return foods.map((food) => ({
       _id: food._id.toString(),
       name: food.name,
@@ -40,7 +42,7 @@ export const foodRouter = router({
     }));
   }),
 
-  // Get all foods with pagination (public)
+  // Get all natural foods with pagination (public)
   allPaginated: publicProcedure
     .input(
       z.object({
@@ -54,12 +56,12 @@ export const foodRouter = router({
 
       const [foods, total] = await Promise.all([
         ctx.db
-          .collection("foods")
+          .collection("natural_foods")
           .find(query)
           .skip(input.cursor)
           .limit(input.limit)
           .toArray(),
-        ctx.db.collection("foods").countDocuments(query),
+        ctx.db.collection("natural_foods").countDocuments(query),
       ]);
 
       return {
@@ -81,10 +83,10 @@ export const foodRouter = router({
       };
     }),
 
-  // Get all categories (public)
+  // Get all categories for natural foods (public)
   categories: publicProcedure.query(async ({ ctx }) => {
     const categories = await ctx.db
-      .collection("foods")
+      .collection("natural_foods")
       .distinct("category");
     return categories.filter(Boolean).sort();
   }),
