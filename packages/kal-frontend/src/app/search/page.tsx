@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import { useState, useEffect, useCallback, useRef } from "react";
+
 import { trpc } from "@/lib/trpc";
 
 interface Food {
@@ -15,11 +16,21 @@ interface Food {
   category?: string;
 }
 
+interface HalalFood extends Food {
+  brand?: string;
+  halalCertifier?: string;
+  halalCertYear?: number;
+}
+
+type TabType = "natural" | "halal";
+
 export default function SearchPage() {
+  const [activeTab, setActiveTab] = useState<TabType>("natural");
   const [inputValue, setInputValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFood, setSelectedFood] = useState<Food | null>(null);
+  const [selectedFood, setSelectedFood] = useState<Food | HalalFood | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedBrand, setSelectedBrand] = useState<string>("");
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Debounce effect - trigger search after 1.5s of no typing
@@ -31,6 +42,13 @@ export default function SearchPage() {
     return () => clearTimeout(timer);
   }, [inputValue]);
 
+  // Reset filters when switching tabs
+  useEffect(() => {
+    setSelectedCategory("");
+    setSelectedBrand("");
+    setSelectedFood(null);
+  }, [activeTab]);
+
   // Handle Enter key press
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -41,17 +59,19 @@ export default function SearchPage() {
     [inputValue]
   );
 
-  // Get categories
-  const { data: categories } = trpc.food.categories.useQuery();
+  // ============================================
+  // Natural Foods Queries
+  // ============================================
+  const { data: naturalCategories } = trpc.food.categories.useQuery(undefined, {
+    enabled: activeTab === "natural",
+  });
 
-  // Search query (when searching)
   const { data: searchResults, isLoading: isSearching } =
     trpc.food.search.useQuery(
       { query: searchQuery },
-      { enabled: searchQuery.length > 0 }
+      { enabled: searchQuery.length > 0 && activeTab === "natural" }
     );
 
-  // Infinite query for browsing (when not searching)
   const {
     data: paginatedData,
     isLoading: isPaginating,
@@ -61,7 +81,35 @@ export default function SearchPage() {
   } = trpc.food.allPaginated.useInfiniteQuery(
     { limit: 10, category: selectedCategory || undefined },
     {
-      enabled: searchQuery.length === 0,
+      enabled: searchQuery.length === 0 && activeTab === "natural",
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      initialCursor: 0,
+    }
+  );
+
+  // ============================================
+  // Halal Foods Queries
+  // ============================================
+  const { data: halalBrands } = trpc.halal.brands.useQuery(undefined, {
+    enabled: activeTab === "halal",
+  });
+
+  const { data: halalSearchResults, isLoading: isHalalSearching } =
+    trpc.halal.search.useQuery(
+      { query: searchQuery },
+      { enabled: searchQuery.length > 0 && activeTab === "halal" }
+    );
+
+  const {
+    data: halalPaginatedData,
+    isLoading: isHalalPaginating,
+    fetchNextPage: fetchNextHalalPage,
+    hasNextPage: hasNextHalalPage,
+    isFetchingNextPage: isFetchingNextHalalPage,
+  } = trpc.halal.allPaginated.useInfiniteQuery(
+    { limit: 10, brand: selectedBrand || undefined },
+    {
+      enabled: searchQuery.length === 0 && activeTab === "halal",
       getNextPageParam: (lastPage) => lastPage.nextCursor,
       initialCursor: 0,
     }
@@ -73,8 +121,12 @@ export default function SearchPage() {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
+        if (entries[0].isIntersecting) {
+          if (activeTab === "natural" && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          } else if (activeTab === "halal" && hasNextHalalPage && !isFetchingNextHalalPage) {
+            fetchNextHalalPage();
+          }
         }
       },
       { threshold: 0.1 }
@@ -82,19 +134,41 @@ export default function SearchPage() {
 
     observer.observe(loadMoreRef.current);
     return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, searchQuery]);
+  }, [
+    activeTab,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextHalalPage,
+    isFetchingNextHalalPage,
+    fetchNextHalalPage,
+    searchQuery,
+  ]);
 
-  // Determine which data to show
+  // Determine which data to show based on active tab
   const isSearchMode = searchQuery.length > 0;
-  const isLoading = isSearchMode ? isSearching : isPaginating;
+  const isLoading = activeTab === "natural"
+    ? (isSearchMode ? isSearching : isPaginating)
+    : (isSearchMode ? isHalalSearching : isHalalPaginating);
 
-  const foods: Food[] = isSearchMode
-    ? searchResults || []
-    : paginatedData?.pages.flatMap((page) => page.items) || [];
+  const foods: (Food | HalalFood)[] = activeTab === "natural"
+    ? (isSearchMode
+        ? searchResults || []
+        : paginatedData?.pages.flatMap((page) => page.items) || [])
+    : (isSearchMode
+        ? halalSearchResults || []
+        : halalPaginatedData?.pages.flatMap((page) => page.items) || []);
 
-  const totalCount = isSearchMode
-    ? searchResults?.length || 0
-    : paginatedData?.pages[0]?.total || 0;
+  const totalCount = activeTab === "natural"
+    ? (isSearchMode
+        ? searchResults?.length || 0
+        : paginatedData?.pages[0]?.total || 0)
+    : (isSearchMode
+        ? halalSearchResults?.length || 0
+        : halalPaginatedData?.pages[0]?.total || 0);
+
+  const currentHasNextPage = activeTab === "natural" ? hasNextPage : hasNextHalalPage;
+  const currentIsFetchingNextPage = activeTab === "natural" ? isFetchingNextPage : isFetchingNextHalalPage;
 
   return (
     <main className="min-h-screen bg-dark">
@@ -119,6 +193,39 @@ export default function SearchPage() {
           </p>
         </div>
 
+        {/* Tab Switcher */}
+        <div className="flex justify-center gap-2 mb-8">
+          <button
+            onClick={() => setActiveTab("natural")}
+            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200
+              ${activeTab === "natural"
+                ? "bg-accent text-dark shadow-lg shadow-accent/20"
+                : "bg-dark-surface text-content-secondary border border-dark-border hover:border-accent/30"
+              }`}
+          >
+            🍚 Natural Foods
+          </button>
+          <button
+            onClick={() => setActiveTab("halal")}
+            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200
+              ${activeTab === "halal"
+                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                : "bg-dark-surface text-content-secondary border border-dark-border hover:border-emerald-500/30"
+              }`}
+          >
+            Halal Certified
+          </button>
+        </div>
+
+        {/* Halal Tab Info Banner */}
+        {activeTab === "halal" && (
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mb-6 text-center">
+            <p className="text-emerald-400 text-sm">
+              ✓ All items are <strong>JAKIM certified halal</strong> with verified brand information
+            </p>
+          </div>
+        )}
+
         {/* Search Bar */}
         <div className="relative max-w-2xl mx-auto mb-6">
           <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
@@ -141,22 +248,30 @@ export default function SearchPage() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Search foods... (press Enter or wait to search)"
-            className="w-full pl-12 pr-4 py-4 rounded-xl bg-dark-surface border border-dark-border 
-                       text-content-primary placeholder-content-muted 
-                       focus:ring-2 focus:ring-accent/50 focus:border-accent/50
-                       transition-all duration-200"
+            placeholder={activeTab === "natural" 
+              ? "Search Malaysian foods..." 
+              : "Search halal foods by name or brand..."}
+            className={`w-full pl-12 pr-4 py-4 rounded-xl bg-dark-surface border 
+                       text-content-primary placeholder-content-muted transition-all duration-200
+                       ${activeTab === "halal" 
+                         ? "border-emerald-500/30 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
+                         : "border-dark-border focus:ring-2 focus:ring-accent/50 focus:border-accent/50"
+                       }`}
           />
           {/* Loading indicator when typing */}
           {inputValue !== searchQuery && inputValue.length > 0 && (
             <div className="absolute inset-y-0 right-4 flex items-center">
-              <div className="w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+              <div className={`w-4 h-4 border-2 rounded-full animate-spin
+                ${activeTab === "halal" 
+                  ? "border-emerald-500/30 border-t-emerald-500" 
+                  : "border-accent/30 border-t-accent"}`} 
+              />
             </div>
           )}
         </div>
 
-        {/* Category Filter (only when not searching) */}
-        {!isSearchMode && categories && categories.length > 0 && (
+        {/* Category Filter (Natural Foods) */}
+        {activeTab === "natural" && !isSearchMode && naturalCategories && naturalCategories.length > 0 && (
           <div className="flex flex-wrap gap-2 justify-center mb-8">
             <button
               onClick={() => setSelectedCategory("")}
@@ -169,7 +284,7 @@ export default function SearchPage() {
             >
               All
             </button>
-            {categories.map((cat) => (
+            {naturalCategories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
@@ -181,6 +296,37 @@ export default function SearchPage() {
                   }`}
               >
                 {cat}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Brand Filter (Halal Foods) */}
+        {activeTab === "halal" && !isSearchMode && halalBrands && halalBrands.length > 0 && (
+          <div className="flex flex-wrap gap-2 justify-center mb-8">
+            <button
+              onClick={() => setSelectedBrand("")}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all
+                ${
+                  selectedBrand === ""
+                    ? "bg-emerald-500 text-white"
+                    : "bg-dark-surface text-content-secondary border border-dark-border hover:border-emerald-500/30"
+                }`}
+            >
+              All Brands
+            </button>
+            {halalBrands.map((brand) => (
+              <button
+                key={brand}
+                onClick={() => setSelectedBrand(brand)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all
+                  ${
+                    selectedBrand === brand
+                      ? "bg-emerald-500 text-white"
+                      : "bg-dark-surface text-content-secondary border border-dark-border hover:border-emerald-500/30"
+                  }`}
+              >
+                {brand}
               </button>
             ))}
           </div>
@@ -211,75 +357,105 @@ export default function SearchPage() {
         ) : foods.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {foods.map((food) => (
-                <button
-                  key={food._id}
-                  onClick={() =>
-                    setSelectedFood(
-                      selectedFood?._id === food._id ? null : food
-                    )
-                  }
-                  className={`text-left p-6 rounded-xl border transition-all duration-200 
-                             hover:scale-[1.01] 
-                             ${
-                               selectedFood?._id === food._id
-                                 ? "bg-dark-elevated border-accent/50"
-                                 : "bg-dark-surface border-dark-border hover:border-accent/30"
-                             }`}
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h3 className="text-xl font-semibold text-content-primary">
-                        {food.name}
-                      </h3>
-                      {food.category && (
-                        <span className="text-xs text-content-muted">
-                          {food.category}
-                        </span>
-                      )}
+              {foods.map((food) => {
+                const isHalalFood = "brand" in food;
+                return (
+                  <button
+                    key={food._id}
+                    onClick={() =>
+                      setSelectedFood(
+                        selectedFood?._id === food._id ? null : food
+                      )
+                    }
+                    className={`text-left p-6 rounded-xl border transition-all duration-200 
+                               hover:scale-[1.01] 
+                               ${
+                                 selectedFood?._id === food._id
+                                   ? isHalalFood
+                                     ? "bg-dark-elevated border-emerald-500/50"
+                                     : "bg-dark-elevated border-accent/50"
+                                   : "bg-dark-surface border-dark-border hover:border-accent/30"
+                               }`}
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="text-xl font-semibold text-content-primary">
+                          {food.name}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          {isHalalFood && (food as HalalFood).brand && (
+                            <span className="text-xs px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full">
+                              {(food as HalalFood).brand}
+                            </span>
+                          )}
+                          {food.category && (
+                            <span className="text-xs text-content-muted">
+                              {food.category}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium
+                        ${isHalalFood 
+                          ? "bg-emerald-500/10 text-emerald-400" 
+                          : "bg-accent/10 text-accent"}`}>
+                        {food.calories} cal
+                      </span>
                     </div>
-                    <span className="px-3 py-1 bg-accent/10 text-accent rounded-full text-sm font-medium">
-                      {food.calories} cal
-                    </span>
-                  </div>
-                  <p className="text-content-secondary text-sm mb-3">
-                    Serving: {food.serving}
-                  </p>
 
-                  {/* Macro breakdown */}
-                  <div className="flex gap-4 text-sm">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full bg-blue-400" />
-                      <span className="text-content-secondary">
-                        P: {food.protein}g
-                      </span>
+                    {/* Halal certification badge */}
+                    {isHalalFood && (food as HalalFood).halalCertifier && (
+                      <div className="flex items-center gap-1.5 mb-3 text-xs text-emerald-400">
+                        <span>
+                          {(food as HalalFood).halalCertifier} Certified
+                          {(food as HalalFood).halalCertYear && ` (${(food as HalalFood).halalCertYear})`}
+                        </span>
+                      </div>
+                    )}
+
+                    <p className="text-content-secondary text-sm mb-3">
+                      Serving: {food.serving}
+                    </p>
+
+                    {/* Macro breakdown */}
+                    <div className="flex gap-4 text-sm">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full bg-blue-400" />
+                        <span className="text-content-secondary">
+                          P: {food.protein}g
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                        <span className="text-content-secondary">
+                          C: {food.carbs}g
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full bg-red-400" />
+                        <span className="text-content-secondary">
+                          F: {food.fat}g
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full bg-yellow-400" />
-                      <span className="text-content-secondary">
-                        C: {food.carbs}g
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full bg-red-400" />
-                      <span className="text-content-secondary">
-                        F: {food.fat}g
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Load more trigger (only for pagination mode) */}
             {!isSearchMode && (
               <div ref={loadMoreRef} className="py-8 text-center">
-                {isFetchingNextPage ? (
+                {currentIsFetchingNextPage ? (
                   <div className="flex items-center justify-center gap-2 text-content-muted">
-                    <div className="w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+                    <div className={`w-4 h-4 border-2 rounded-full animate-spin
+                      ${activeTab === "halal" 
+                        ? "border-emerald-500/30 border-t-emerald-500" 
+                        : "border-accent/30 border-t-accent"}`} 
+                    />
                     Loading more...
                   </div>
-                ) : hasNextPage ? (
+                ) : currentHasNextPage ? (
                   <p className="text-content-muted text-sm">
                     Scroll for more
                   </p>
@@ -297,7 +473,9 @@ export default function SearchPage() {
             <p className="text-content-secondary">
               {searchQuery
                 ? `No foods found for "${searchQuery}"`
-                : "No food data"}
+                : activeTab === "halal"
+                  ? "No halal certified foods available"
+                  : "No food data"}
             </p>
           </div>
         )}
@@ -305,16 +483,32 @@ export default function SearchPage() {
         {/* Selected Food Detail Modal */}
         {selectedFood && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50">
-            <div className="bg-dark-elevated border border-dark-border rounded-2xl p-6 shadow-2xl">
+            <div className={`bg-dark-elevated border rounded-2xl p-6 shadow-2xl
+              ${"brand" in selectedFood 
+                ? "border-emerald-500/30" 
+                : "border-dark-border"}`}>
               <div className="flex justify-between items-center mb-4">
                 <div>
                   <h3 className="text-xl font-bold text-content-primary">
                     {selectedFood.name}
                   </h3>
-                  {selectedFood.category && (
-                    <span className="text-xs text-content-muted">
-                      {selectedFood.category}
-                    </span>
+                  <div className="flex items-center gap-2 mt-1">
+                    {"brand" in selectedFood && (selectedFood as HalalFood).brand && (
+                      <span className="text-xs px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full">
+                        {(selectedFood as HalalFood).brand}
+                      </span>
+                    )}
+                    {selectedFood.category && (
+                      <span className="text-xs text-content-muted">
+                        {selectedFood.category}
+                      </span>
+                    )}
+                  </div>
+                    {"brand" in selectedFood && (selectedFood as HalalFood).halalCertifier && (
+                    <p className="text-xs text-emerald-400 mt-2">
+                      {(selectedFood as HalalFood).halalCertifier} Certified
+                      {(selectedFood as HalalFood).halalCertYear && ` (${(selectedFood as HalalFood).halalCertYear})`}
+                    </p>
                   )}
                 </div>
                 <button
@@ -325,8 +519,8 @@ export default function SearchPage() {
                 </button>
               </div>
               <div className="grid grid-cols-4 gap-3 text-center">
-                <div className="bg-accent/10 rounded-xl p-3">
-                  <p className="text-2xl font-bold text-accent">
+                <div className={`rounded-xl p-3 ${"brand" in selectedFood ? "bg-emerald-500/10" : "bg-accent/10"}`}>
+                  <p className={`text-2xl font-bold ${"brand" in selectedFood ? "text-emerald-400" : "text-accent"}`}>
                     {selectedFood.calories}
                   </p>
                   <p className="text-xs text-content-muted">Calories</p>

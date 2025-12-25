@@ -37,13 +37,11 @@ services:
     container_name: kal-logto
     entrypoint: ["sh", "-c", "npm run cli db seed -- --swe && npm start"]
     ports:
-      - "${LOGTO_PORT:-3301}:3001"
-      - "${LOGTO_ADMIN_PORT:-3302}:3002"
+      - "3001:3001"
+      - "3002:3002"
     environment:
       - TRUST_PROXY_HEADER=1
       - DB_URL=postgres://${LOGTO_DB_USER}:${LOGTO_DB_PASSWORD}@postgres:5432/${LOGTO_DB_NAME}
-      - ENDPOINT=${LOGTO_ENDPOINT}
-      - ADMIN_ENDPOINT=${LOGTO_ADMIN_ENDPOINT}
     depends_on:
       postgres:
         condition: service_healthy

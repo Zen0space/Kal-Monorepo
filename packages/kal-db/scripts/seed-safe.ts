@@ -1,6 +1,6 @@
 /**
  * Safe seed script for production
- * Only seeds the foods collection if it's empty
+ * Only seeds collections if they're empty
  * This prevents data loss on redeployments
  */
 import "dotenv/config";
@@ -35,8 +35,10 @@ const getDbName = () => {
   return process.env.MONGODB_DATABASE || "kal";
 };
 
-// Malaysian food database with calories, macros, and categories
-const foods = [
+// ============================================================================
+// NATURAL FOODS - Generic Malaysian dishes (street vendor, no formal halal cert)
+// ============================================================================
+const naturalFoods = [
   // === RICE DISHES ===
   { name: "Nasi Lemak", calories: 644, protein: 18, carbs: 80, fat: 28, serving: "1 plate", category: "Rice" },
   { name: "Nasi Lemak Ayam Goreng", calories: 850, protein: 32, carbs: 90, fat: 38, serving: "1 plate", category: "Rice" },
@@ -157,6 +159,26 @@ const foods = [
   { name: "Tahu Goreng", calories: 180, protein: 12, carbs: 8, fat: 12, serving: "100g", category: "Basics" },
 ];
 
+// ============================================================================
+// HALAL FOODS - Branded foods with official halal certification
+// ============================================================================
+const halalFoods = [
+  // === RAMLY (JAKIM Certified) ===
+  { name: "Ramly Beef Burger", calories: 400, protein: 15, carbs: 35, fat: 20, serving: "1 burger (200g)", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ramly Beef Special", calories: 600, protein: 25, carbs: 45, fat: 35, serving: "1 burger (250g)", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ramly Beef Cheese", calories: 480, protein: 18, carbs: 38, fat: 28, serving: "1 burger (220g)", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ramly Double Special", calories: 800, protein: 40, carbs: 50, fat: 45, serving: "1 burger (350g)", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ramly Chicken Burger", calories: 480, protein: 20, carbs: 42, fat: 22, serving: "1 burger (250g)", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ramly Chicken Special", calories: 550, protein: 24, carbs: 45, fat: 28, serving: "1 burger (250g)", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ramly Chicken Cheese", calories: 530, protein: 22, carbs: 44, fat: 26, serving: "1 burger (250g)", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ramly Lamb Burger", calories: 450, protein: 22, carbs: 35, fat: 25, serving: "1 burger (200g)", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ramly Fish Burger", calories: 380, protein: 18, carbs: 38, fat: 18, serving: "1 burger (200g)", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ramly Beef Sausage", calories: 280, protein: 12, carbs: 8, fat: 22, serving: "2 sausages", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ramly Chicken Sausage", calories: 240, protein: 10, carbs: 10, fat: 18, serving: "2 sausages", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ramly Oblong Beef", calories: 420, protein: 16, carbs: 36, fat: 22, serving: "1 burger (220g)", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ramly Oblong Chicken", calories: 400, protein: 18, carbs: 38, fat: 20, serving: "1 burger (220g)", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
+];
+
 async function seedSafe() {
   console.log("🌱 Starting safe seed (will skip if data exists)...");
 
@@ -169,26 +191,47 @@ async function seedSafe() {
     console.log("✅ Connected to MongoDB");
 
     const db = client.db(dbName);
-    const collection = db.collection("foods");
-
-    // Check if collection already has data
-    const count = await collection.countDocuments();
     
-    if (count > 0) {
-      console.log(`ℹ️  Foods collection already has ${count} documents - skipping seed`);
-      console.log("💡 To force reseed, run 'pnpm seed' instead");
-      return;
+    // ========================================
+    // Seed natural_foods collection (if empty)
+    // ========================================
+    const naturalCollection = db.collection("natural_foods");
+    const naturalCount = await naturalCollection.countDocuments();
+    
+    if (naturalCount > 0) {
+      console.log(`ℹ️  natural_foods collection already has ${naturalCount} documents - skipping`);
+    } else {
+      await naturalCollection.insertMany(naturalFoods);
+      console.log(`✅ Inserted ${naturalFoods.length} items into 'natural_foods' collection`);
+      
+      // Create indexes
+      await naturalCollection.createIndex({ name: "text" });
+      await naturalCollection.createIndex({ category: 1 });
+      console.log("✅ Created indexes on 'natural_foods' collection");
     }
 
-    // Collection is empty, proceed with seeding
-    await collection.insertMany(foods);
-    console.log(`✅ Inserted ${foods.length} Malaysian foods with categories`);
+    // ========================================
+    // Seed halal_foods collection (if empty)
+    // ========================================
+    const halalCollection = db.collection("halal_foods");
+    const halalCount = await halalCollection.countDocuments();
+    
+    if (halalCount > 0) {
+      console.log(`ℹ️  halal_foods collection already has ${halalCount} documents - skipping`);
+    } else {
+      await halalCollection.insertMany(halalFoods);
+      console.log(`✅ Inserted ${halalFoods.length} items into 'halal_foods' collection`);
+      
+      // Create indexes
+      await halalCollection.createIndex({ name: "text" });
+      await halalCollection.createIndex({ category: 1 });
+      await halalCollection.createIndex({ brand: 1 });
+      await halalCollection.createIndex({ halalCertifier: 1 });
+      console.log("✅ Created indexes on 'halal_foods' collection");
+    }
 
-    // Create index on category for filtering
-    await collection.createIndex({ category: 1 });
-    console.log("✅ Created index on category field");
-
-    console.log("🎉 Safe seeding completed successfully!");
+    console.log("🎉 Safe seeding completed!");
+    console.log("💡 To force reseed, run 'pnpm seed' instead");
   } catch (error) {
     console.error("❌ Safe seeding failed:", error);
     process.exit(1);

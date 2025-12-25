@@ -1,6 +1,6 @@
+import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { Button } from "@/components/ui/Button";
 
 const sampleFoods = [
   { name: "Grilled Chicken", calories: 165, protein: 31, carbs: 0, fat: 3.6, serving: "100g" },

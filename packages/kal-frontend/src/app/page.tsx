@@ -1,13 +1,13 @@
-import { Navbar } from "@/components/landing/Navbar";
-import { Hero } from "@/components/landing/Hero";
-import { ProblemSolution } from "@/components/landing/ProblemSolution";
-import { HowItWorks } from "@/components/landing/HowItWorks";
+import { FinalCTA } from "@/components/landing/CTA";
+import { FAQ } from "@/components/landing/FAQ";
 import { Features } from "@/components/landing/Features";
+import { Footer } from "@/components/landing/Footer";
+import { Hero } from "@/components/landing/Hero";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { Navbar } from "@/components/landing/Navbar";
+import { ProblemSolution } from "@/components/landing/ProblemSolution";
 import { SampleFoods } from "@/components/landing/SampleFoods";
 import { Testimonials } from "@/components/landing/Testimonials";
-import { FAQ } from "@/components/landing/FAQ";
-import { FinalCTA } from "@/components/landing/CTA";
-import { Footer } from "@/components/landing/Footer";
 
 export default function LandingPage() {
   return (
