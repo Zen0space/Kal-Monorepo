@@ -1,11 +1,13 @@
-import { handleSignIn } from '@logto/next/server-actions';
-import { redirect } from 'next/navigation';
-import type { NextRequest } from 'next/server';
+import { handleSignIn } from "@logto/next/server-actions";
+import { redirect } from "next/navigation";
+import type { NextRequest } from "next/server";
 
-import { logtoConfig } from '@/lib/logto';
+import { logtoConfig } from "@/lib/logto";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   await handleSignIn(logtoConfig, searchParams);
-  redirect('/');
+
+  // Redirect to login success page, which will then redirect to dashboard
+  redirect("/login-success");
 }

@@ -1,11 +1,15 @@
 import { Router, type Router as RouterType } from "express";
 
 import { getDB } from "../lib/db.js";
+import { validateApiKeyMiddleware } from "../middleware/api-key-middleware.js";
 
 const router: RouterType = Router();
 
+// Apply API key validation to all routes
+router.use(validateApiKeyMiddleware);
+
 // ============================================
-// Natural Foods - Public REST API
+// Natural Foods - Public REST API (requires API key)
 // ============================================
 
 /**

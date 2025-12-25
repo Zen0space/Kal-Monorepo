@@ -2,8 +2,9 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
+import { useAuth } from "./auth-context";
 import { trpc } from "./trpc";
 
 function getBaseUrl() {
@@ -14,17 +15,33 @@ function getBaseUrl() {
 }
 
 export function TRPCProvider({ children }: { children: React.ReactNode }) {
+  const { logtoId, email, name } = useAuth();
+  
+  // Use a ref to access the current auth context in the headers callback
+  const authRef = useRef({ logtoId, email, name });
+  authRef.current = { logtoId, email, name };
+
   const [queryClient] = useState(() => new QueryClient());
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
         httpBatchLink({
           url: `${getBaseUrl()}/trpc`,
+          fetch(url, options) {
+            return fetch(url, {
+              ...options,
+              credentials: "include",
+            });
+          },
           headers() {
-            // TODO: Add Logto auth token
-            return {
-              "x-user-id": "dev-user-123", // Temporary for development
-            };
+            const { logtoId, email, name } = authRef.current;
+            const headers: Record<string, string> = {};
+            
+            if (logtoId) headers["x-logto-id"] = logtoId;
+            if (email) headers["x-logto-email"] = email;
+            if (name) headers["x-logto-name"] = name;
+            
+            return headers;
           },
         }),
       ],

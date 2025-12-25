@@ -7,9 +7,8 @@ import express from "express";
 import session from "express-session";
 
 import { createContext } from "./lib/context.js";
-import { connectDB, getDB } from "./lib/db.js";
+import { connectDB } from "./lib/db.js";
 import { logtoConfig, validateLogtoConfig } from "./lib/logto.js";
-import { checkRateLimit, getRateLimitHeaders } from "./middleware/rate-limit.js";
 import { apiRouter } from "./routers/api.js";
 import { appRouter } from "./routers/index.js";
 
@@ -94,7 +93,16 @@ async function main() {
   const app = express();
 
   // Core middleware
-  app.use(cors());
+  app.use(
+    cors({
+      origin: [
+        "http://localhost:3000",
+        process.env.NEXT_PUBLIC_APP_URL,
+        process.env.FRONTEND_URL,
+      ].filter((url): url is string => !!url),
+      credentials: true,
+    })
+  );
   app.use(express.json());
   app.use(cookieParser());
 

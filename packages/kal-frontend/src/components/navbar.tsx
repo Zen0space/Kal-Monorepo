@@ -15,6 +15,7 @@ export default async function Navbar() {
       <div className="nav-auth">
         {isAuthenticated ? (
           <div className="user-info">
+            <a href="/dashboard" className="dashboard-link">Dashboard</a>
             <span className="user-email">{claims?.email || claims?.sub}</span>
             <SignOut
               onSignOut={async () => {

@@ -47,6 +47,37 @@ export interface LogtoUserInfo {
   picture?: string;
 }
 
+// ===================
+// API Keys
+// ===================
+export type ApiKeyExpiration = '1_week' | '1_month' | 'never';
+
+export interface ApiKey {
+  _id: string;
+  userId: string;           // Reference to user
+  key: string;              // The actual API key (hashed in DB)
+  keyPrefix: string;        // First 8 chars for display (e.g., "kal_a1b2...")
+  name: string;             // User-defined name for the key
+  expiration: ApiKeyExpiration;
+  expiresAt: Date | null;   // null = never expires
+  createdAt: Date;
+  lastUsedAt: Date | null;
+  isRevoked: boolean;
+  revokedAt: Date | null;
+}
+
+// For frontend display (never expose full key after creation)
+export interface ApiKeyPublic {
+  _id: string;
+  keyPrefix: string;
+  name: string;
+  expiration: ApiKeyExpiration;
+  expiresAt: Date | null;
+  createdAt: Date;
+  lastUsedAt: Date | null;
+  isRevoked: boolean;
+}
+
 
 
 export interface FoodEntry {
