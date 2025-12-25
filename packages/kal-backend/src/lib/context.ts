@@ -23,7 +23,8 @@ async function syncUserFromLogto(
   const now = new Date();
   const usersCollection = db.collection<User>("users");
   
-  const displayName = claims.name || claims.username;
+  // Use name, username, or email (before @) as display name
+  const displayName = claims.name || claims.username || claims.email?.split("@")[0] || "";
 
   // Upsert user - create if not exists, update if exists
   const result = await usersCollection.findOneAndUpdate(
@@ -31,7 +32,8 @@ async function syncUserFromLogto(
     {
       $set: {
         email: claims.email || "",
-        name: displayName,
+        // Only update name if we have a value (don't overwrite with empty)
+        ...(displayName ? { name: displayName } : {}),
         updatedAt: now,
       },
       $setOnInsert: {
