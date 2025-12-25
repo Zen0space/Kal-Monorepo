@@ -5,24 +5,22 @@ function normalizeEndpoint(endpoint: string): string {
   return endpoint.endsWith('/') ? endpoint : `${endpoint}/`;
 }
 
-const endpoint = process.env.NEXT_PUBLIC_LOGTO_ENDPOINT || 'http://localhost:3001';
-
-export const logtoConfig: LogtoNextConfig = {
-  endpoint: normalizeEndpoint(endpoint),
-  appId: process.env.NEXT_PUBLIC_LOGTO_APP_ID || '',
-  appSecret: process.env.LOGTO_APP_SECRET || '',
-  baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-  cookieSecret: process.env.SESSION_SECRET || 'dev-secret-please-change-in-production',
-  cookieSecure: process.env.NODE_ENV === 'production',
-};
-
-// Debug: Log config in development (not secrets)
-if (process.env.NODE_ENV !== 'production') {
-  console.info('[Logto Config]', {
-    endpoint: logtoConfig.endpoint,
-    appId: logtoConfig.appId,
-    baseUrl: logtoConfig.baseUrl,
-    hasAppSecret: !!logtoConfig.appSecret,
-    cookieSecure: logtoConfig.cookieSecure,
-  });
+/**
+ * Get Logto config - reads env vars at call time (runtime)
+ * This ensures that production secrets are read correctly even if not available at build time
+ */
+export function getLogtoConfig(): LogtoNextConfig {
+  const endpoint = process.env.NEXT_PUBLIC_LOGTO_ENDPOINT || 'http://localhost:3001';
+  
+  return {
+    endpoint: normalizeEndpoint(endpoint),
+    appId: process.env.NEXT_PUBLIC_LOGTO_APP_ID || '',
+    appSecret: process.env.LOGTO_APP_SECRET || '',
+    baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    cookieSecret: process.env.SESSION_SECRET || 'dev-secret-please-change-in-production',
+    cookieSecure: process.env.NODE_ENV === 'production',
+  };
 }
+
+// For backward compatibility - but prefer getLogtoConfig() in route handlers
+export const logtoConfig = getLogtoConfig();
