@@ -3,13 +3,16 @@ import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { logtoConfig } from "@/lib/logto";
+import { getLogtoConfig } from "@/lib/logto";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   
+  // Get config at request time to ensure runtime env vars are read
+  const config = getLogtoConfig();
+  
   try {
-    await handleSignIn(logtoConfig, searchParams);
+    await handleSignIn(config, searchParams);
   } catch (error) {
     console.error("[Callback Error]", error);
     
@@ -21,11 +24,11 @@ export async function GET(request: NextRequest) {
         message: errorMessage,
         hint: "Check that LOGTO_APP_SECRET, NEXT_PUBLIC_LOGTO_ENDPOINT, and SESSION_SECRET are correctly set in production.",
         debug: {
-          endpoint: logtoConfig.endpoint,
-          appId: logtoConfig.appId,
-          baseUrl: logtoConfig.baseUrl,
-          hasAppSecret: !!logtoConfig.appSecret,
-          appSecretLength: logtoConfig.appSecret?.length || 0,
+          endpoint: config.endpoint,
+          appId: config.appId,
+          baseUrl: config.baseUrl,
+          hasAppSecret: !!config.appSecret,
+          appSecretLength: config.appSecret?.length || 0,
         },
       },
       { status: 500 }
