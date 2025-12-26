@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -33,22 +33,20 @@ export function Sidebar({ onSignOut }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const hasInitialized = useRef(false);
 
-  // Auto-collapse on tablet, auto-close on mobile when navigating
+  // Only set initial collapse state once on mount
   useEffect(() => {
-    if (isMounted && shouldAutoCollapse) {
-      setCollapsed(true);
-    }
-    // Close mobile menu when route changes
-    setMobileOpen(false);
-  }, [pathname, shouldAutoCollapse, isMounted]);
-
-  // Update collapsed state when breakpoint changes
-  useEffect(() => {
-    if (isMounted) {
+    if (isMounted && !hasInitialized.current) {
+      hasInitialized.current = true;
       setCollapsed(shouldAutoCollapse);
     }
-  }, [shouldAutoCollapse, isMounted]);
+  }, [isMounted, shouldAutoCollapse]);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   // Mobile: Show hamburger menu and overlay (only after hydration)
   if (isMounted && isMobile) {
@@ -56,7 +54,7 @@ export function Sidebar({ onSignOut }: SidebarProps) {
       <>
         {/* Mobile Header Bar */}
         <header className="fixed top-0 left-0 right-0 h-16 bg-dark-surface border-b border-dark-border z-50 flex items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-accent" />
             <span className="text-xl font-bold text-content-primary">Kal</span>
           </Link>
@@ -87,7 +85,7 @@ export function Sidebar({ onSignOut }: SidebarProps) {
           <div className="flex flex-col h-full">
             {/* Header */}
             <div className="h-16 flex items-center justify-between px-4 border-b border-dark-border">
-              <Link href="/" className="flex items-center gap-2">
+              <Link href="/dashboard" className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-accent" />
                 <span className="text-xl font-bold text-content-primary">Kal</span>
               </Link>
@@ -112,7 +110,6 @@ export function Sidebar({ onSignOut }: SidebarProps) {
                     onClick={() => setMobileOpen(false)}
                     className={`
                       flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-                      transition-all duration-200
                       ${isActive 
                         ? "bg-accent/10 text-accent border border-accent/30" 
                         : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
@@ -133,7 +130,7 @@ export function Sidebar({ onSignOut }: SidebarProps) {
                   onClick={onSignOut}
                   className="flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
                     text-content-secondary hover:bg-dark-elevated hover:text-red-400
-                    transition-all duration-200 w-[calc(100%-1rem)]"
+                    w-[calc(100%-1rem)]"
                 >
                   <LogOut size={20} />
                   <span className="font-medium">Sign Out</span>
@@ -150,18 +147,18 @@ export function Sidebar({ onSignOut }: SidebarProps) {
   return (
     <aside
       className={`
-        fixed left-0 top-0 h-full bg-dark-surface border-r border-dark-border
-        transition-all duration-300 ease-in-out z-40
+        fixed left-0 top-0 h-full bg-dark-surface border-r border-dark-border z-40
+        transition-[width] duration-300 ease-in-out
         ${collapsed ? "w-16" : "w-64"}
       `}
     >
       <div className="flex flex-col h-full">
         {/* Logo */}
         <div className="h-16 flex items-center px-4 border-b border-dark-border">
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link href="/dashboard" className="flex items-center gap-2 group">
             <div className="w-3 h-3 rounded-full bg-accent group-hover:scale-110 transition-transform flex-shrink-0" />
             {!collapsed && (
-              <span className="text-xl font-bold text-content-primary">Kal</span>
+              <span className="text-xl font-bold text-content-primary whitespace-nowrap">Kal</span>
             )}
           </Link>
         </div>
@@ -178,7 +175,6 @@ export function Sidebar({ onSignOut }: SidebarProps) {
                 href={item.href}
                 className={`
                   flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-                  transition-all duration-200
                   ${isActive 
                     ? "bg-accent/10 text-accent border border-accent/30" 
                     : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
@@ -187,7 +183,7 @@ export function Sidebar({ onSignOut }: SidebarProps) {
                 title={collapsed ? item.label : undefined}
               >
                 <Icon size={20} className="flex-shrink-0" />
-                {!collapsed && <span className="font-medium">{item.label}</span>}
+                {!collapsed && <span className="font-medium whitespace-nowrap">{item.label}</span>}
               </Link>
             );
           })}
@@ -200,11 +196,11 @@ export function Sidebar({ onSignOut }: SidebarProps) {
               onClick={onSignOut}
               className="flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
                 text-content-secondary hover:bg-dark-elevated hover:text-red-400
-                transition-all duration-200 w-[calc(100%-1rem)]"
+                w-[calc(100%-1rem)]"
               title={collapsed ? "Sign Out" : undefined}
             >
               <LogOut size={20} className="flex-shrink-0" />
-              {!collapsed && <span className="font-medium">Sign Out</span>}
+              {!collapsed && <span className="font-medium whitespace-nowrap">Sign Out</span>}
             </button>
           )}
 
@@ -213,7 +209,7 @@ export function Sidebar({ onSignOut }: SidebarProps) {
             onClick={() => setCollapsed(!collapsed)}
             className="flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
               text-content-muted hover:bg-dark-elevated hover:text-content-primary
-              transition-all duration-200 w-[calc(100%-1rem)]"
+              w-[calc(100%-1rem)]"
             title={collapsed ? "Expand" : "Collapse"}
           >
             {collapsed ? (
@@ -221,7 +217,7 @@ export function Sidebar({ onSignOut }: SidebarProps) {
             ) : (
               <>
                 <ChevronLeft size={20} className="flex-shrink-0" />
-                <span className="font-medium">Collapse</span>
+                <span className="font-medium whitespace-nowrap">Collapse</span>
               </>
             )}
           </button>
@@ -240,13 +236,15 @@ export function DashboardLayout({
 }) {
   const { isMobile, shouldAutoCollapse, isMounted } = useSidebarLayout();
   const [collapsed, setCollapsed] = useState(false);
+  const hasInitialized = useRef(false);
 
-  // Sync collapse state with breakpoint
+  // Only set initial collapse state once on mount
   useEffect(() => {
-    if (isMounted) {
+    if (isMounted && !hasInitialized.current) {
+      hasInitialized.current = true;
       setCollapsed(shouldAutoCollapse);
     }
-  }, [shouldAutoCollapse, isMounted]);
+  }, [isMounted, shouldAutoCollapse]);
 
   // Determine margin - default to desktop (ml-64) for SSR
   const mainMargin = isMounted && isMobile 
@@ -258,12 +256,7 @@ export function DashboardLayout({
   return (
     <div className="min-h-screen bg-dark">
       <Sidebar onSignOut={onSignOut} />
-      <main
-        className={`
-          transition-all duration-300 ease-in-out
-          ${mainMargin}
-        `}
-      >
+      <main className={`transition-[margin] duration-300 ease-in-out ${mainMargin}`}>
         {children}
       </main>
     </div>
