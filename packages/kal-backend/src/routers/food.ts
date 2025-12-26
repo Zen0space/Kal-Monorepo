@@ -11,7 +11,7 @@ export const foodRouter = router({
     .input(z.object({ query: z.string().min(1) }))
     .query(async ({ input, ctx }) => {
       const foods = await ctx.db
-        .collection("natural_foods")
+        .collection("foods")
         .find({ name: { $regex: input.query, $options: "i" } })
         .limit(20)
         .toArray();
@@ -29,7 +29,7 @@ export const foodRouter = router({
 
   // Get all natural foods (public)
   all: publicProcedure.query(async ({ ctx }) => {
-    const foods = await ctx.db.collection("natural_foods").find({}).toArray();
+    const foods = await ctx.db.collection("foods").find({}).toArray();
     return foods.map((food) => ({
       _id: food._id.toString(),
       name: food.name,
@@ -56,12 +56,12 @@ export const foodRouter = router({
 
       const [foods, total] = await Promise.all([
         ctx.db
-          .collection("natural_foods")
+          .collection("foods")
           .find(query)
           .skip(input.cursor)
           .limit(input.limit)
           .toArray(),
-        ctx.db.collection("natural_foods").countDocuments(query),
+        ctx.db.collection("foods").countDocuments(query),
       ]);
 
       return {
@@ -86,7 +86,7 @@ export const foodRouter = router({
   // Get all categories for natural foods (public)
   categories: publicProcedure.query(async ({ ctx }) => {
     const categories = await ctx.db
-      .collection("natural_foods")
+      .collection("foods")
       .distinct("category");
     return categories.filter(Boolean).sort();
   }),

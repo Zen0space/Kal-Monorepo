@@ -62,7 +62,7 @@ router.get("/foods/search", async (req: AuthRequest, res: Response) => {
 
     const db = getDB();
     const foods = await db
-      .collection("natural_foods")
+      .collection("foods")
       .find({ name: { $regex: q, $options: "i" } })
       .limit(20)
       .toArray();
@@ -112,12 +112,12 @@ router.get("/foods", async (req: AuthRequest, res: Response) => {
 
     const [foods, total] = await Promise.all([
       db
-        .collection("natural_foods")
+        .collection("foods")
         .find(query)
         .skip(offsetNum)
         .limit(limitNum)
         .toArray(),
-      db.collection("natural_foods").countDocuments(query),
+      db.collection("foods").countDocuments(query),
     ]);
 
     logSuccess(req, res, { count: foods.length });
@@ -168,7 +168,7 @@ router.get("/foods/:id", async (req: AuthRequest, res: Response) => {
     }
 
     const db = getDB();
-    const food = await db.collection("natural_foods").findOne({ _id: new ObjectId(id) });
+    const food = await db.collection("foods").findOne({ _id: new ObjectId(id) });
 
     if (!food) {
       logError(req, 404, "Food not found");
@@ -209,7 +209,7 @@ router.get("/foods/:id", async (req: AuthRequest, res: Response) => {
 router.get("/categories", async (req: AuthRequest, res: Response) => {
   try {
     const db = getDB();
-    const categories = await db.collection("natural_foods").distinct("category");
+    const categories = await db.collection("foods").distinct("category");
 
     logSuccess(req, res, { count: categories.length });
 
@@ -438,8 +438,8 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
     const db = getDB();
 
     const [naturalCount, naturalCategories, halalCount, halalBrands] = await Promise.all([
-      db.collection("natural_foods").countDocuments(),
-      db.collection("natural_foods").distinct("category"),
+      db.collection("foods").countDocuments(),
+      db.collection("foods").distinct("category"),
       db.collection("halal_foods").countDocuments(),
       db.collection("halal_foods").distinct("brand"),
     ]);
