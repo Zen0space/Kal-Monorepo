@@ -1,38 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { TypewriterNumber } from "@/components/ui/TypewriterNumber";
-
-function getBaseUrl() {
-  if (typeof window !== "undefined") {
-    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-  }
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-}
+import { trpc } from "@/lib/trpc";
 
 export function Hero() {
-  const [totalFoods, setTotalFoods] = useState<number | null>(null);
-
-  useEffect(() => {
-    async function fetchStats() {
-      try {
-        const res = await fetch(`${getBaseUrl()}/api/stats`);
-        if (res.ok) {
-          const data = await res.json();
-          // Total = naturalFoods + halalFoods
-          const total = (data.data?.naturalFoods?.total || 0) + (data.data?.halalFoods?.total || 0);
-          setTotalFoods(total);
-        }
-      } catch (error) {
-        console.error("Failed to fetch stats:", error);
-        setTotalFoods(348); // Fallback
-      }
-    }
-    fetchStats();
-  }, []);
+  const { data: stats } = trpc.food.stats.useQuery();
 
   return (
     <section className="pt-32 pb-20 md:pt-40 md:pb-28">
@@ -76,8 +50,8 @@ export function Hero() {
             {/* Dynamic Food Count */}
             <div className="text-center">
               <div className="text-2xl md:text-3xl font-bold text-accent mb-1 h-9 flex items-center justify-center">
-                {totalFoods !== null ? (
-                  <TypewriterNumber value={totalFoods} suffix="+" />
+                {stats?.total ? (
+                  <TypewriterNumber value={stats.total} suffix="+" />
                 ) : (
                   <span className="animate-pulse">...</span>
                 )}
