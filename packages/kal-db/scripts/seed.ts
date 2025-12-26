@@ -151,6 +151,66 @@ const naturalFoods = [
   { name: "Sambal Belacan", calories: 50, protein: 1, carbs: 5, fat: 3, serving: "1 tbsp", category: "Basics" },
   { name: "Tempeh Goreng", calories: 200, protein: 15, carbs: 10, fat: 12, serving: "100g", category: "Basics" },
   { name: "Tahu Goreng", calories: 180, protein: 12, carbs: 8, fat: 12, serving: "100g", category: "Basics" },
+
+  // === FRUITS (Local & Tropical) ===
+  { name: "Pisang (Banana)", calories: 89, protein: 1, carbs: 23, fat: 0.3, serving: "1 medium", category: "Fruits" },
+  { name: "Durian", calories: 147, protein: 1.5, carbs: 27, fat: 5, serving: "100g", category: "Fruits" },
+  { name: "Mangga (Mango)", calories: 60, protein: 0.8, carbs: 15, fat: 0.4, serving: "100g", category: "Fruits" },
+  { name: "Papaya", calories: 43, protein: 0.5, carbs: 11, fat: 0.3, serving: "100g", category: "Fruits" },
+  { name: "Rambutan", calories: 68, protein: 0.9, carbs: 16, fat: 0.2, serving: "100g", category: "Fruits" },
+  { name: "Langsat", calories: 60, protein: 1, carbs: 14, fat: 0.2, serving: "100g", category: "Fruits" },
+  { name: "Manggis (Mangosteen)", calories: 73, protein: 0.4, carbs: 18, fat: 0.6, serving: "100g", category: "Fruits" },
+  { name: "Nangka (Jackfruit)", calories: 95, protein: 1.7, carbs: 23, fat: 0.6, serving: "100g", category: "Fruits" },
+  { name: "Betik (Papaya)", calories: 43, protein: 0.5, carbs: 11, fat: 0.3, serving: "100g", category: "Fruits" },
+  { name: "Tembikai (Watermelon)", calories: 30, protein: 0.6, carbs: 8, fat: 0.2, serving: "100g", category: "Fruits" },
+  { name: "Limau Manis (Orange)", calories: 47, protein: 0.9, carbs: 12, fat: 0.1, serving: "1 medium", category: "Fruits" },
+  { name: "Epal (Apple)", calories: 52, protein: 0.3, carbs: 14, fat: 0.2, serving: "1 medium", category: "Fruits" },
+  { name: "Anggur (Grapes)", calories: 69, protein: 0.7, carbs: 18, fat: 0.2, serving: "100g", category: "Fruits" },
+  { name: "Jambu Batu (Guava)", calories: 68, protein: 2.6, carbs: 14, fat: 1, serving: "100g", category: "Fruits" },
+  { name: "Ciku (Sapodilla)", calories: 83, protein: 0.4, carbs: 20, fat: 1, serving: "100g", category: "Fruits" },
+
+  // === VEGETABLES ===
+  { name: "Kangkung", calories: 19, protein: 2.6, carbs: 3, fat: 0.2, serving: "100g", category: "Vegetables" },
+  { name: "Bayam (Spinach)", calories: 23, protein: 2.9, carbs: 3.6, fat: 0.4, serving: "100g", category: "Vegetables" },
+  { name: "Sawi (Mustard Greens)", calories: 27, protein: 2.9, carbs: 4.7, fat: 0.4, serving: "100g", category: "Vegetables" },
+  { name: "Kubis (Cabbage)", calories: 25, protein: 1.3, carbs: 6, fat: 0.1, serving: "100g", category: "Vegetables" },
+  { name: "Timun (Cucumber)", calories: 15, protein: 0.7, carbs: 3.6, fat: 0.1, serving: "100g", category: "Vegetables" },
+  { name: "Tomato", calories: 18, protein: 0.9, carbs: 3.9, fat: 0.2, serving: "100g", category: "Vegetables" },
+  { name: "Lobak Merah (Carrot)", calories: 41, protein: 0.9, carbs: 10, fat: 0.2, serving: "100g", category: "Vegetables" },
+  { name: "Brokoli (Broccoli)", calories: 34, protein: 2.8, carbs: 7, fat: 0.4, serving: "100g", category: "Vegetables" },
+  { name: "Kacang Panjang (Long Bean)", calories: 47, protein: 2.8, carbs: 8, fat: 0.4, serving: "100g", category: "Vegetables" },
+  { name: "Terung (Eggplant)", calories: 25, protein: 1, carbs: 6, fat: 0.2, serving: "100g", category: "Vegetables" },
+
+  // === PROTEINS ===
+  { name: "Dada Ayam (Chicken Breast)", calories: 165, protein: 31, carbs: 0, fat: 3.6, serving: "100g", category: "Proteins" },
+  { name: "Paha Ayam (Chicken Thigh)", calories: 209, protein: 26, carbs: 0, fat: 11, serving: "100g", category: "Proteins" },
+  { name: "Daging Lembu (Beef)", calories: 250, protein: 26, carbs: 0, fat: 15, serving: "100g", category: "Proteins" },
+  { name: "Ikan Salmon", calories: 208, protein: 20, carbs: 0, fat: 13, serving: "100g", category: "Proteins" },
+  { name: "Ikan Kembung", calories: 139, protein: 21, carbs: 0, fat: 6, serving: "100g", category: "Proteins" },
+  { name: "Ikan Tilapia", calories: 96, protein: 20, carbs: 0, fat: 1.7, serving: "100g", category: "Proteins" },
+  { name: "Udang (Prawn)", calories: 99, protein: 24, carbs: 0.2, fat: 0.3, serving: "100g", category: "Proteins" },
+  { name: "Sotong (Squid)", calories: 92, protein: 18, carbs: 3, fat: 1.4, serving: "100g", category: "Proteins" },
+  { name: "Telur Ayam (Chicken Egg)", calories: 155, protein: 13, carbs: 1.1, fat: 11, serving: "2 eggs", category: "Proteins" },
+  { name: "Tahu (Tofu)", calories: 76, protein: 8, carbs: 1.9, fat: 4.8, serving: "100g", category: "Proteins" },
+
+  // === GRAINS & CARBS ===
+  { name: "Nasi Putih (White Rice)", calories: 130, protein: 2.7, carbs: 28, fat: 0.3, serving: "100g", category: "Grains" },
+  { name: "Nasi Perang (Brown Rice)", calories: 111, protein: 2.6, carbs: 23, fat: 0.9, serving: "100g", category: "Grains" },
+  { name: "Roti Putih (White Bread)", calories: 79, protein: 3, carbs: 15, fat: 1, serving: "1 slice", category: "Grains" },
+  { name: "Roti Wholemeal", calories: 81, protein: 4, carbs: 13, fat: 1.3, serving: "1 slice", category: "Grains" },
+  { name: "Oat", calories: 389, protein: 17, carbs: 66, fat: 7, serving: "100g", category: "Grains" },
+  { name: "Mee Kuning (Yellow Noodles)", calories: 138, protein: 5, carbs: 25, fat: 2, serving: "100g", category: "Grains" },
+  { name: "Bihun (Rice Vermicelli)", calories: 364, protein: 3.4, carbs: 83, fat: 0.6, serving: "100g dry", category: "Grains" },
+  { name: "Kuey Teow", calories: 109, protein: 3, carbs: 24, fat: 0.2, serving: "100g", category: "Grains" },
+  { name: "Ubi Keledek (Sweet Potato)", calories: 86, protein: 1.6, carbs: 20, fat: 0.1, serving: "100g", category: "Grains" },
+  { name: "Kentang (Potato)", calories: 77, protein: 2, carbs: 17, fat: 0.1, serving: "100g", category: "Grains" },
+
+  // === HEALTHY ADDITIONS ===
+  { name: "Kacang Tanah (Peanuts)", calories: 567, protein: 26, carbs: 16, fat: 49, serving: "100g", category: "Nuts" },
+  { name: "Kacang Badam (Almonds)", calories: 579, protein: 21, carbs: 22, fat: 50, serving: "100g", category: "Nuts" },
+  { name: "Santan (Coconut Milk)", calories: 230, protein: 2.3, carbs: 6, fat: 24, serving: "100ml", category: "Basics" },
+  { name: "Madu (Honey)", calories: 304, protein: 0.3, carbs: 82, fat: 0, serving: "100g", category: "Basics" },
+  { name: "Gula Melaka (Palm Sugar)", calories: 375, protein: 0.4, carbs: 93, fat: 0.4, serving: "100g", category: "Basics" },
 ];
 
 // ============================================================================
@@ -171,6 +231,41 @@ const halalFoods = [
   { name: "Ramly Chicken Sausage", calories: 240, protein: 10, carbs: 10, fat: 18, serving: "2 sausages", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
   { name: "Ramly Oblong Beef", calories: 420, protein: 16, carbs: 36, fat: 22, serving: "1 burger (220g)", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
   { name: "Ramly Oblong Chicken", calories: 400, protein: 18, carbs: 38, fat: 20, serving: "1 burger (220g)", category: "Fast Food", brand: "Ramly", halalCertifier: "JAKIM", halalCertYear: 2024 },
+
+  // === AYAMAS (JAKIM Certified) ===
+  { name: "Ayamas Crispy Nuggets", calories: 185, protein: 7, carbs: 15, fat: 9, serving: "100g", category: "Frozen", brand: "Ayamas", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ayamas Tempura Nuggets", calories: 164, protein: 9, carbs: 12, fat: 7, serving: "100g", category: "Frozen", brand: "Ayamas", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ayamas Chicken Sausage", calories: 128, protein: 6, carbs: 11, fat: 7, serving: "55g (3 pcs)", category: "Frozen", brand: "Ayamas", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ayamas Chicken Frankfurter", calories: 260, protein: 9, carbs: 6, fat: 22, serving: "100g", category: "Frozen", brand: "Ayamas", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Ayamas Chicken Karaage", calories: 220, protein: 14, carbs: 12, fat: 13, serving: "100g", category: "Frozen", brand: "Ayamas", halalCertifier: "JAKIM", halalCertYear: 2024 },
+
+  // === ADABI (JAKIM Certified) ===
+  { name: "Adabi Rendang Paste", calories: 231, protein: 2, carbs: 17, fat: 16, serving: "100g", category: "Condiments", brand: "Adabi", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Adabi Curry Paste", calories: 180, protein: 3, carbs: 15, fat: 12, serving: "100g", category: "Condiments", brand: "Adabi", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Adabi Sambal Tumis", calories: 150, protein: 2, carbs: 12, fat: 10, serving: "100g", category: "Condiments", brand: "Adabi", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Adabi Kari Daging Paste", calories: 190, protein: 3, carbs: 16, fat: 13, serving: "100g", category: "Condiments", brand: "Adabi", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Adabi Nasi Goreng Paste", calories: 160, protein: 2, carbs: 20, fat: 8, serving: "100g", category: "Condiments", brand: "Adabi", halalCertifier: "JAKIM", halalCertYear: 2024 },
+
+  // === KAWAN (JAKIM Certified) ===
+  { name: "Kawan Paratha Plain", calories: 180, protein: 3, carbs: 25, fat: 8, serving: "1 piece", category: "Frozen", brand: "Kawan", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Kawan Chapati", calories: 120, protein: 3, carbs: 22, fat: 3, serving: "1 piece", category: "Frozen", brand: "Kawan", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Kawan Spring Roll Pastry", calories: 90, protein: 2, carbs: 18, fat: 1, serving: "4 sheets", category: "Frozen", brand: "Kawan", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Kawan Roti Canai", calories: 320, protein: 6, carbs: 42, fat: 14, serving: "1 piece", category: "Frozen", brand: "Kawan", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Kawan Puff Pastry", calories: 200, protein: 3, carbs: 20, fat: 12, serving: "100g", category: "Frozen", brand: "Kawan", halalCertifier: "JAKIM", halalCertYear: 2024 },
+
+  // === MUNCHY'S (JAKIM Certified) ===
+  { name: "Munchy's Cream Crackers", calories: 440, protein: 8, carbs: 70, fat: 14, serving: "100g", category: "Snacks", brand: "Munchy's", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Munchy's Lexus Cream", calories: 500, protein: 5, carbs: 65, fat: 25, serving: "100g", category: "Snacks", brand: "Munchy's", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Munchy's Oat Krunch", calories: 450, protein: 7, carbs: 68, fat: 18, serving: "100g", category: "Snacks", brand: "Munchy's", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Munchy's Captain Munch", calories: 480, protein: 6, carbs: 72, fat: 20, serving: "100g", category: "Snacks", brand: "Munchy's", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Munchy's Choc-O", calories: 520, protein: 5, carbs: 60, fat: 28, serving: "100g", category: "Snacks", brand: "Munchy's", halalCertifier: "JAKIM", halalCertYear: 2024 },
+
+  // === FARM FRESH (JAKIM Certified) ===
+  { name: "Farm Fresh Greek Yogurt", calories: 128, protein: 7, carbs: 10, fat: 5, serving: "120g", category: "Dairy", brand: "Farm Fresh", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Farm Fresh Natural Yogurt", calories: 93, protein: 4, carbs: 12, fat: 3, serving: "120g", category: "Dairy", brand: "Farm Fresh", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Farm Fresh Fresh Milk", calories: 130, protein: 6, carbs: 10, fat: 7, serving: "200ml", category: "Dairy", brand: "Farm Fresh", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Farm Fresh Low Fat Milk", calories: 90, protein: 6, carbs: 10, fat: 2, serving: "200ml", category: "Dairy", brand: "Farm Fresh", halalCertifier: "JAKIM", halalCertYear: 2024 },
+  { name: "Farm Fresh Oat Milk", calories: 110, protein: 2, carbs: 18, fat: 3, serving: "200ml", category: "Dairy", brand: "Farm Fresh", halalCertifier: "JAKIM", halalCertYear: 2024 },
 ];
 
 async function seed() {
@@ -187,31 +282,30 @@ async function seed() {
     const db = client.db(dbName);
 
     // ========================================
-    // Migrate existing 'foods' to 'natural_foods'
+    // Seed foods collection
     // ========================================
     const oldFoodsCollection = db.collection("foods");
     const oldCount = await oldFoodsCollection.countDocuments();
     
     if (oldCount > 0) {
-      console.log(`📦 Found ${oldCount} items in old 'foods' collection - will be replaced`);
+      console.log(`📦 Found ${oldCount} items in 'foods' collection - will be replaced`);
     }
     
     // Clear old 'foods' collection (if exists)
     await oldFoodsCollection.deleteMany({});
-    console.log("🗑️  Cleared old 'foods' collection");
+    console.log("🗑️  Cleared 'foods' collection");
 
     // ========================================
-    // Seed natural_foods collection
+    // Seed foods collection
     // ========================================
-    const naturalCollection = db.collection("natural_foods");
-    await naturalCollection.deleteMany({});
-    await naturalCollection.insertMany(naturalFoods);
-    console.log(`✅ Inserted ${naturalFoods.length} items into 'natural_foods' collection`);
+    const foodsCollection = db.collection("foods");
+    await foodsCollection.insertMany(naturalFoods);
+    console.log(`✅ Inserted ${naturalFoods.length} items into 'foods' collection`);
 
-    // Create indexes for natural_foods
-    await naturalCollection.createIndex({ name: "text" });
-    await naturalCollection.createIndex({ category: 1 });
-    console.log("✅ Created indexes on 'natural_foods' collection");
+    // Create indexes for foods
+    await foodsCollection.createIndex({ name: "text" });
+    await foodsCollection.createIndex({ category: 1 });
+    console.log("✅ Created indexes on 'foods' collection");
 
     // ========================================
     // Seed halal_foods collection
@@ -229,7 +323,7 @@ async function seed() {
     console.log("✅ Created indexes on 'halal_foods' collection");
 
     console.log("🎉 Seeding completed successfully!");
-    console.log(`   📊 Total: ${naturalFoods.length} natural foods + ${halalFoods.length} halal certified foods`);
+    console.log(`   📊 Total: ${naturalFoods.length} foods + ${halalFoods.length} halal certified foods`);
   } catch (error) {
     console.error("❌ Seeding failed:", error);
     process.exit(1);
