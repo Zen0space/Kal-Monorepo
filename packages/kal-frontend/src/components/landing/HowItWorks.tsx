@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart2, CheckCircle, Search } from "react-feather";
+import { Code, Key, Zap } from "react-feather";
 
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -8,21 +8,21 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 const steps = [
   {
     number: "1",
-    icon: <Search className="w-8 h-8" />,
-    title: "Search",
-    description: "Type any food name into our search bar",
+    icon: <Key className="w-8 h-8" />,
+    title: "Get Your API Key",
+    description: "Sign in to your dashboard and generate a free API key",
   },
   {
     number: "2",
-    icon: <BarChart2 className="w-8 h-8" />,
-    title: "View",
-    description: "See calories, protein, carbs, and fat instantly",
+    icon: <Code className="w-8 h-8" />,
+    title: "Make API Calls",
+    description: "Use our REST API to search foods and get nutritional data",
   },
   {
     number: "3",
-    icon: <CheckCircle className="w-8 h-8" />,
-    title: "Track",
-    description: "Know exactly what you're eating every day",
+    icon: <Zap className="w-8 h-8" />,
+    title: "Build Your App",
+    description: "Integrate Malaysian food data into your health apps",
   },
 ];
 
@@ -32,7 +32,7 @@ export function HowItWorks() {
       <Container>
         <SectionHeading
           title="How it works"
-          subtitle="Get nutritional information in three simple steps"
+          subtitle="Integrate our API in three simple steps"
         />
 
         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">

@@ -2,9 +2,9 @@ import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 
 const stats = [
-  { value: "500+", label: "Foods in database" },
-  { value: "100%", label: "Free to use" },
-  { value: "1 sec", label: "Average search time" },
+  { value: "100+", label: "Malaysian Foods" },
+  { value: "Free", label: "API Access" },
+  { value: "<50ms", label: "Response Time" },
 ];
 
 export function Hero() {
@@ -22,26 +22,26 @@ export function Hero() {
 
           {/* Headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-content-primary mb-6 leading-tight">
-            Know exactly what you eat
+            Malaysian Food Nutrition API
           </h1>
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-content-secondary max-w-2xl mx-auto mb-10 leading-relaxed">
-            Track calories and macros in seconds. Get insights that help you reach 
-            your health goals — whether you&apos;re losing weight, building muscle, 
-            or eating smarter.
+            Access comprehensive nutritional data for Malaysian foods. 
+            Build health apps, track calories, or integrate food data into your projects 
+            with our free REST API.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Button href="/search" size="lg">
-              Start Searching — It&apos;s Free
+            <Button href="/api-docs" size="lg">
+              View API Documentation
               <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </Button>
-            <Button href="#how-it-works" variant="secondary" size="lg">
-              See How It Works
+            <Button href="/search" variant="secondary" size="lg">
+              Try Food Search
             </Button>
           </div>
 

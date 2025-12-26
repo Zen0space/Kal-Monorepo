@@ -2,17 +2,17 @@ import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 
 const problems = [
-  "Confusing nutrition labels",
-  "Manual entry takes forever",
-  "No idea what's in your food",
-  "Apps that require sign-ups",
+  "Scattered food data sources",
+  "No Malaysian-specific nutrition info",
+  "Complex integrations required",
+  "Missing halal certification data",
 ];
 
 const solutions = [
-  "Clear, simple nutritional data",
-  "Instant search results",
-  "Complete macro breakdown",
-  "No account required",
+  "One unified REST API",
+  "100+ authentic Malaysian foods",
+  "Simple JSON responses",
+  "JAKIM halal verified foods included",
 ];
 
 export function ProblemSolution() {
@@ -20,8 +20,8 @@ export function ProblemSolution() {
     <section className="py-20">
       <Container>
         <SectionHeading
-          title="Calorie tracking shouldn't be complicated"
-          subtitle="We built Kal to make nutrition tracking simple and accessible for everyone"
+          title="Building a food app shouldn't be hard"
+          subtitle="We created Kal to give developers easy access to Malaysian food data"
         />
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
