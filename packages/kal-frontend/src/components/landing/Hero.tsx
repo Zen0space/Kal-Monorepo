@@ -51,7 +51,7 @@ export function Hero() {
             <div className="text-center">
               <div className="text-2xl md:text-3xl font-bold text-accent mb-1 h-9 flex items-center justify-center">
                 {stats?.total ? (
-                  <TypewriterNumber value={stats.total} suffix="+" />
+                  <TypewriterNumber value={stats.total} />
                 ) : (
                   <span className="animate-pulse">...</span>
                 )}
@@ -65,7 +65,7 @@ export function Hero() {
             <div className="text-center">
               <div className="text-2xl md:text-3xl font-bold text-accent mb-1 h-9 flex items-center justify-center">
                 {stats?.halal ? (
-                  <TypewriterNumber value={stats.halal} suffix="+" />
+                  <TypewriterNumber value={stats.halal} />
                 ) : (
                   <span className="animate-pulse">...</span>
                 )}
