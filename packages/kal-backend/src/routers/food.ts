@@ -91,6 +91,19 @@ export const foodRouter = router({
     return categories.filter(Boolean).sort();
   }),
 
+  // Get database statistics (public)
+  stats: publicProcedure.query(async ({ ctx }) => {
+    const [foodsCount, halalCount] = await Promise.all([
+      ctx.db.collection("foods").countDocuments(),
+      ctx.db.collection("halal_foods").countDocuments(),
+    ]);
+    return {
+      foods: foodsCount,
+      halal: halalCount,
+      total: foodsCount + halalCount,
+    };
+  }),
+
   // Add a food entry
   create: protectedProcedure
     .input(CreateFoodEntrySchema)

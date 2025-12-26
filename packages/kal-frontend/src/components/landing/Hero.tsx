@@ -1,13 +1,13 @@
+"use client";
+
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-
-const stats = [
-  { value: "100+", label: "Malaysian Foods" },
-  { value: "Free", label: "API Access" },
-  { value: "<50ms", label: "Response Time" },
-];
+import { TypewriterNumber } from "@/components/ui/TypewriterNumber";
+import { trpc } from "@/lib/trpc";
 
 export function Hero() {
+  const { data: stats } = trpc.food.stats.useQuery();
+
   return (
     <section className="pt-32 pb-20 md:pt-40 md:pb-28">
       <Container size="md">
@@ -46,17 +46,54 @@ export function Hero() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-accent mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-content-muted">
-                  {stat.label}
-                </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
+            {/* Foods Count */}
+            <div className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-accent mb-1 h-9 flex items-center justify-center">
+                {stats?.total ? (
+                  <TypewriterNumber value={stats.total} />
+                ) : (
+                  <span className="animate-pulse">...</span>
+                )}
               </div>
-            ))}
+              <div className="text-sm text-content-muted">
+                Foods
+              </div>
+            </div>
+
+            {/* Halal Foods Count */}
+            <div className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-accent mb-1 h-9 flex items-center justify-center">
+                {stats?.halal ? (
+                  <TypewriterNumber value={stats.halal} />
+                ) : (
+                  <span className="animate-pulse">...</span>
+                )}
+              </div>
+              <div className="text-sm text-content-muted">
+                Halal Certified
+              </div>
+            </div>
+
+            {/* Free */}
+            <div className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-accent mb-1">
+                Free
+              </div>
+              <div className="text-sm text-content-muted">
+                API Access
+              </div>
+            </div>
+
+            {/* Response Time */}
+            <div className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-accent mb-1">
+                &lt;50ms
+              </div>
+              <div className="text-sm text-content-muted">
+                Response Time
+              </div>
+            </div>
           </div>
         </div>
       </Container>
