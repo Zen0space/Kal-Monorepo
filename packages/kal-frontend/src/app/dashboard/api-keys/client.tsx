@@ -5,6 +5,7 @@ import { RATE_LIMITS } from "kal-shared";
 import { useState } from "react";
 import { AlertTriangle, Check, CheckCircle, Plus } from "react-feather";
 
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { AuthUpdater, useAuth } from "@/lib/auth-context";
 import { trpc } from "@/lib/trpc";
 
@@ -39,7 +40,7 @@ function ApiKeysContentWrapper({ expectedLogtoId }: { expectedLogtoId?: string }
   
   if (expectedLogtoId && logtoId !== expectedLogtoId) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <div className="animate-pulse">
           <div className="h-8 bg-dark-elevated rounded w-48 mb-4" />
           <div className="h-4 bg-dark-elevated rounded w-32" />
@@ -52,6 +53,7 @@ function ApiKeysContentWrapper({ expectedLogtoId }: { expectedLogtoId?: string }
 }
 
 function ApiKeysContent() {
+  const { isMobile } = useBreakpoint();
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
   const [newKeyExpiration, setNewKeyExpiration] = useState<"1_week" | "1_month" | "never">("1_month");
@@ -111,31 +113,31 @@ function ApiKeysContent() {
   const dailyPercentage = Math.min(100, (dailyUsed / limits.dailyLimit) * 100);
 
   return (
-    <div className="p-8 max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-content-primary mb-2">API Keys</h1>
-        <p className="text-content-secondary">Manage your API keys and view rate limit analytics</p>
+    <div className="p-4 md:p-6 lg:p-8 max-w-5xl">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2">API Keys</h1>
+        <p className="text-content-secondary text-sm md:text-base">Manage your API keys and view rate limit analytics</p>
       </div>
 
       {/* Usage Stats */}
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold text-content-primary mb-4">Rate Limit Analytics</h2>
-        <div className="grid md:grid-cols-3 gap-4">
-          <div className="bg-dark-surface border border-dark-border rounded-xl p-6">
+      <section className="mb-6 md:mb-8">
+        <h2 className="text-base md:text-lg font-semibold text-content-primary mb-3 md:mb-4">Rate Limit Analytics</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-content-secondary text-sm">Current Tier</span>
+              <span className="text-content-secondary text-xs md:text-sm">Current Tier</span>
               <span className={`px-2 py-1 rounded text-xs font-medium tier-badge tier-${tier}`}>
                 {tier === "free" ? "Free" : tier === "tier_1" ? "Tier 1" : "Tier 2"}
               </span>
             </div>
-            <p className="text-content-muted text-sm">{limits.dailyLimit} requests/day</p>
-            <p className="text-content-muted text-sm">{limits.burstLimit} requests/minute</p>
+            <p className="text-content-muted text-xs md:text-sm">{limits.dailyLimit} requests/day</p>
+            <p className="text-content-muted text-xs md:text-sm">{limits.burstLimit} requests/minute</p>
           </div>
 
-          <div className="bg-dark-surface border border-dark-border rounded-xl p-6">
+          <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-content-secondary text-sm">Today&apos;s Usage</span>
-              <span className="text-accent font-semibold">{dailyUsed} / {limits.dailyLimit}</span>
+              <span className="text-content-secondary text-xs md:text-sm">Today&apos;s Usage</span>
+              <span className="text-accent font-semibold text-sm md:text-base">{dailyUsed} / {limits.dailyLimit}</span>
             </div>
             <div className="h-2 bg-dark-elevated rounded-full overflow-hidden mb-2">
               <div 
@@ -143,13 +145,13 @@ function ApiKeysContent() {
                 style={{ width: `${dailyPercentage}%` }}
               />
             </div>
-            <p className="text-content-muted text-sm">{dailyRemaining} requests remaining</p>
+            <p className="text-content-muted text-xs md:text-sm">{dailyRemaining} requests remaining</p>
           </div>
 
-          <div className="bg-dark-surface border border-dark-border rounded-xl p-6">
+          <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-content-secondary text-sm">Active Keys</span>
-              <span className="text-accent font-semibold text-2xl">{stats?.activeKeyCount || 0}</span>
+              <span className="text-content-secondary text-xs md:text-sm">Active Keys</span>
+              <span className="text-accent font-semibold text-xl md:text-2xl">{stats?.activeKeyCount || 0}</span>
             </div>
           </div>
         </div>
@@ -157,61 +159,88 @@ function ApiKeysContent() {
 
       {/* API Keys List */}
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-content-primary">Your API Keys</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <h2 className="text-base md:text-lg font-semibold text-content-primary">Your API Keys</h2>
           <button 
-            className="flex items-center gap-2 px-4 py-2 bg-accent text-dark font-medium rounded-lg hover:bg-accent/90 transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-accent text-dark font-medium rounded-lg hover:bg-accent/90 transition-colors text-sm md:text-base"
             onClick={() => setShowGenerateModal(true)}
           >
-            <Plus size={18} /> Generate New Key
+            <Plus size={isMobile ? 16 : 18} /> Generate New Key
           </button>
         </div>
 
         {apiKeys && apiKeys.length > 0 ? (
           <div className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden">
-            <div className="grid grid-cols-5 gap-4 px-6 py-3 bg-dark-elevated text-xs font-medium text-content-muted uppercase tracking-wider">
+            {/* Desktop Table Header */}
+            <div className="hidden md:grid grid-cols-5 gap-4 px-6 py-3 bg-dark-elevated text-xs font-medium text-content-muted uppercase tracking-wider">
               <span>Name</span>
               <span>Key</span>
               <span>Expires</span>
               <span>Last Used</span>
               <span>Actions</span>
             </div>
+            
             {apiKeys.map((key: SerializedApiKey) => (
-              <div key={key._id} className="grid grid-cols-5 gap-4 px-6 py-4 border-t border-dark-border items-center">
-                <span className="font-medium text-content-primary">{key.name}</span>
-                <code className="text-content-secondary text-sm bg-dark-elevated px-2 py-1 rounded">{key.keyPrefix}</code>
-                <span className="text-content-secondary text-sm">
-                  {key.expiresAt ? new Date(key.expiresAt).toLocaleDateString() : "Never"}
-                </span>
-                <span className="text-content-muted text-sm">
-                  {key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleDateString() : "Never"}
-                </span>
-                <button
-                  className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
-                  onClick={() => handleRevoke(key._id, key.name)}
-                  disabled={revokeMutation.isPending}
-                >
-                  Revoke
-                </button>
+              <div key={key._id}>
+                {/* Desktop Row */}
+                <div className="hidden md:grid grid-cols-5 gap-4 px-6 py-4 border-t border-dark-border items-center">
+                  <span className="font-medium text-content-primary truncate">{key.name}</span>
+                  <code className="text-content-secondary text-sm bg-dark-elevated px-2 py-1 rounded truncate">{key.keyPrefix}</code>
+                  <span className="text-content-secondary text-sm">
+                    {key.expiresAt ? new Date(key.expiresAt).toLocaleDateString() : "Never"}
+                  </span>
+                  <span className="text-content-muted text-sm">
+                    {key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleDateString() : "Never"}
+                  </span>
+                  <button
+                    className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
+                    onClick={() => handleRevoke(key._id, key.name)}
+                    disabled={revokeMutation.isPending}
+                  >
+                    Revoke
+                  </button>
+                </div>
+                
+                {/* Mobile Card */}
+                <div className="md:hidden p-4 border-t border-dark-border">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-content-primary">{key.name}</span>
+                    <button
+                      className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
+                      onClick={() => handleRevoke(key._id, key.name)}
+                      disabled={revokeMutation.isPending}
+                    >
+                      Revoke
+                    </button>
+                  </div>
+                  <code className="block text-content-secondary text-xs bg-dark-elevated px-2 py-1 rounded mb-2">{key.keyPrefix}</code>
+                  <div className="flex gap-4 text-xs text-content-muted">
+                    <span>Expires: {key.expiresAt ? new Date(key.expiresAt).toLocaleDateString() : "Never"}</span>
+                    <span>Used: {key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleDateString() : "Never"}</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="bg-dark-surface border border-dark-border rounded-xl p-12 text-center">
-            <p className="text-content-secondary">No API keys yet. Generate one to get started!</p>
+          <div className="bg-dark-surface border border-dark-border rounded-xl p-8 md:p-12 text-center">
+            <p className="text-content-secondary text-sm md:text-base">No API keys yet. Generate one to get started!</p>
           </div>
         )}
       </section>
 
       {/* Generate Key Modal */}
       {showGenerateModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={handleCloseModal}>
-          <div className="bg-dark-surface border border-dark-border rounded-2xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4" onClick={handleCloseModal}>
+          <div 
+            className="bg-dark-surface border border-dark-border rounded-t-2xl sm:rounded-2xl p-4 md:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto" 
+            onClick={(e) => e.stopPropagation()}
+          >
             {!generatedKey ? (
               <>
-                <h3 className="text-xl font-semibold text-content-primary mb-6">Generate New API Key</h3>
+                <h3 className="text-lg md:text-xl font-semibold text-content-primary mb-4 md:mb-6">Generate New API Key</h3>
                 <div className="mb-4">
-                  <label htmlFor="keyName" className="block text-sm font-medium text-content-secondary mb-2">Key Name</label>
+                  <label htmlFor="keyName" className="block text-xs md:text-sm font-medium text-content-secondary mb-2">Key Name</label>
                   <input
                     id="keyName"
                     type="text"
@@ -219,11 +248,11 @@ function ApiKeysContent() {
                     value={newKeyName}
                     onChange={(e) => setNewKeyName(e.target.value)}
                     maxLength={50}
-                    className="w-full px-4 py-3 bg-dark-elevated border border-dark-border rounded-lg text-content-primary placeholder-content-muted focus:ring-2 focus:ring-accent/50 focus:border-accent/50"
+                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-dark-elevated border border-dark-border rounded-lg text-content-primary placeholder-content-muted focus:ring-2 focus:ring-accent/50 focus:border-accent/50 text-sm md:text-base"
                   />
                 </div>
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-content-secondary mb-2">Expiration</label>
+                <div className="mb-4 md:mb-6">
+                  <label className="block text-xs md:text-sm font-medium text-content-secondary mb-2">Expiration</label>
                   <div className="flex gap-2">
                     {[
                       { value: "1_week", label: "1 Week" },
@@ -232,7 +261,7 @@ function ApiKeysContent() {
                     ].map((opt) => (
                       <button
                         key={opt.value}
-                        className={`flex-1 py-2 rounded-lg font-medium transition-all ${
+                        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                           newKeyExpiration === opt.value
                             ? "bg-accent text-dark"
                             : "bg-dark-elevated text-content-secondary border border-dark-border hover:border-accent/30"
@@ -245,11 +274,11 @@ function ApiKeysContent() {
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <button className="flex-1 py-3 rounded-lg font-medium bg-dark-elevated text-content-secondary hover:text-content-primary transition-colors" onClick={handleCloseModal}>
+                  <button className="flex-1 py-2 md:py-3 rounded-lg font-medium bg-dark-elevated text-content-secondary hover:text-content-primary transition-colors text-sm md:text-base" onClick={handleCloseModal}>
                     Cancel
                   </button>
                   <button
-                    className="flex-1 py-3 rounded-lg font-medium bg-accent text-dark hover:bg-accent/90 transition-colors disabled:opacity-50"
+                    className="flex-1 py-2 md:py-3 rounded-lg font-medium bg-accent text-dark hover:bg-accent/90 transition-colors disabled:opacity-50 text-sm md:text-base"
                     onClick={handleGenerate}
                     disabled={!newKeyName.trim() || generateMutation.isPending}
                   >
@@ -259,26 +288,26 @@ function ApiKeysContent() {
               </>
             ) : (
               <>
-                <h3 className="text-xl font-semibold text-content-primary mb-4 flex items-center gap-2">
-                  <CheckCircle size={20} className="text-accent" /> API Key Generated!
+                <h3 className="text-lg md:text-xl font-semibold text-content-primary mb-4 flex items-center gap-2">
+                  <CheckCircle size={isMobile ? 18 : 20} className="text-accent" /> API Key Generated!
                 </h3>
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-4">
-                  <p className="text-yellow-400 text-sm flex items-center gap-2">
-                    <AlertTriangle size={16} /> <strong>Save this key now!</strong>
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 md:p-4 mb-4">
+                  <p className="text-yellow-400 text-xs md:text-sm flex items-center gap-2">
+                    <AlertTriangle size={isMobile ? 14 : 16} /> <strong>Save this key now!</strong>
                   </p>
-                  <p className="text-yellow-400/80 text-sm mt-1">This is the only time you&apos;ll see this key.</p>
+                  <p className="text-yellow-400/80 text-xs md:text-sm mt-1">This is the only time you&apos;ll see this key.</p>
                 </div>
-                <div className="bg-dark-elevated rounded-lg p-4 mb-6 flex items-center gap-3">
-                  <code className="flex-1 text-content-primary text-sm break-all">{generatedKey}</code>
+                <div className="bg-dark-elevated rounded-lg p-3 md:p-4 mb-4 md:mb-6">
+                  <code className="block text-content-primary text-xs md:text-sm break-all mb-3">{generatedKey}</code>
                   <button 
-                    className="px-4 py-2 bg-accent text-dark font-medium rounded-lg hover:bg-accent/90 transition-colors flex items-center gap-1"
+                    className="w-full sm:w-auto px-4 py-2 bg-accent text-dark font-medium rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center gap-1 text-sm"
                     onClick={handleCopyKey}
                   >
                     {copied ? <><Check size={14} /> Copied!</> : "Copy"}
                   </button>
                 </div>
                 <button 
-                  className="w-full py-3 rounded-lg font-medium bg-accent text-dark hover:bg-accent/90 transition-colors"
+                  className="w-full py-2 md:py-3 rounded-lg font-medium bg-accent text-dark hover:bg-accent/90 transition-colors text-sm md:text-base"
                   onClick={handleCloseModal}
                 >
                   Done
