@@ -36,6 +36,7 @@ export function useMediaQuery(query: string): boolean {
 
 /**
  * Hook to detect current breakpoint
+ * Returns default desktop values on server, updates on client after mount
  */
 export function useBreakpoint(): {
   breakpoint: Breakpoint | "xs";
@@ -43,15 +44,19 @@ export function useBreakpoint(): {
   isTablet: boolean;
   isDesktop: boolean;
   width: number;
+  isMounted: boolean;
 } {
-  const [width, setWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1024);
+  const [isMounted, setIsMounted] = useState(false);
+  const [width, setWidth] = useState(1024); // Default to desktop width for SSR
 
   useEffect(() => {
-    const handleResize = () => setWidth(window.innerWidth);
+    // Mark as mounted first
+    setIsMounted(true);
     
-    // Set initial width
-    handleResize();
+    // Set actual width
+    setWidth(window.innerWidth);
 
+    const handleResize = () => setWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -69,10 +74,11 @@ export function useBreakpoint(): {
 
   return {
     breakpoint,
-    isMobile: width < breakpoints.md,
-    isTablet: width >= breakpoints.md && width < breakpoints.lg,
-    isDesktop: width >= breakpoints.lg,
+    isMobile: isMounted && width < breakpoints.md,
+    isTablet: isMounted && width >= breakpoints.md && width < breakpoints.lg,
+    isDesktop: !isMounted || width >= breakpoints.lg, // Default to desktop for SSR
     width,
+    isMounted,
   };
 }
 
@@ -83,12 +89,14 @@ export function useSidebarLayout(): {
   isMobile: boolean;
   shouldAutoCollapse: boolean;
   defaultCollapsed: boolean;
+  isMounted: boolean;
 } {
-  const { isMobile, isTablet } = useBreakpoint();
+  const { isMobile, isTablet, isMounted } = useBreakpoint();
 
   return {
     isMobile,
-    shouldAutoCollapse: isMobile || isTablet,
+    shouldAutoCollapse: isMounted && (isMobile || isTablet),
     defaultCollapsed: isTablet,
+    isMounted,
   };
 }

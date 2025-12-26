@@ -29,27 +29,29 @@ const navItems = [
 ];
 
 export function Sidebar({ onSignOut }: SidebarProps) {
-  const { isMobile, shouldAutoCollapse, defaultCollapsed } = useSidebarLayout();
-  const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  const { isMobile, shouldAutoCollapse, isMounted } = useSidebarLayout();
+  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
   // Auto-collapse on tablet, auto-close on mobile when navigating
   useEffect(() => {
-    if (shouldAutoCollapse) {
+    if (isMounted && shouldAutoCollapse) {
       setCollapsed(true);
     }
     // Close mobile menu when route changes
     setMobileOpen(false);
-  }, [pathname, shouldAutoCollapse]);
+  }, [pathname, shouldAutoCollapse, isMounted]);
 
   // Update collapsed state when breakpoint changes
   useEffect(() => {
-    setCollapsed(shouldAutoCollapse);
-  }, [shouldAutoCollapse]);
+    if (isMounted) {
+      setCollapsed(shouldAutoCollapse);
+    }
+  }, [shouldAutoCollapse, isMounted]);
 
-  // Mobile: Show hamburger menu and overlay
-  if (isMobile) {
+  // Mobile: Show hamburger menu and overlay (only after hydration)
+  if (isMounted && isMobile) {
     return (
       <>
         {/* Mobile Header Bar */}
@@ -144,7 +146,7 @@ export function Sidebar({ onSignOut }: SidebarProps) {
     );
   }
 
-  // Desktop/Tablet: Collapsible sidebar
+  // Desktop/Tablet: Collapsible sidebar (default for SSR and non-mobile)
   return (
     <aside
       className={`
@@ -236,13 +238,22 @@ export function DashboardLayout({
   children: React.ReactNode;
   onSignOut?: () => Promise<void>;
 }) {
-  const { isMobile, shouldAutoCollapse } = useSidebarLayout();
-  const [collapsed, setCollapsed] = useState(shouldAutoCollapse);
+  const { isMobile, shouldAutoCollapse, isMounted } = useSidebarLayout();
+  const [collapsed, setCollapsed] = useState(false);
 
   // Sync collapse state with breakpoint
   useEffect(() => {
-    setCollapsed(shouldAutoCollapse);
-  }, [shouldAutoCollapse]);
+    if (isMounted) {
+      setCollapsed(shouldAutoCollapse);
+    }
+  }, [shouldAutoCollapse, isMounted]);
+
+  // Determine margin - default to desktop (ml-64) for SSR
+  const mainMargin = isMounted && isMobile 
+    ? "ml-0 pt-16" 
+    : collapsed 
+      ? "ml-16" 
+      : "ml-64";
 
   return (
     <div className="min-h-screen bg-dark">
@@ -250,12 +261,7 @@ export function DashboardLayout({
       <main
         className={`
           transition-all duration-300 ease-in-out
-          ${isMobile 
-            ? "ml-0 pt-16" 
-            : collapsed 
-              ? "ml-16" 
-              : "ml-64"
-          }
+          ${mainMargin}
         `}
       >
         {children}
