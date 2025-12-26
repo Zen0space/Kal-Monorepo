@@ -98,8 +98,10 @@ jobs:
       - name: Build Backend Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: ./packages/kal-backend
+          context: .
+          file: ./packages/kal-backend/Dockerfile
           push: false
           tags: kal-backend:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
