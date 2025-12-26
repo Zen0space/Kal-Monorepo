@@ -387,11 +387,17 @@ const halalFoods = [
 
 /**
  * Safe seed script for production
- * Only seeds collections if they're empty
- * This prevents data loss on redeployments
+ * - Normal mode: Only seeds collections if they're empty
+ * - Force mode (FORCE_SEED=true): Drops and reseeds everything
  */
 async function seedSafe() {
-  console.log("🌱 Starting safe seed (will skip if data exists)...");
+  const forceMode = process.env.FORCE_SEED === "true";
+  
+  if (forceMode) {
+    console.log("🔥 FORCE_SEED=true detected - will drop and reseed all collections!");
+  } else {
+    console.log("🌱 Starting safe seed (will skip if data exists)...");
+  }
 
   const uri = getDatabaseUri();
   const dbName = getDbName();
@@ -404,14 +410,19 @@ async function seedSafe() {
     const db = client.db(dbName);
     
     // ========================================
-    // Seed foods collection (if empty)
+    // Seed foods collection
     // ========================================
     const foodsCollection = db.collection("foods");
     const foodsCount = await foodsCollection.countDocuments();
     
-    if (foodsCount > 0) {
-      console.log(`ℹ️  foods collection already has ${foodsCount} documents - skipping`);
-    } else {
+    if (forceMode && foodsCount > 0) {
+      console.log(`🗑️  Force mode: Dropping ${foodsCount} items from 'foods' collection...`);
+      await foodsCollection.deleteMany({});
+    }
+    
+    const shouldSeedFoods = forceMode || foodsCount === 0;
+    
+    if (shouldSeedFoods) {
       await foodsCollection.insertMany(naturalFoods);
       console.log(`✅ Inserted ${naturalFoods.length} items into 'foods' collection`);
       
@@ -419,17 +430,24 @@ async function seedSafe() {
       await foodsCollection.createIndex({ name: "text" });
       await foodsCollection.createIndex({ category: 1 });
       console.log("✅ Created indexes on 'foods' collection");
+    } else {
+      console.log(`ℹ️  foods collection already has ${foodsCount} documents - skipping`);
     }
 
     // ========================================
-    // Seed halal_foods collection (if empty)
+    // Seed halal_foods collection
     // ========================================
     const halalCollection = db.collection("halal_foods");
     const halalCount = await halalCollection.countDocuments();
     
-    if (halalCount > 0) {
-      console.log(`ℹ️  halal_foods collection already has ${halalCount} documents - skipping`);
-    } else {
+    if (forceMode && halalCount > 0) {
+      console.log(`🗑️  Force mode: Dropping ${halalCount} items from 'halal_foods' collection...`);
+      await halalCollection.deleteMany({});
+    }
+    
+    const shouldSeedHalal = forceMode || halalCount === 0;
+    
+    if (shouldSeedHalal) {
       await halalCollection.insertMany(halalFoods);
       console.log(`✅ Inserted ${halalFoods.length} items into 'halal_foods' collection`);
       
@@ -439,13 +457,20 @@ async function seedSafe() {
       await halalCollection.createIndex({ brand: 1 });
       await halalCollection.createIndex({ halalCertifier: 1 });
       console.log("✅ Created indexes on 'halal_foods' collection");
+    } else {
+      console.log(`ℹ️  halal_foods collection already has ${halalCount} documents - skipping`);
     }
 
-    console.log("🎉 Safe seeding completed!");
+    console.log("🎉 Seeding completed!");
     console.log(`   📊 Data: ${naturalFoods.length} foods + ${halalFoods.length} halal certified foods`);
-    console.log("💡 To force reseed, run 'pnpm seed' instead");
+    
+    if (forceMode) {
+      console.log("⚠️  Remember to remove FORCE_SEED=true from env vars after this deploy!");
+    } else {
+      console.log("💡 To force reseed, set FORCE_SEED=true in environment variables");
+    }
   } catch (error) {
-    console.error("❌ Safe seeding failed:", error);
+    console.error("❌ Seeding failed:", error);
     process.exit(1);
   } finally {
     await client.close();
