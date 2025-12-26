@@ -1,0 +1,9 @@
+# CODEOWNERS file for Kal-Monorepo
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repo
+# The owner(s) below will be requested for review when someone opens a PR
+# that modifies code in this repository.
+
+# Zen0space (Khairul Anuar) owns everything
+* @Zen0space
