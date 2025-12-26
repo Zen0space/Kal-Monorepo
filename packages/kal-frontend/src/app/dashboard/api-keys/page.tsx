@@ -1,26 +1,25 @@
 import { getLogtoContext } from "@logto/next/server-actions";
 import { redirect } from "next/navigation";
 
-import DashboardClient from "./client";
+import ApiKeysClient from "./client";
 
 import { getLogtoConfig } from "@/lib/logto";
 
 export const metadata = {
-  title: "Dashboard - Kal API",
-  description: "Manage your API keys and view usage statistics",
+  title: "API Keys - Kal Dashboard",
+  description: "Manage your API keys and view usage analytics",
 };
 
-export default async function DashboardPage() {
+export default async function ApiKeysPage() {
   const config = getLogtoConfig();
   const { isAuthenticated, claims } = await getLogtoContext(config);
 
-  // Redirect to home if not authenticated
   if (!isAuthenticated) {
     redirect("/");
   }
 
   return (
-    <DashboardClient 
+    <ApiKeysClient 
       logtoId={claims?.sub} 
       email={claims?.email}
       name={claims?.name || claims?.username}

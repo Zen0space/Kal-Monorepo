@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Check, FileText, Heart, Lock, Menu, Star, X } from "react-feather";
 
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -298,9 +299,7 @@ export default function APIDocsClient({ isAuthenticated, userEmail, curlExamples
             onClick={() => onSignIn()}
             className="px-4 py-2 bg-[#10b981] text-black font-semibold rounded-lg hover:bg-[#0d9668] transition-colors flex items-center gap-2 text-sm"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
+            <Lock size={14} />
             Sign in to view
           </button>
         </div>
@@ -361,13 +360,7 @@ export default function APIDocsClient({ isAuthenticated, userEmail, curlExamples
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-2 text-content-secondary hover:text-content-primary"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {mobileMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
 
@@ -422,7 +415,7 @@ export default function APIDocsClient({ isAuthenticated, userEmail, curlExamples
               target="_blank"
               className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-[#262626] rounded-lg hover:border-[#10b981] transition-colors"
             >
-              📄 OpenAPI Spec
+              <FileText size={16} /> OpenAPI Spec
             </a>
             <a 
               href="https://github.com/Zen0space/Kal-Monorepo" 
@@ -430,7 +423,7 @@ export default function APIDocsClient({ isAuthenticated, userEmail, curlExamples
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-[#262626] rounded-lg hover:border-[#10b981] transition-colors"
             >
-              ⭐ GitHub
+              <Star size={16} /> GitHub
             </a>
           </div>
         </section>
@@ -446,7 +439,6 @@ export default function APIDocsClient({ isAuthenticated, userEmail, curlExamples
         {/* Natural Foods Endpoints */}
         <section className="mb-12">
           <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">🍚</span>
             <h3 className="text-xl font-semibold">Natural Foods</h3>
             <span className="text-sm text-[#a3a3a3]">Street food & traditional Malaysian dishes</span>
           </div>
@@ -462,8 +454,8 @@ export default function APIDocsClient({ isAuthenticated, userEmail, curlExamples
             <span className="text-sm text-emerald-400/70">JAKIM certified brands</span>
           </div>
           <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 mb-6">
-            <p className="text-emerald-400 text-sm">
-              ✓ All items include brand name, halal certifier (JAKIM), and certification year
+            <p className="text-emerald-400 text-sm flex items-center gap-2">
+              <Check size={14} /> All items include brand name, halal certifier (JAKIM), and certification year
             </p>
           </div>
           <div className="space-y-4">
@@ -547,8 +539,8 @@ export default function APIDocsClient({ isAuthenticated, userEmail, curlExamples
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold">cURL Examples</h3>
             {!isAuthenticated && (
-              <span className="text-sm text-[#a3a3a3]">
-                🔒 Sign in to view full examples
+              <span className="text-sm text-[#a3a3a3] flex items-center gap-1">
+                <Lock size={12} /> Sign in to view full examples
               </span>
             )}
           </div>
@@ -563,7 +555,7 @@ export default function APIDocsClient({ isAuthenticated, userEmail, curlExamples
       {/* Footer */}
       <footer className="border-t border-[#262626] mt-16">
         <div className="max-w-5xl mx-auto px-4 py-6 flex items-center justify-between text-sm text-[#525252]">
-          <p>Made with ❤️ in Malaysia</p>
+          <p className="flex items-center gap-1">Made with <Heart size={12} className="text-red-400" /> in Malaysia</p>
           <Link href="/" className="hover:text-[#10b981] transition-colors">← Back to Kal</Link>
         </div>
       </footer>

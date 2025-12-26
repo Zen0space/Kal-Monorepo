@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Check, Search, X } from "react-feather";
 
 import { trpc } from "@/lib/trpc";
 
@@ -203,7 +204,7 @@ export default function SearchPage() {
                 : "bg-dark-surface text-content-secondary border border-dark-border hover:border-accent/30"
               }`}
           >
-            🍚 Natural Foods
+            Natural Foods
           </button>
           <button
             onClick={() => setActiveTab("halal")}
@@ -220,8 +221,8 @@ export default function SearchPage() {
         {/* Halal Tab Info Banner */}
         {activeTab === "halal" && (
           <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mb-6 text-center">
-            <p className="text-emerald-400 text-sm">
-              ✓ All items are <strong>JAKIM certified halal</strong> with verified brand information
+            <p className="text-emerald-400 text-sm flex items-center justify-center gap-2">
+              <Check size={14} /> All items are <strong>JAKIM certified halal</strong> with verified brand information
             </p>
           </div>
         )}
@@ -469,7 +470,7 @@ export default function SearchPage() {
           </>
         ) : (
           <div className="text-center py-16">
-            <div className="text-6xl mb-4">🔍</div>
+            <div className="text-6xl mb-4"><Search size={64} className="mx-auto text-content-muted" /></div>
             <p className="text-content-secondary">
               {searchQuery
                 ? `No foods found for "${searchQuery}"`
@@ -515,7 +516,7 @@ export default function SearchPage() {
                   onClick={() => setSelectedFood(null)}
                   className="text-content-muted hover:text-content-primary transition-colors"
                 >
-                  ✕
+                  <X size={20} />
                 </button>
               </div>
               <div className="grid grid-cols-4 gap-3 text-center">
