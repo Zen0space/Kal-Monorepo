@@ -40,6 +40,7 @@ export async function checkRateLimit(
   if (!usage) {
     // First request of the day
     usage = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       _id: "" as any,
       userId,
       date: today,
@@ -48,6 +49,7 @@ export async function checkRateLimit(
       minuteCount: 1,
       updatedAt: now,
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await collection.insertOne(usage as any);
   } else if (isNewMinute) {
     // New minute - reset minute counter

@@ -2,7 +2,21 @@
 
 A simple, fast calorie tracking app focused on Malaysian cuisine. Search our database of 100+ Malaysian foods with accurate nutritional information.
 
-![Kal](https://img.shields.io/badge/Malaysian-Food-green) ![License](https://img.shields.io/badge/license-MIT-blue)
+![Kal](https://img.shields.io/badge/Malaysian-Food-green) ![License](https://img.shields.io/badge/license-MIT-blue) ![CI](https://github.com/Zen0space/Kal-Monorepo/actions/workflows/ci.yml/badge.svg)
+
+**🌐 Production:** [https://kalori-api.my](https://kalori-api.my)
+
+---
+
+## 📚 Documentation
+
+| Document                                        | Description                                      |
+| ----------------------------------------------- | ------------------------------------------------ |
+| [API Documentation](docs/api.md)                | REST API endpoints, authentication, and examples |
+| [Contributing Guidelines](docs/contributing.md) | How to contribute, branch strategy, PR process   |
+| [GitHub Actions CI/CD](docs/github-actions.md)  | CI/CD pipeline and deployment workflow           |
+| [Linting Guide](docs/linting.md)                | ESLint and Prettier configuration                |
+| [VPS Setup](docs/vps-setup-selfhosted.md)       | Self-hosted deployment guide                     |
 
 ---
 
@@ -201,13 +215,24 @@ pnpm lint
 
 The app is deployed using [Coolify](https://coolify.io/) to a self-hosted server.
 
-- **Production:** Merging to `main` triggers auto-deploy
+🌐 **Production URL:** [https://kalori-api.my](https://kalori-api.my)
+
+| Environment | Trigger         | URL                                    |
+| ----------- | --------------- | -------------------------------------- |
+| Production  | Merge to `main` | [kalori-api.my](https://kalori-api.my) |
+| Preview     | PR to `dev`     | CI runs only                           |
+
+- **CI/CD:** GitHub Actions - see [docs/github-actions.md](docs/github-actions.md)
 - **Backend:** Docker container with entrypoint running migrations
 - **Frontend:** Static build via Next.js
 
 ---
 
 ## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](docs/contributing.md) for detailed instructions.
+
+### Quick Start
 
 1. Fork the repository
 2. Create branch from `dev` (not `main`)
@@ -218,7 +243,10 @@ The app is deployed using [Coolify](https://coolify.io/) to a self-hosted server
 7. Wait for review
 
 > [!TIP]
-> See [docs/linting.md](docs/linting.md) for full linting guide.
+> See [docs/contributing.md](docs/contributing.md) for the full guide including issue templates and PR process.
+
+> [!TIP]
+> See [docs/linting.md](docs/linting.md) for the linting guide.
 
 ### Commit Convention
 
