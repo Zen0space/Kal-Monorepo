@@ -5,6 +5,7 @@ import type { ApiKey, User } from "kal-shared";
 import type { Db } from "mongodb";
 
 import { getDB } from "../lib/db.js";
+import { logger } from "../lib/logger.js";
 
 import { checkRateLimit, getRateLimitHeaders } from "./rate-limit.js";
 
@@ -25,6 +26,13 @@ export function generateApiKey(): string {
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
   return `kal_${hex}`;
+}
+
+/**
+ * Get key prefix for logging (first 12 chars)
+ */
+function getKeyPrefix(apiKey: string): string {
+  return apiKey.substring(0, 12);
 }
 
 /**
@@ -78,9 +86,13 @@ export function validateApiKeyMiddleware(
   res: Response,
   next: NextFunction
 ): void {
+  const startTime = Date.now();
   const apiKey = req.headers["x-api-key"] as string | undefined;
+  const method = req.method;
+  const endpoint = req.originalUrl.split("?")[0]; // Remove query string for logging
 
   if (!apiKey) {
+    logger.authFailed("No API key provided");
     res.status(401).json({
       success: false,
       error: "API key required. Provide X-API-Key header.",
@@ -89,7 +101,10 @@ export function validateApiKeyMiddleware(
     return;
   }
 
+  const keyPrefix = getKeyPrefix(apiKey);
+
   if (!apiKey.startsWith("kal_")) {
+    logger.authFailed("Invalid format", keyPrefix);
     res.status(401).json({
       success: false,
       error: "Invalid API key format",
@@ -97,11 +112,16 @@ export function validateApiKeyMiddleware(
     return;
   }
 
+  logger.apiRequest(method, endpoint, keyPrefix);
+
   const db = getDB();
 
   validateApiKeyAndGetUser(db, apiKey)
     .then(async (result) => {
       if (!result.valid || !result.user) {
+        const duration = Date.now() - startTime;
+        logger.authFailed(result.error || "Unknown", keyPrefix);
+        logger.apiError(method, endpoint, result.statusCode || 401, result.error || "Auth failed", { duration });
         res.status(result.statusCode || 401).json({
           success: false,
           error: result.error,
@@ -109,10 +129,13 @@ export function validateApiKeyMiddleware(
         return;
       }
 
+      const userId = result.user._id.toString();
+      logger.authSuccess(keyPrefix, userId);
+
       // Check rate limits
       const rateResult = await checkRateLimit(
         db,
-        result.user._id.toString(),
+        userId,
         result.user.tier
       );
 
@@ -123,6 +146,9 @@ export function validateApiKeyMiddleware(
       });
 
       if (rateResult.limited) {
+        const duration = Date.now() - startTime;
+        logger.rateLimited(userId, result.user.tier);
+        logger.apiError(method, endpoint, 429, "Rate limit exceeded", { duration, userId });
         res.status(429).json({
           success: false,
           error: "Rate limit exceeded",
@@ -131,13 +157,16 @@ export function validateApiKeyMiddleware(
         return;
       }
 
-      // Attach user to request for downstream use
-      (req as Request & { apiUser?: User }).apiUser = result.user;
+      // Attach user and timing to request for downstream use
+      (req as Request & { apiUser?: User; startTime?: number; keyPrefix?: string }).apiUser = result.user;
+      (req as Request & { startTime?: number }).startTime = startTime;
+      (req as Request & { keyPrefix?: string }).keyPrefix = keyPrefix;
 
       next();
     })
     .catch((error) => {
-      console.error("API key validation error:", error);
+      const duration = Date.now() - startTime;
+      logger.error("API key validation error", { error: error.message, endpoint, duration });
       res.status(500).json({
         success: false,
         error: "Internal server error",
