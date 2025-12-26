@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Copy, Terminal } from "react-feather";
 
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { AuthUpdater, useAuth } from "@/lib/auth-context";
 import { trpc } from "@/lib/trpc";
 
@@ -24,7 +25,7 @@ function SetupContentWrapper({ expectedLogtoId }: { expectedLogtoId?: string }) 
   
   if (expectedLogtoId && logtoId !== expectedLogtoId) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <div className="animate-pulse">
           <div className="h-8 bg-dark-elevated rounded w-48 mb-4" />
           <div className="h-4 bg-dark-elevated rounded w-32" />
@@ -37,6 +38,7 @@ function SetupContentWrapper({ expectedLogtoId }: { expectedLogtoId?: string }) 
 }
 
 function SetupContent() {
+  const { isMobile } = useBreakpoint();
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const { data: apiKeys } = trpc.apiKeys.list.useQuery();
   
@@ -113,49 +115,49 @@ for food in halal_foods.get("data", []):
   ];
 
   return (
-    <div className="p-8 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-content-primary mb-2 flex items-center gap-2">
-          <Terminal size={24} /> Python Setup Guide
+    <div className="p-4 md:p-6 lg:p-8 max-w-4xl">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2 flex items-center gap-2">
+          <Terminal size={isMobile ? 20 : 24} /> Python Setup Guide
         </h1>
-        <p className="text-content-secondary">Get started using the Kal API with Python in minutes</p>
+        <p className="text-content-secondary text-sm md:text-base">Get started using the Kal API with Python in minutes</p>
       </div>
 
       {/* API Key Reminder */}
-      <div className="bg-accent/10 border border-accent/30 rounded-xl p-4 mb-8">
-        <p className="text-accent text-sm">
+      <div className="bg-accent/10 border border-accent/30 rounded-xl p-3 md:p-4 mb-6 md:mb-8">
+        <p className="text-accent text-xs md:text-sm">
           <strong>Your API Key:</strong> Make sure you have generated an API key from the{" "}
           <a href="/dashboard/api-keys" className="underline hover:no-underline">API Keys page</a>.
           {apiKeys && apiKeys.length > 0 && (
             <span className="block mt-1 text-content-secondary">
-              You have {apiKeys.length} active key(s). Latest: <code className="bg-dark-elevated px-2 py-0.5 rounded">{firstKeyPrefix}...</code>
+              You have {apiKeys.length} active key(s). Latest: <code className="bg-dark-elevated px-1.5 md:px-2 py-0.5 rounded text-xs">{firstKeyPrefix}...</code>
             </span>
           )}
         </p>
       </div>
 
       {/* Code Snippets */}
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {codeSnippets.map((snippet, index) => (
           <div key={index} className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 bg-dark-elevated border-b border-dark-border">
-              <h3 className="font-medium text-content-primary">{snippet.title}</h3>
+            <div className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 bg-dark-elevated border-b border-dark-border">
+              <h3 className="font-medium text-content-primary text-sm md:text-base">{snippet.title}</h3>
               <button
                 onClick={() => copyToClipboard(snippet.code, index)}
-                className="flex items-center gap-1 text-sm text-content-muted hover:text-content-primary transition-colors"
+                className="flex items-center gap-1 text-xs md:text-sm text-content-muted hover:text-content-primary transition-colors p-1"
               >
                 {copiedIndex === index ? (
                   <>
-                    <Check size={14} className="text-accent" /> Copied!
+                    <Check size={isMobile ? 12 : 14} className="text-accent" /> Copied!
                   </>
                 ) : (
                   <>
-                    <Copy size={14} /> Copy
+                    <Copy size={isMobile ? 12 : 14} /> Copy
                   </>
                 )}
               </button>
             </div>
-            <pre className="p-4 overflow-x-auto text-sm">
+            <pre className="p-3 md:p-4 overflow-x-auto text-xs md:text-sm">
               <code className={`language-${snippet.language} text-content-secondary`}>
                 {snippet.code}
               </code>
@@ -165,12 +167,12 @@ for food in halal_foods.get("data", []):
       </div>
 
       {/* Additional Resources */}
-      <div className="mt-8 bg-dark-surface border border-dark-border rounded-xl p-6">
-        <h3 className="font-medium text-content-primary mb-3">Need more help?</h3>
-        <div className="flex gap-4">
+      <div className="mt-6 md:mt-8 bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
+        <h3 className="font-medium text-content-primary mb-3 text-sm md:text-base">Need more help?</h3>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <a 
             href="/api-docs" 
-            className="text-accent hover:underline text-sm"
+            className="text-accent hover:underline text-xs md:text-sm"
           >
             View API Documentation →
           </a>
@@ -178,7 +180,7 @@ for food in halal_foods.get("data", []):
             href="https://github.com/Zen0space/Kal-Monorepo" 
             target="_blank"
             rel="noopener noreferrer"
-            className="text-accent hover:underline text-sm"
+            className="text-accent hover:underline text-xs md:text-sm"
           >
             GitHub Repository →
           </a>
