@@ -34,14 +34,14 @@ const getDbName = () => {
 // ============================================================================
 const naturalFoods = [
   // === RICE DISHES ===
-  { name: "Nasi Lemak", calories: 644, protein: 18, carbs: 80, fat: 28, serving: "1 plate (350g)", category: "Rice" },
-  { name: "Nasi Lemak Ayam Goreng", calories: 850, protein: 32, carbs: 90, fat: 38, serving: "1 plate (450g)", category: "Rice" },
-  { name: "Nasi Goreng", calories: 520, protein: 15, carbs: 65, fat: 22, serving: "1 plate (350g)", category: "Rice" },
-  { name: "Nasi Goreng Kampung", calories: 480, protein: 14, carbs: 60, fat: 20, serving: "1 plate (350g)", category: "Rice" },
+  { name: "Nasi Lemak", calories: 494, protein: 13, carbs: 80, fat: 14, serving: "1 plate (350g)", category: "Rice" },
+  { name: "Nasi Lemak Ayam Goreng", calories: 744, protein: 28, carbs: 85, fat: 32, serving: "1 plate (450g)", category: "Rice" },
+  { name: "Nasi Goreng", calories: 472, protein: 12, carbs: 84, fat: 8, serving: "1 plate (350g)", category: "Rice" },
+  { name: "Nasi Goreng Kampung", calories: 518, protein: 14, carbs: 81, fat: 15, serving: "1 plate (350g)", category: "Rice" },
   { name: "Nasi Goreng Pattaya", calories: 650, protein: 20, carbs: 75, fat: 30, serving: "1 plate (400g)", category: "Rice" },
-  { name: "Nasi Ayam", calories: 550, protein: 28, carbs: 65, fat: 18, serving: "1 plate (400g)", category: "Rice" },
-  { name: "Nasi Ayam Hainan", calories: 580, protein: 30, carbs: 68, fat: 20, serving: "1 plate (420g)", category: "Rice" },
-  { name: "Nasi Kandar", calories: 720, protein: 25, carbs: 85, fat: 32, serving: "1 plate (500g)", category: "Rice" },
+  { name: "Nasi Ayam", calories: 400, protein: 20, carbs: 60, fat: 10, serving: "1 plate (380g)", category: "Rice" },
+  { name: "Nasi Ayam Hainan", calories: 618, protein: 30, carbs: 75, fat: 22, serving: "1 plate (400g)", category: "Rice" },
+  { name: "Nasi Kandar", calories: 800, protein: 35, carbs: 100, fat: 30, serving: "1 plate (500g)", category: "Rice" },
   { name: "Nasi Kerabu", calories: 450, protein: 15, carbs: 55, fat: 18, serving: "1 plate (380g)", category: "Rice" },
   { name: "Nasi Dagang", calories: 520, protein: 18, carbs: 70, fat: 18, serving: "1 plate (400g)", category: "Rice" },
   { name: "Nasi Briyani", calories: 600, protein: 22, carbs: 75, fat: 24, serving: "1 plate (450g)", category: "Rice" },
@@ -49,13 +49,13 @@ const naturalFoods = [
   
   // === NOODLE DISHES ===
   { name: "Mee Goreng", calories: 450, protein: 12, carbs: 55, fat: 20, serving: "1 plate (300g)", category: "Noodles" },
-  { name: "Mee Goreng Mamak", calories: 520, protein: 15, carbs: 60, fat: 24, serving: "1 plate (350g)", category: "Noodles" },
-  { name: "Char Kuey Teow", calories: 740, protein: 22, carbs: 76, fat: 38, serving: "1 plate (400g)", category: "Noodles" },
+  { name: "Mee Goreng Mamak", calories: 450, protein: 15, carbs: 60, fat: 16, serving: "1 plate (350g)", category: "Noodles" },
+  { name: "Char Kuey Teow", calories: 700, protein: 24, carbs: 85, fat: 30, serving: "1 plate (400g)", category: "Noodles" },
   { name: "Kuey Teow Goreng", calories: 580, protein: 18, carbs: 65, fat: 28, serving: "1 plate (350g)", category: "Noodles" },
-  { name: "Laksa Penang", calories: 590, protein: 18, carbs: 58, fat: 32, serving: "1 bowl (450ml)", category: "Noodles" },
+  { name: "Laksa Penang", calories: 436, protein: 18, carbs: 55, fat: 18, serving: "1 bowl (450ml)", category: "Noodles" },
   { name: "Laksa Sarawak", calories: 520, protein: 20, carbs: 52, fat: 26, serving: "1 bowl (450ml)", category: "Noodles" },
-  { name: "Curry Laksa", calories: 550, protein: 22, carbs: 50, fat: 30, serving: "1 bowl (450ml)", category: "Noodles" },
-  { name: "Mee Rebus", calories: 420, protein: 15, carbs: 55, fat: 16, serving: "1 bowl (400ml)", category: "Noodles" },
+  { name: "Curry Laksa", calories: 600, protein: 22, carbs: 55, fat: 32, serving: "1 bowl (450ml)", category: "Noodles" },
+  { name: "Mee Rebus", calories: 450, protein: 18, carbs: 60, fat: 15, serving: "1 bowl (400ml)", category: "Noodles" },
   { name: "Mee Siam", calories: 380, protein: 12, carbs: 50, fat: 14, serving: "1 bowl (350ml)", category: "Noodles" },
   { name: "Mee Curry", calories: 480, protein: 18, carbs: 48, fat: 24, serving: "1 bowl (400ml)", category: "Noodles" },
   { name: "Mee Kari", calories: 480, protein: 18, carbs: 48, fat: 24, serving: "1 bowl (400ml)", category: "Noodles" },
@@ -66,8 +66,8 @@ const naturalFoods = [
   { name: "Loh Mee", calories: 450, protein: 16, carbs: 55, fat: 18, serving: "1 bowl (400ml)", category: "Noodles" },
   
   // === ROTI & BREAD ===
-  { name: "Roti Canai", calories: 320, protein: 6, carbs: 42, fat: 14, serving: "1 piece (100g)", category: "Roti" },
-  { name: "Roti Canai Telur", calories: 380, protein: 12, carbs: 42, fat: 18, serving: "1 piece (130g)", category: "Roti" },
+  { name: "Roti Canai", calories: 250, protein: 5, carbs: 36, fat: 10, serving: "1 piece (100g)", category: "Roti" },
+  { name: "Roti Canai Telur", calories: 356, protein: 12, carbs: 46, fat: 14, serving: "1 piece (130g)", category: "Roti" },
   { name: "Roti Tissue", calories: 450, protein: 8, carbs: 65, fat: 18, serving: "1 piece (150g)", category: "Roti" },
   { name: "Roti Bom", calories: 420, protein: 8, carbs: 55, fat: 20, serving: "1 piece (120g)", category: "Roti" },
   { name: "Roti Sardin", calories: 380, protein: 14, carbs: 40, fat: 18, serving: "1 piece (140g)", category: "Roti" },
@@ -77,10 +77,10 @@ const naturalFoods = [
   { name: "Naan", calories: 260, protein: 7, carbs: 45, fat: 6, serving: "1 piece (90g)", category: "Roti" },
   
   // === MEAT DISHES ===
-  { name: "Satay Ayam", calories: 200, protein: 20, carbs: 5, fat: 12, serving: "5 sticks", category: "Meat" },
-  { name: "Satay Daging", calories: 220, protein: 22, carbs: 5, fat: 14, serving: "5 sticks", category: "Meat" },
-  { name: "Rendang Daging", calories: 480, protein: 32, carbs: 8, fat: 36, serving: "1 serving (150g)", category: "Meat" },
-  { name: "Rendang Ayam", calories: 380, protein: 28, carbs: 8, fat: 26, serving: "1 serving (150g)", category: "Meat" },
+  { name: "Satay Ayam", calories: 180, protein: 22, carbs: 3, fat: 10, serving: "5 sticks (100g)", category: "Meat" },
+  { name: "Satay Daging", calories: 200, protein: 25, carbs: 3, fat: 11, serving: "5 sticks (110g)", category: "Meat" },
+  { name: "Rendang Daging", calories: 350, protein: 29, carbs: 8, fat: 24, serving: "1 serving (120g)", category: "Meat" },
+  { name: "Rendang Ayam", calories: 280, protein: 24, carbs: 6, fat: 18, serving: "1 serving (120g)", category: "Meat" },
   { name: "Ayam Goreng", calories: 320, protein: 28, carbs: 12, fat: 18, serving: "1 piece (120g)", category: "Meat" },
   { name: "Ayam Masak Merah", calories: 280, protein: 24, carbs: 10, fat: 16, serving: "1 serving (150g)", category: "Meat" },
   { name: "Ayam Percik", calories: 350, protein: 26, carbs: 12, fat: 22, serving: "1 serving (180g)", category: "Meat" },
@@ -135,9 +135,9 @@ const naturalFoods = [
   { name: "Ondeh-Ondeh", calories: 120, protein: 2, carbs: 22, fat: 4, serving: "4 pieces (60g)", category: "Desserts" },
   
   // === DRINKS ===
-  { name: "Teh Tarik", calories: 120, protein: 3, carbs: 18, fat: 4, serving: "1 glass (250ml)", category: "Drinks" },
-  { name: "Kopi O", calories: 45, protein: 0, carbs: 12, fat: 0, serving: "1 glass (200ml)", category: "Drinks" },
-  { name: "Milo Ais", calories: 180, protein: 5, carbs: 30, fat: 5, serving: "1 glass (300ml)", category: "Drinks" },
+  { name: "Teh Tarik", calories: 170, protein: 2, carbs: 26, fat: 4, serving: "1 glass (250ml)", category: "Drinks" },
+  { name: "Kopi O", calories: 50, protein: 0, carbs: 12, fat: 0, serving: "1 glass (200ml)", category: "Drinks" },
+  { name: "Milo Ais", calories: 200, protein: 6, carbs: 32, fat: 5, serving: "1 glass (300ml)", category: "Drinks" },
   { name: "Bandung", calories: 150, protein: 3, carbs: 28, fat: 3, serving: "1 glass (250ml)", category: "Drinks" },
   { name: "Air Kelapa", calories: 45, protein: 1, carbs: 9, fat: 0, serving: "1 glass (250ml)", category: "Drinks" },
   { name: "Sirap Limau", calories: 100, protein: 0, carbs: 26, fat: 0, serving: "1 glass (250ml)", category: "Drinks" },
@@ -156,7 +156,6 @@ const naturalFoods = [
   { name: "Pisang (Banana)", calories: 89, protein: 1, carbs: 23, fat: 0.3, serving: "1 medium", category: "Fruits" },
   { name: "Durian", calories: 147, protein: 1.5, carbs: 27, fat: 5, serving: "100g", category: "Fruits" },
   { name: "Mangga (Mango)", calories: 60, protein: 0.8, carbs: 15, fat: 0.4, serving: "100g", category: "Fruits" },
-  { name: "Papaya", calories: 43, protein: 0.5, carbs: 11, fat: 0.3, serving: "100g", category: "Fruits" },
   { name: "Rambutan", calories: 68, protein: 0.9, carbs: 16, fat: 0.2, serving: "100g", category: "Fruits" },
   { name: "Langsat", calories: 60, protein: 1, carbs: 14, fat: 0.2, serving: "100g", category: "Fruits" },
   { name: "Manggis (Mangosteen)", calories: 73, protein: 0.4, carbs: 18, fat: 0.6, serving: "100g", category: "Fruits" },
@@ -270,7 +269,6 @@ const naturalFoods = [
   { name: "Wajik", calories: 170, protein: 2, carbs: 34, fat: 4, serving: "2 pcs (80g)", category: "Desserts" },
 
   // === ADDITIONAL KUIH ===
-  { name: "Kuih Seri Muka", calories: 180, protein: 3, carbs: 30, fat: 7, serving: "2 pcs (100g)", category: "Desserts" },
   { name: "Kuih Dadar", calories: 140, protein: 2, carbs: 24, fat: 5, serving: "2 pcs (70g)", category: "Desserts" },
   { name: "Pulut Inti", calories: 200, protein: 3, carbs: 38, fat: 5, serving: "2 pcs (120g)", category: "Desserts" },
   { name: "Pulut Tai Tai", calories: 190, protein: 3, carbs: 35, fat: 5, serving: "2 pcs (100g)", category: "Desserts" },
@@ -284,7 +282,6 @@ const naturalFoods = [
   // === REGIONAL DISHES ===
   { name: "Mee Jawa", calories: 420, protein: 15, carbs: 52, fat: 18, serving: "1 bowl (400ml)", category: "Noodles" },
   { name: "Mee Udang", calories: 450, protein: 20, carbs: 48, fat: 20, serving: "1 bowl (400ml)", category: "Noodles" },
-  { name: "Mee Kari", calories: 480, protein: 18, carbs: 48, fat: 24, serving: "1 bowl (400ml)", category: "Noodles" },
   { name: "Nasi Ambeng", calories: 680, protein: 25, carbs: 85, fat: 28, serving: "1 plate (550g)", category: "Rice" },
   { name: "Nasi Minyak", calories: 420, protein: 8, carbs: 70, fat: 12, serving: "1 plate (300g)", category: "Rice" },
   { name: "Bubur Lambuk", calories: 280, protein: 12, carbs: 40, fat: 8, serving: "1 bowl (350ml)", category: "Rice" },
@@ -302,14 +299,14 @@ const naturalFoods = [
   { name: "Appam", calories: 120, protein: 3, carbs: 22, fat: 2, serving: "2 pcs (80g)", category: "Snacks" },
 
   // === MORE DRINKS ===
-  { name: "Teh Halia", calories: 100, protein: 2, carbs: 16, fat: 3, serving: "1 glass (250ml)", category: "Drinks" },
-  { name: "Kopi Tarik", calories: 130, protein: 3, carbs: 18, fat: 5, serving: "1 glass (250ml)", category: "Drinks" },
-  { name: "Teh Ais", calories: 90, protein: 1, carbs: 20, fat: 0, serving: "1 glass (300ml)", category: "Drinks" },
-  { name: "Kopi Ais", calories: 100, protein: 2, carbs: 18, fat: 3, serving: "1 glass (300ml)", category: "Drinks" },
+  { name: "Teh Halia", calories: 180, protein: 2, carbs: 28, fat: 4, serving: "1 glass (250ml)", category: "Drinks" },
+  { name: "Kopi Tarik", calories: 190, protein: 2, carbs: 30, fat: 5, serving: "1 glass (250ml)", category: "Drinks" },
+  { name: "Teh Ais", calories: 120, protein: 1, carbs: 26, fat: 2, serving: "1 glass (300ml)", category: "Drinks" },
+  { name: "Kopi Ais", calories: 140, protein: 2, carbs: 24, fat: 4, serving: "1 glass (300ml)", category: "Drinks" },
   { name: "Sirap Bandung", calories: 140, protein: 2, carbs: 28, fat: 3, serving: "1 glass (250ml)", category: "Drinks" },
   { name: "Air Tebu", calories: 120, protein: 0, carbs: 30, fat: 0, serving: "1 glass (300ml)", category: "Drinks" },
   { name: "Limau Ais", calories: 60, protein: 0, carbs: 15, fat: 0, serving: "1 glass (250ml)", category: "Drinks" },
-  { name: "Teh Tarik Halia", calories: 130, protein: 3, carbs: 20, fat: 4, serving: "1 glass (250ml)", category: "Drinks" },
+  { name: "Teh Tarik Halia", calories: 190, protein: 2, carbs: 30, fat: 4, serving: "1 glass (250ml)", category: "Drinks" },
 
   // === INTERNATIONAL - ASIAN ===
   { name: "Sushi Roll", calories: 200, protein: 8, carbs: 38, fat: 1, serving: "6 pcs (180g)", category: "Japanese" },
@@ -452,15 +449,12 @@ const naturalFoods = [
   { name: "Amaranth (Cooked)", calories: 251, protein: 9.4, carbs: 46, fat: 3.9, serving: "1 cup (246g)", category: "Grains" },
 
   // === COMMON INGREDIENTS ===
-  { name: "Brown Rice", calories: 215, protein: 5, carbs: 45, fat: 2, serving: "1 cup cooked", category: "Basics" },
   { name: "Pasta Plain", calories: 200, protein: 7, carbs: 42, fat: 1, serving: "1 cup cooked", category: "Basics" },
   { name: "Bread Slice", calories: 80, protein: 3, carbs: 15, fat: 1, serving: "1 slice", category: "Basics" },
   { name: "Egg Fried", calories: 92, protein: 6, carbs: 1, fat: 7, serving: "1 egg", category: "Basics" },
-  { name: "Chicken Thigh", calories: 210, protein: 26, carbs: 0, fat: 11, serving: "100g", category: "Basics" },
   { name: "Ground Beef", calories: 250, protein: 26, carbs: 0, fat: 15, serving: "100g", category: "Basics" },
-  { name: "Tofu", calories: 76, protein: 8, carbs: 2, fat: 5, serving: "100g", category: "Basics" },
-  { name: "Milk Full Fat", calories: 150, protein: 8, carbs: 12, fat: 8, serving: "1 glass", category: "Basics" },
-  { name: "Orange Juice", calories: 110, protein: 2, carbs: 26, fat: 0, serving: "1 glass", category: "Basics" },
+  { name: "Milk Full Fat", calories: 150, protein: 8, carbs: 12, fat: 8, serving: "1 glass (250ml)", category: "Basics" },
+  { name: "Orange Juice", calories: 110, protein: 2, carbs: 26, fat: 0, serving: "1 glass (250ml)", category: "Basics" },
   { name: "Coffee Black", calories: 5, protein: 0, carbs: 0, fat: 0, serving: "1 cup", category: "Basics" },
 ];
 
