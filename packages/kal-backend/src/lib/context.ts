@@ -56,6 +56,7 @@ async function getUserById(db: Db, userId: string): Promise<User | null> {
   try {
     return await db
       .collection<User>("users")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .findOne({ _id: new ObjectId(userId) as any });
   } catch {
     return null;

@@ -20,6 +20,11 @@ function calculateExpiresAt(expiration: ApiKeyExpiration): Date | null {
       return new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     case "never":
       return null;
+    default: {
+      // Exhaustive check - if a new expiration type is added, TypeScript will catch it
+      const _exhaustiveCheck: never = expiration;
+      return _exhaustiveCheck;
+    }
   }
 }
 
