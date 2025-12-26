@@ -46,8 +46,8 @@ export function Hero() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto">
-            {/* Dynamic Food Count */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
+            {/* Foods Count */}
             <div className="text-center">
               <div className="text-2xl md:text-3xl font-bold text-accent mb-1 h-9 flex items-center justify-center">
                 {stats?.total ? (
@@ -57,11 +57,25 @@ export function Hero() {
                 )}
               </div>
               <div className="text-sm text-content-muted">
-                Malaysian Foods
+                Foods
               </div>
             </div>
 
-            {/* Static Stats */}
+            {/* Halal Foods Count */}
+            <div className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-accent mb-1 h-9 flex items-center justify-center">
+                {stats?.halal ? (
+                  <TypewriterNumber value={stats.halal} suffix="+" />
+                ) : (
+                  <span className="animate-pulse">...</span>
+                )}
+              </div>
+              <div className="text-sm text-content-muted">
+                Halal Certified
+              </div>
+            </div>
+
+            {/* Free */}
             <div className="text-center">
               <div className="text-2xl md:text-3xl font-bold text-accent mb-1">
                 Free
@@ -71,6 +85,7 @@ export function Hero() {
               </div>
             </div>
 
+            {/* Response Time */}
             <div className="text-center">
               <div className="text-2xl md:text-3xl font-bold text-accent mb-1">
                 &lt;50ms
