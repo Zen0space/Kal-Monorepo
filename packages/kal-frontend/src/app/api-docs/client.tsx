@@ -6,6 +6,7 @@ import { Check, FileText, Heart, Lock, Menu, Star, X } from "react-feather";
 
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { trpc } from "@/lib/trpc";
 
 // Get the API base URL from environment
 const getApiUrl = () => {
@@ -136,9 +137,8 @@ const endpoints: EndpointExample[] = [
 
 interface APIDocsClientProps {
   isAuthenticated: boolean;
-  userEmail?: string;
+  userName?: string;
   onSignIn: () => Promise<void>;
-  onSignOut: () => Promise<void>;
 }
 
 const navLinks = [
@@ -148,13 +148,21 @@ const navLinks = [
   { label: "API", href: "/api-docs" },
 ];
 
-export default function APIDocsClient({ isAuthenticated, userEmail, onSignIn, onSignOut }: APIDocsClientProps) {
+export default function APIDocsClient({ isAuthenticated, userName, onSignIn }: APIDocsClientProps) {
   const [activeEndpoint, setActiveEndpoint] = useState<string | null>(null);
   const [tryUrls, setTryUrls] = useState<Record<string, string>>({});
   const [response, setResponse] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Fetch user info from database (same as dashboard)
+  const { data: userInfo } = trpc.apiKeys.getMe.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+
+  // Display name: prefer DB name > claims name > fallback
+  const displayName = userInfo?.name || userName || "User";
 
   // Get the try URL for an endpoint (uses custom value or falls back to default example)
   const getTryUrl = (endpointId: string, defaultExample: string) => {
@@ -327,13 +335,13 @@ export default function APIDocsClient({ isAuthenticated, userEmail, onSignIn, on
             <div className="hidden md:flex items-center gap-3">
               {isAuthenticated ? (
                 <>
-                  <span className="text-content-secondary text-sm">{userEmail}</span>
-                  <button
-                    onClick={() => onSignOut()}
-                    className="px-3 py-1.5 text-sm text-content-secondary hover:text-content-primary transition-colors"
+                  <span className="text-content-secondary text-sm">{displayName}</span>
+                  <Link
+                    href="/dashboard"
+                    className="px-4 py-1.5 text-sm bg-accent text-dark font-medium rounded-lg hover:bg-accent-hover transition-colors"
                   >
-                    Sign Out
-                  </button>
+                    Dashboard
+                  </Link>
                 </>
               ) : (
                 <Button onClick={() => onSignIn()} size="sm">
@@ -364,14 +372,18 @@ export default function APIDocsClient({ isAuthenticated, userEmail, onSignIn, on
                   {link.label}
                 </a>
               ))}
-              <div className="mt-4">
+              <div className="mt-4 space-y-2">
                 {isAuthenticated ? (
-                  <button
-                    onClick={() => onSignOut()}
-                    className="w-full py-2 text-content-secondary hover:text-content-primary transition-colors text-left"
-                  >
-                    Sign Out ({userEmail})
-                  </button>
+                  <>
+                    <p className="text-content-secondary text-sm py-2">{displayName}</p>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block w-full py-2 px-4 bg-accent text-dark font-medium rounded-lg text-center"
+                    >
+                      Dashboard
+                    </Link>
+                  </>
                 ) : (
                   <Button onClick={() => onSignIn()} className="w-full">
                     Sign In →
@@ -531,7 +543,7 @@ export default function APIDocsClient({ isAuthenticated, userEmail, onSignIn, on
                 </div>
                 <h3 className="text-2xl font-bold text-content-primary mb-2">You're All Set!</h3>
                 <p className="text-content-secondary mb-6 max-w-md mx-auto">
-                  You're signed in as <span className="text-accent font-medium">{userEmail}</span>. 
+                  You're signed in as <span className="text-accent font-medium">{displayName}</span>. 
                   Head to your dashboard to manage your API keys.
                 </p>
                 <Link
