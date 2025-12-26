@@ -230,8 +230,9 @@ export default function SearchPage() {
         {/* Halal Tab Info Banner */}
         {activeTab === "halal" && (
           <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mb-6 text-center">
-            <p className="text-emerald-400 text-sm flex items-center justify-center gap-2">
-              <Check size={14} /> All items are <strong>JAKIM certified halal</strong> with verified brand information
+            <p className="text-emerald-400 text-sm">
+              <Check size={14} className="inline-block mr-1.5 -mt-0.5" />
+              All items are <strong>JAKIM certified halal</strong> with verified brand information
             </p>
           </div>
         )}
