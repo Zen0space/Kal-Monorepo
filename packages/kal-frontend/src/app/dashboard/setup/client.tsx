@@ -47,6 +47,13 @@ const tabs: { id: TabType; label: string }[] = [
   { id: "nextjs", label: "Next.js" },
 ];
 
+interface Snippet {
+  title: string;
+  description?: string;
+  code: string;
+  language: string;
+}
+
 // API Playground Component
 function ApiPlayground({ apiKey }: { apiKey?: string }) {
   const { isMobile } = useBreakpoint();
@@ -601,7 +608,7 @@ export async function GET(request: NextRequest) {
     },
   ];
 
-  const getSnippets = () => {
+  const getSnippets = (): Snippet[] => {
     switch (activeTab) {
       case "env": return envSnippets;
       case "python": return pythonSnippets;
