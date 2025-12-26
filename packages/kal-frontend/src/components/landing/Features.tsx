@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart2, Database, Sliders, Smartphone, Unlock, Zap } from "react-feather";
+import { Check, Code, Database, Globe, Lock, Zap } from "react-feather";
 
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -8,33 +8,33 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 const features = [
   {
     icon: <Zap className="w-6 h-6" />,
-    title: "Instant Search",
-    description: "Find any food in milliseconds with our fast search engine",
-  },
-  {
-    icon: <BarChart2 className="w-6 h-6" />,
-    title: "Macro Breakdown",
-    description: "See detailed protein, carbohydrates, and fat information",
-  },
-  {
-    icon: <Sliders className="w-6 h-6" />,
-    title: "Serving Sizes",
-    description: "Accurate portion information for precise tracking",
-  },
-  {
-    icon: <Unlock className="w-6 h-6" />,
-    title: "No Sign-up",
-    description: "Use immediately without creating an account",
-  },
-  {
-    icon: <Smartphone className="w-6 h-6" />,
-    title: "Mobile Friendly",
-    description: "Works perfectly on any device, anywhere",
+    title: "Fast REST API",
+    description: "Lightning-fast responses with optimized endpoints for search and filtering",
   },
   {
     icon: <Database className="w-6 h-6" />,
-    title: "Growing Database",
-    description: "New foods added regularly to expand our library",
+    title: "Rich Food Data",
+    description: "Access 100+ Malaysian foods with complete macro nutritional information",
+  },
+  {
+    icon: <Check className="w-6 h-6" />,
+    title: "Halal Certified",
+    description: "JAKIM certified foods with verified brand and certification details",
+  },
+  {
+    icon: <Code className="w-6 h-6" />,
+    title: "Simple Integration",
+    description: "Clean JSON responses that work with any language or framework",
+  },
+  {
+    icon: <Lock className="w-6 h-6" />,
+    title: "Free API Keys",
+    description: "Get your API key instantly with generous rate limits",
+  },
+  {
+    icon: <Globe className="w-6 h-6" />,
+    title: "Production Ready",
+    description: "Reliable infrastructure built for your production applications",
   },
 ];
 
@@ -44,7 +44,7 @@ export function Features() {
       <Container>
         <SectionHeading
           title="Everything you need"
-          subtitle="Powerful features to help you track your nutrition effortlessly"
+          subtitle="Powerful API features to integrate Malaysian food data into your apps"
         />
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

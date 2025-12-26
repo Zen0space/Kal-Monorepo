@@ -10,8 +10,15 @@ import { Container } from "@/components/ui/Container";
 // Get the API base URL from environment
 const getApiUrl = () => {
   if (typeof window !== "undefined") {
-    // In browser, use relative path or env
     return process.env.NEXT_PUBLIC_API_URL || "";
+  }
+  return "";
+};
+
+// Get demo API key for "Try it" feature
+const getDemoApiKey = () => {
+  if (typeof window !== "undefined") {
+    return process.env.NEXT_PUBLIC_DEMO_API_KEY || "";
   }
   return "";
 };
@@ -127,17 +134,9 @@ const endpoints: EndpointExample[] = [
   },
 ];
 
-// cURL example type
-interface CurlExample {
-  comment: string;
-  command: string;
-  type: "natural" | "halal";
-}
-
 interface APIDocsClientProps {
   isAuthenticated: boolean;
   userEmail?: string;
-  curlExamples: CurlExample[];
   onSignIn: () => Promise<void>;
   onSignOut: () => Promise<void>;
 }
@@ -149,12 +148,23 @@ const navLinks = [
   { label: "API", href: "/api-docs" },
 ];
 
-export default function APIDocsClient({ isAuthenticated, userEmail, curlExamples, onSignIn, onSignOut }: APIDocsClientProps) {
+export default function APIDocsClient({ isAuthenticated, userEmail, onSignIn, onSignOut }: APIDocsClientProps) {
   const [activeEndpoint, setActiveEndpoint] = useState<string | null>(null);
+  const [tryUrls, setTryUrls] = useState<Record<string, string>>({});
   const [response, setResponse] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Get the try URL for an endpoint (uses custom value or falls back to default example)
+  const getTryUrl = (endpointId: string, defaultExample: string) => {
+    return tryUrls[endpointId] ?? defaultExample;
+  };
+
+  // Update the try URL for an endpoint
+  const setTryUrl = (endpointId: string, url: string) => {
+    setTryUrls(prev => ({ ...prev, [endpointId]: url }));
+  };
 
   const tryEndpoint = async (example: string) => {
     setLoading(true);
@@ -163,8 +173,15 @@ export default function APIDocsClient({ isAuthenticated, userEmail, curlExamples
 
     try {
       const apiUrl = getApiUrl();
+      const demoKey = getDemoApiKey();
       const fullUrl = apiUrl ? `${apiUrl}${example}` : example;
-      const res = await fetch(fullUrl);
+      
+      const headers: Record<string, string> = {};
+      if (demoKey) {
+        headers["X-API-Key"] = demoKey;
+      }
+      
+      const res = await fetch(fullUrl, { headers });
       const data = await res.json();
       setResponse(JSON.stringify(data, null, 2));
     } catch (err) {
@@ -244,11 +261,15 @@ export default function APIDocsClient({ isAuthenticated, userEmail, curlExamples
           <div className="mb-4">
             <h4 className="text-sm font-semibold text-[#a3a3a3] mb-2">Try it</h4>
             <div className="flex gap-2">
-              <code className="flex-1 bg-[#0a0a0a] border border-[#262626] rounded-lg px-3 py-2 font-mono text-sm text-[#a3a3a3] overflow-x-auto">
-                {endpoint.example}
-              </code>
+              <input
+                type="text"
+                value={getTryUrl(endpoint.id, endpoint.example)}
+                onChange={(e) => setTryUrl(endpoint.id, e.target.value)}
+                className="flex-1 bg-[#0a0a0a] border border-[#262626] rounded-lg px-3 py-2 font-mono text-sm text-[#a3a3a3] focus:outline-none focus:border-[#10b981] transition-colors"
+                placeholder={endpoint.example}
+              />
               <button
-                onClick={() => tryEndpoint(endpoint.example)}
+                onClick={() => tryEndpoint(getTryUrl(endpoint.id, endpoint.example))}
                 disabled={loading}
                 className={`px-4 py-2 ${accentColor} text-black font-semibold rounded-lg hover:opacity-80 transition-colors disabled:opacity-50`}
               >
@@ -271,41 +292,7 @@ export default function APIDocsClient({ isAuthenticated, userEmail, curlExamples
     </div>
   );
 
-  // cURL example component - secure: command is empty for unauthenticated users
-  const CurlExampleCard = ({ example }: { example: CurlExample }) => {
-    const borderColor = example.type === "halal" ? "border-emerald-500/30" : "border-[#262626]";
-    const commentColor = example.type === "halal" ? "text-emerald-400" : "text-[#10b981]";
-    const hasCommand = example.command && example.command.length > 0;
 
-    if (hasCommand) {
-      // Authenticated - show full command
-      return (
-        <div className={`bg-[#141414] border ${borderColor} rounded-lg px-4 py-3`}>
-          <p className={`${commentColor} text-sm mb-2`}>{example.comment}</p>
-          <code className="text-[#a3a3a3] font-mono text-sm">
-            {example.command}
-          </code>
-        </div>
-      );
-    }
-
-    // Not authenticated - show locked state (command is empty from server)
-    return (
-      <div className={`bg-[#141414] border ${borderColor} rounded-lg px-4 py-3 relative min-h-[72px]`}>
-        <p className={`${commentColor} text-sm mb-2`}>{example.comment}</p>
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-5 bg-[#262626] rounded animate-pulse" />
-          <button
-            onClick={() => onSignIn()}
-            className="px-4 py-2 bg-[#10b981] text-black font-semibold rounded-lg hover:bg-[#0d9668] transition-colors flex items-center gap-2 text-sm"
-          >
-            <Lock size={14} />
-            Sign in to view
-          </button>
-        </div>
-      </div>
-    );
-  };
 
   const naturalEndpoints = endpoints.filter(e => e.section === "natural");
   const halalEndpoints = endpoints.filter(e => e.section === "halal");
@@ -534,20 +521,40 @@ export default function APIDocsClient({ isAuthenticated, userEmail, curlExamples
           </div>
         </section>
 
-        {/* cURL Examples - with blur for unauthenticated users */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold">cURL Examples</h3>
-            {!isAuthenticated && (
-              <span className="text-sm text-[#a3a3a3] flex items-center gap-1">
-                <Lock size={12} /> Sign in to view full examples
-              </span>
+        {/* Get Your API Key Banner */}
+        <section className="mb-12">
+          <div className={`rounded-2xl p-8 text-center ${isAuthenticated ? 'bg-accent/10 border border-accent/30' : 'bg-gradient-to-br from-accent/20 via-dark-surface to-emerald-500/20 border border-accent/30'}`}>
+            {isAuthenticated ? (
+              <>
+                <div className="w-16 h-16 rounded-2xl bg-accent/20 border border-accent/30 flex items-center justify-center mx-auto mb-4">
+                  <Check size={32} className="text-accent" />
+                </div>
+                <h3 className="text-2xl font-bold text-content-primary mb-2">You're All Set!</h3>
+                <p className="text-content-secondary mb-6 max-w-md mx-auto">
+                  You're signed in as <span className="text-accent font-medium">{userEmail}</span>. 
+                  Head to your dashboard to manage your API keys.
+                </p>
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-accent text-dark font-semibold rounded-xl hover:bg-accent-hover transition-colors"
+                >
+                  Go to Dashboard →
+                </Link>
+              </>
+            ) : (
+              <>
+                <div className="w-16 h-16 rounded-2xl bg-accent/20 border border-accent/30 flex items-center justify-center mx-auto mb-4">
+                  <Lock size={32} className="text-accent" />
+                </div>
+                <h3 className="text-2xl font-bold text-content-primary mb-2">Get Your API Key</h3>
+                <p className="text-content-secondary mb-6 max-w-md mx-auto">
+                  Sign in to generate your free API key and start building with Malaysian food data.
+                </p>
+                <Button onClick={() => onSignIn()} size="lg">
+                  Sign In to Get Started →
+                </Button>
+              </>
             )}
-          </div>
-          <div className="space-y-4">
-            {curlExamples.map((example, index) => (
-              <CurlExampleCard key={index} example={example} />
-            ))}
           </div>
         </section>
       </div>
