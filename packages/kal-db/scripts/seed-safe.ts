@@ -268,6 +268,48 @@ const naturalFoods = [
   { name: "Kuih Bangkit", calories: 80, protein: 1, carbs: 14, fat: 3, serving: "5 pcs", category: "Desserts" },
   { name: "Dodol", calories: 150, protein: 1, carbs: 30, fat: 4, serving: "50g", category: "Desserts" },
   { name: "Wajik", calories: 170, protein: 2, carbs: 34, fat: 4, serving: "2 pcs", category: "Desserts" },
+
+  // === ADDITIONAL KUIH ===
+  { name: "Kuih Seri Muka", calories: 180, protein: 3, carbs: 30, fat: 7, serving: "2 pcs", category: "Desserts" },
+  { name: "Kuih Dadar", calories: 140, protein: 2, carbs: 24, fat: 5, serving: "2 pcs", category: "Desserts" },
+  { name: "Pulut Inti", calories: 200, protein: 3, carbs: 38, fat: 5, serving: "2 pcs", category: "Desserts" },
+  { name: "Pulut Tai Tai", calories: 190, protein: 3, carbs: 35, fat: 5, serving: "2 pcs", category: "Desserts" },
+  { name: "Kuih Keria", calories: 150, protein: 1, carbs: 28, fat: 5, serving: "3 pcs", category: "Desserts" },
+  { name: "Kuih Kodok", calories: 130, protein: 1, carbs: 24, fat: 4, serving: "3 pcs", category: "Desserts" },
+  { name: "Kuih Putu Piring", calories: 160, protein: 2, carbs: 32, fat: 4, serving: "3 pcs", category: "Desserts" },
+  { name: "Kuih Kapit", calories: 120, protein: 2, carbs: 20, fat: 4, serving: "5 pcs", category: "Desserts" },
+  { name: "Kuih Ros", calories: 100, protein: 1, carbs: 18, fat: 3, serving: "5 pcs", category: "Desserts" },
+  { name: "Rempeyek", calories: 180, protein: 6, carbs: 18, fat: 10, serving: "5 pcs", category: "Snacks" },
+
+  // === REGIONAL DISHES ===
+  { name: "Mee Jawa", calories: 420, protein: 15, carbs: 52, fat: 18, serving: "1 bowl", category: "Noodles" },
+  { name: "Mee Udang", calories: 450, protein: 20, carbs: 48, fat: 20, serving: "1 bowl", category: "Noodles" },
+  { name: "Mee Kari", calories: 480, protein: 18, carbs: 48, fat: 24, serving: "1 bowl", category: "Noodles" },
+  { name: "Nasi Ambeng", calories: 680, protein: 25, carbs: 85, fat: 28, serving: "1 plate", category: "Rice" },
+  { name: "Nasi Minyak", calories: 420, protein: 8, carbs: 70, fat: 12, serving: "1 plate", category: "Rice" },
+  { name: "Bubur Lambuk", calories: 280, protein: 12, carbs: 40, fat: 8, serving: "1 bowl", category: "Rice" },
+  { name: "Ketupat Palas", calories: 180, protein: 4, carbs: 38, fat: 2, serving: "2 pcs", category: "Rice" },
+  { name: "Lemang", calories: 250, protein: 5, carbs: 45, fat: 6, serving: "1 piece", category: "Rice" },
+  { name: "Nasi Himpit", calories: 180, protein: 4, carbs: 40, fat: 0.5, serving: "1 piece", category: "Rice" },
+
+  // === STREET FOOD ===
+  { name: "Murtabak Daging", calories: 450, protein: 20, carbs: 45, fat: 22, serving: "1 piece", category: "Roti" },
+  { name: "Murtabak Ayam", calories: 380, protein: 18, carbs: 42, fat: 16, serving: "1 piece", category: "Roti" },
+  { name: "Roti John", calories: 380, protein: 15, carbs: 35, fat: 20, serving: "1 piece", category: "Roti" },
+  { name: "Popiah Basah", calories: 180, protein: 6, carbs: 28, fat: 5, serving: "2 pcs", category: "Snacks" },
+  { name: "Vadai", calories: 150, protein: 6, carbs: 18, fat: 7, serving: "3 pcs", category: "Snacks" },
+  { name: "Putu Mayam", calories: 200, protein: 4, carbs: 40, fat: 3, serving: "1 serving", category: "Snacks" },
+  { name: "Appam", calories: 120, protein: 3, carbs: 22, fat: 2, serving: "2 pcs", category: "Snacks" },
+
+  // === MORE DRINKS ===
+  { name: "Teh Halia", calories: 100, protein: 2, carbs: 16, fat: 3, serving: "1 glass", category: "Drinks" },
+  { name: "Kopi Tarik", calories: 130, protein: 3, carbs: 18, fat: 5, serving: "1 glass", category: "Drinks" },
+  { name: "Teh Ais", calories: 90, protein: 1, carbs: 20, fat: 0, serving: "1 glass", category: "Drinks" },
+  { name: "Kopi Ais", calories: 100, protein: 2, carbs: 18, fat: 3, serving: "1 glass", category: "Drinks" },
+  { name: "Sirap Bandung", calories: 140, protein: 2, carbs: 28, fat: 3, serving: "1 glass", category: "Drinks" },
+  { name: "Air Tebu", calories: 120, protein: 0, carbs: 30, fat: 0, serving: "1 glass", category: "Drinks" },
+  { name: "Limau Ais", calories: 60, protein: 0, carbs: 15, fat: 0, serving: "1 glass", category: "Drinks" },
+  { name: "Teh Tarik Halia", calories: 130, protein: 3, carbs: 20, fat: 4, serving: "1 glass", category: "Drinks" },
 ];
 
 // ============================================================================
@@ -383,7 +425,49 @@ const halalFoods = [
   { name: "Spritzer Natural Mineral Water", calories: 0, protein: 0, carbs: 0, fat: 0, serving: "500ml", category: "Beverages", brand: "Spritzer", halalCertifier: "JAKIM", halalCertYear: 2024 },
   { name: "Spritzer Silica Water", calories: 0, protein: 0, carbs: 0, fat: 0, serving: "500ml", category: "Beverages", brand: "Spritzer", halalCertifier: "JAKIM", halalCertYear: 2024 },
   { name: "Spritzer Sparkling Lemon", calories: 40, protein: 0, carbs: 10, fat: 0, serving: "325ml", category: "Beverages", brand: "Spritzer", halalCertifier: "JAKIM", halalCertYear: 2024 },
+
+  // === SAJI (JAKIM Certified 2025) ===
+  { name: "Saji Mee Goreng", calories: 360, protein: 7, carbs: 50, fat: 15, serving: "1 pack", category: "Instant Noodles", brand: "Saji", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Saji Mee Kari", calories: 340, protein: 6, carbs: 48, fat: 14, serving: "1 pack", category: "Instant Noodles", brand: "Saji", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Saji Mee Sup", calories: 300, protein: 6, carbs: 45, fat: 10, serving: "1 pack", category: "Instant Noodles", brand: "Saji", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Saji Kicap Manis", calories: 80, protein: 2, carbs: 16, fat: 0, serving: "2 tbsp", category: "Condiments", brand: "Saji", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Saji Sos Tiram", calories: 50, protein: 1, carbs: 10, fat: 0, serving: "2 tbsp", category: "Condiments", brand: "Saji", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Saji Sos Cili", calories: 40, protein: 0, carbs: 8, fat: 0, serving: "2 tbsp", category: "Condiments", brand: "Saji", halalCertifier: "JAKIM", halalCertYear: 2025 },
+
+  // === A&W MALAYSIA (JAKIM Certified 2025) ===
+  { name: "A&W Coney Dog", calories: 350, protein: 12, carbs: 35, fat: 18, serving: "1 piece", category: "Fast Food", brand: "A&W", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "A&W Mozza Burger", calories: 520, protein: 25, carbs: 42, fat: 28, serving: "1 burger", category: "Fast Food", brand: "A&W", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "A&W Golden Aroma Chicken", calories: 280, protein: 22, carbs: 15, fat: 16, serving: "1 piece", category: "Fast Food", brand: "A&W", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "A&W Root Beer", calories: 160, protein: 0, carbs: 42, fat: 0, serving: "1 mug", category: "Beverages", brand: "A&W", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "A&W Curly Fries", calories: 320, protein: 4, carbs: 42, fat: 15, serving: "1 serving", category: "Fast Food", brand: "A&W", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "A&W Waffle Ice Cream", calories: 280, protein: 4, carbs: 38, fat: 12, serving: "1 serving", category: "Desserts", brand: "A&W", halalCertifier: "JAKIM", halalCertYear: 2025 },
+
+  // === MARIGOLD (JAKIM Certified 2025) ===
+  { name: "Marigold HL Milk", calories: 125, protein: 6, carbs: 10, fat: 7, serving: "200ml", category: "Dairy", brand: "Marigold", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Marigold Low Fat Milk", calories: 90, protein: 6, carbs: 10, fat: 2, serving: "200ml", category: "Dairy", brand: "Marigold", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Marigold Peel Fresh Orange", calories: 90, protein: 1, carbs: 20, fat: 0, serving: "250ml", category: "Beverages", brand: "Marigold", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Marigold Peel Fresh Apple", calories: 95, protein: 0, carbs: 22, fat: 0, serving: "250ml", category: "Beverages", brand: "Marigold", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Marigold Yogurt Drink Mango", calories: 110, protein: 3, carbs: 20, fat: 2, serving: "200ml", category: "Dairy", brand: "Marigold", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Marigold Yogurt Drink Mixed Berry", calories: 115, protein: 3, carbs: 22, fat: 2, serving: "200ml", category: "Dairy", brand: "Marigold", halalCertifier: "JAKIM", halalCertYear: 2025 },
+
+  // === YEO'S (JAKIM Certified 2025) ===
+  { name: "Yeo's Soya Bean", calories: 120, protein: 5, carbs: 18, fat: 3, serving: "250ml", category: "Beverages", brand: "Yeo's", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Yeo's Chrysanthemum Tea", calories: 80, protein: 0, carbs: 20, fat: 0, serving: "250ml", category: "Beverages", brand: "Yeo's", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Yeo's Winter Melon Tea", calories: 70, protein: 0, carbs: 18, fat: 0, serving: "250ml", category: "Beverages", brand: "Yeo's", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Yeo's Lemon Barley", calories: 90, protein: 0, carbs: 22, fat: 0, serving: "250ml", category: "Beverages", brand: "Yeo's", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Yeo's Coconut Water", calories: 60, protein: 1, carbs: 14, fat: 0, serving: "250ml", category: "Beverages", brand: "Yeo's", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "Yeo's Grass Jelly Drink", calories: 75, protein: 0, carbs: 18, fat: 0, serving: "250ml", category: "Beverages", brand: "Yeo's", halalCertifier: "JAKIM", halalCertYear: 2025 },
+
+  // === 100 PLUS (JAKIM Certified 2025) ===
+  { name: "100 Plus Original", calories: 75, protein: 0, carbs: 18, fat: 0, serving: "325ml", category: "Beverages", brand: "100 Plus", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "100 Plus Active", calories: 50, protein: 0, carbs: 12, fat: 0, serving: "325ml", category: "Beverages", brand: "100 Plus", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "100 Plus Zero Sugar", calories: 5, protein: 0, carbs: 0, fat: 0, serving: "325ml", category: "Beverages", brand: "100 Plus", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "100 Plus Lemon Lime", calories: 80, protein: 0, carbs: 20, fat: 0, serving: "325ml", category: "Beverages", brand: "100 Plus", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "100 Plus Berry", calories: 78, protein: 0, carbs: 19, fat: 0, serving: "325ml", category: "Beverages", brand: "100 Plus", halalCertifier: "JAKIM", halalCertYear: 2025 },
+  { name: "100 Plus Tangy Tangerine", calories: 76, protein: 0, carbs: 18, fat: 0, serving: "325ml", category: "Beverages", brand: "100 Plus", halalCertifier: "JAKIM", halalCertYear: 2025 },
 ];
+
+
 
 /**
  * Safe seed script for production
