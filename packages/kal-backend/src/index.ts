@@ -271,6 +271,16 @@ async function main() {
     createExpressMiddleware({
       router: appRouter,
       createContext,
+      onError: ({ path, error }) => {
+        console.error(`[tRPC ERROR] ${path}:`, error.message);
+        if (error.stack) {
+          console.error(error.stack);
+        }
+        // Log additional tRPC error details if available
+        if ('code' in error) {
+          console.error(`[tRPC ERROR] Code: ${error.code}`);
+        }
+      },
     })
   );
 

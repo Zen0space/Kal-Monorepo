@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "cleanup-db": "tsx scripts/cleanup-db.ts"
   },
   "dependencies": {
     "@logto/express": "^3.0.12",
