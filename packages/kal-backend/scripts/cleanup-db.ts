@@ -1,8 +1,10 @@
 /**
  * Database Cleanup Script
  * 
- * Removes corrupt documents from the rate_limit_usage collection:
- * - Documents with _id: "" (empty string) caused by a bug in the rate limiting code
+ * Fixes database issues:
+ * 1. Removes corrupt rate_limit_usage documents with _id: ""
+ * 2. Fixes the users collection indexes (drops unique email, ensures unique logtoId)
+ * 3. Sets empty email strings to null
  * 
  * Run with: pnpm --filter kal-backend cleanup-db
  */
@@ -43,39 +45,95 @@ async function cleanup() {
     console.log(`\n📂 Using database: ${dbName}`);
     console.log("─".repeat(50));
     
-    // 1. Clean up rate_limit_usage documents with empty _id
+    // ========================================
+    // 1. Fix users collection indexes
+    // ========================================
+    console.log("\n🔧 Fixing users collection indexes...");
+    
+    const usersCollection = db.collection("users");
+    
+    // Check existing indexes
+    const indexes = await usersCollection.indexes();
+    console.log(`   Found ${indexes.length} index(es)`);
+    
+    // Drop the email_1 unique index if it exists
+    const emailIndex = indexes.find(idx => idx.name === "email_1");
+    if (emailIndex) {
+      console.log("   ⚠️  Found unique email_1 index - dropping it...");
+      try {
+        await usersCollection.dropIndex("email_1");
+        console.log("   ✅ Dropped email_1 unique index");
+      } catch (e) {
+        console.log("   ⚠️  Could not drop email_1 index:", (e as Error).message);
+      }
+    } else {
+      console.log("   ✅ No problematic email_1 index found");
+    }
+    
+    // Ensure logtoId has a unique index
+    const logtoIdIndex = indexes.find(idx => idx.key && (idx.key as Record<string, number>).logtoId);
+    if (!logtoIdIndex) {
+      console.log("   Creating unique index on logtoId...");
+      await usersCollection.createIndex({ logtoId: 1 }, { unique: true, sparse: true });
+      console.log("   ✅ Created unique index on logtoId");
+    } else {
+      console.log("   ✅ logtoId index already exists");
+    }
+    
+    // Fix users with empty email strings (set to null)
+    const emptyEmailResult = await usersCollection.updateMany(
+      { email: "" },
+      { $set: { email: null } }
+    );
+    if (emptyEmailResult.modifiedCount > 0) {
+      console.log(`   ✅ Fixed ${emptyEmailResult.modifiedCount} user(s) with empty email`);
+    } else {
+      console.log("   ✅ No users with empty email strings");
+    }
+    
+    // ========================================
+    // 2. Clean up rate_limit_usage documents
+    // ========================================
     console.log("\n🧹 Cleaning up rate_limit_usage collection...");
     
     const rateLimitCollection = db.collection("rate_limit_usage");
     
     // Find corrupt documents
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const corruptDocs = await rateLimitCollection.find({ _id: "" as unknown as any }).toArray();
     
     if (corruptDocs.length > 0) {
       console.log(`   Found ${corruptDocs.length} corrupt document(s) with _id: ""`);
       
       // Delete corrupt documents
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const deleteResult = await rateLimitCollection.deleteMany({ _id: "" as unknown as any });
       console.log(`   ✅ Deleted ${deleteResult.deletedCount} corrupt document(s)`);
     } else {
       console.log("   ✅ No corrupt documents found");
     }
     
-    // 2. Show current collection stats
+    // ========================================
+    // 3. Show current stats
+    // ========================================
     console.log("\n📊 Collection Statistics:");
-    const totalDocs = await rateLimitCollection.countDocuments();
-    console.log(`   rate_limit_usage: ${totalDocs} document(s)`);
     
-    // Show sample of valid documents
-    const sampleDocs = await rateLimitCollection.find().limit(5).toArray();
-    if (sampleDocs.length > 0) {
-      console.log("\n   Sample documents:");
-      sampleDocs.forEach((doc, i) => {
-        console.log(`   ${i + 1}. _id: "${doc._id}", dailyCount: ${doc.dailyCount}, date: ${doc.date}`);
-      });
-    }
+    const totalUsers = await usersCollection.countDocuments();
+    console.log(`   users: ${totalUsers} document(s)`);
     
-    console.log("\n─".repeat(50));
+    const totalRateLimit = await rateLimitCollection.countDocuments();
+    console.log(`   rate_limit_usage: ${totalRateLimit} document(s)`);
+    
+    // Show current users indexes
+    const finalIndexes = await usersCollection.indexes();
+    console.log("\n   Users collection indexes:");
+    finalIndexes.forEach((idx, i) => {
+      const unique = idx.unique ? " (unique)" : "";
+      const sparse = idx.sparse ? " (sparse)" : "";
+      console.log(`   ${i + 1}. ${idx.name}${unique}${sparse}`);
+    });
+    
+    console.log("\n" + "─".repeat(50));
     console.log("✅ Database cleanup complete!\n");
     
   } catch (error) {
@@ -88,3 +146,4 @@ async function cleanup() {
 }
 
 cleanup();
+
