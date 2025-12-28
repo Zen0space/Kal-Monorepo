@@ -70,61 +70,72 @@ export async function createContext({
   user: User | null;
   userId: string | undefined;
 }> {
-  const db = getDB();
-  let user: User | null = null;
+  try {
+    const db = getDB();
+    let user: User | null = null;
 
-  // Try Logto session first (user is added by @logto/express middleware)
-  const logtoUser = (req as Request & { user?: LogtoRequestUser }).user;
-  if (logtoUser?.claims?.sub) {
-    user = await syncUserFromLogto(db, {
-      ...logtoUser.claims,
-      username: logtoUser.claims.username || undefined,
-    });
-  }
+    // Try Logto session first (user is added by @logto/express middleware)
+    const logtoUser = (req as Request & { user?: LogtoRequestUser }).user;
+    if (logtoUser?.claims?.sub) {
+      user = await syncUserFromLogto(db, {
+        ...logtoUser.claims,
+        username: logtoUser.claims.username || undefined,
+      });
+    }
 
-  // Fallback to header-based auth (for API keys or development)
-  if (!user) {
-    // Try Logto ID from frontend header (when using Next.js proxy/tRPC)
-    const headerLogtoId = req.headers["x-logto-id"] as string | undefined;
-    if (headerLogtoId) {
-      user = await db.collection<User>("users").findOne({ logtoId: headerLogtoId });
-      
-      const headerEmail = req.headers["x-logto-email"] as string | undefined;
-      const headerName = req.headers["x-logto-name"] as string | undefined;
+    // Fallback to header-based auth (for API keys or development)
+    if (!user) {
+      // Try Logto ID from frontend header (when using Next.js proxy/tRPC)
+      const headerLogtoId = req.headers["x-logto-id"] as string | undefined;
+      if (headerLogtoId) {
+        user = await db.collection<User>("users").findOne({ logtoId: headerLogtoId });
+        
+        const headerEmail = req.headers["x-logto-email"] as string | undefined;
+        const headerName = req.headers["x-logto-name"] as string | undefined;
 
-      // If user not found but we have claims in headers (trusted from frontend), create/sync them
-      if (!user) {
-        // Proceed if we at least have an email or if the ID is sufficient for a basic record
-        if (headerLogtoId) {
-          user = await syncUserFromLogto(db, {
-            sub: headerLogtoId,
-            email: headerEmail,
-            name: headerName,
-          });
+        // If user not found but we have claims in headers (trusted from frontend), create/sync them
+        if (!user) {
+          // Proceed if we at least have an email or if the ID is sufficient for a basic record
+          if (headerLogtoId) {
+            user = await syncUserFromLogto(db, {
+              sub: headerLogtoId,
+              email: headerEmail,
+              name: headerName,
+            });
+          }
+        } else if (headerName && !user.name) {
+           // Update if local name is missing but header has one
+           await db.collection<User>("users").updateOne(
+             { _id: user._id }, 
+             { $set: { name: headerName, email: headerEmail || user.email } } 
+           );
+           user.name = headerName;
+           if (headerEmail) user.email = headerEmail;
         }
-      } else if (headerName && !user.name) {
-         // Update if local name is missing but header has one
-         await db.collection<User>("users").updateOne(
-           { _id: user._id }, 
-           { $set: { name: headerName, email: headerEmail || user.email } } 
-         );
-         user.name = headerName;
-         if (headerEmail) user.email = headerEmail;
+      }
+
+      // Try explicit user ID (development)
+      const headerUserId = req.headers["x-user-id"] as string | undefined;
+      if (!user && headerUserId) {
+        user = await getUserById(db, headerUserId);
       }
     }
 
-    // Try explicit user ID (development)
-    const headerUserId = req.headers["x-user-id"] as string | undefined;
-    if (!user && headerUserId) {
-      user = await getUserById(db, headerUserId);
-    }
-  }
+    // Ensure userId is properly converted to string
+    const userId = user?._id ? String(user._id) : undefined;
 
-  return {
-    db,
-    user,
-    userId: user?._id?.toString(),
-  };
+    return {
+      db,
+      user,
+      userId,
+    };
+  } catch (error) {
+    console.error("[Context Error] Failed to create context:", error);
+    if (error instanceof Error) {
+      console.error("[Context Error] Stack:", error.stack);
+    }
+    throw error;
+  }
 }
 
 export type Context = inferAsyncReturnType<typeof createContext>;
