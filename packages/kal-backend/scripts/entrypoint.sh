@@ -19,6 +19,11 @@ fi
 echo "🌱 Running safe seed..."
 npx tsx scripts/seed-safe.ts || echo "⚠️  Safe seed skipped or failed"
 
+# Run database cleanup (removes corrupt documents from rate_limit_usage)
+echo "🧹 Running database cleanup..."
+cd /app/packages/kal-backend
+npx tsx scripts/cleanup-db.ts || echo "⚠️  Cleanup skipped or failed"
+
 echo "================================"
 echo "✅ Database setup complete"
 
@@ -26,3 +31,4 @@ echo "✅ Database setup complete"
 echo "🎯 Starting Node.js application..."
 cd /app/packages/kal-backend
 exec node dist/index.js
+

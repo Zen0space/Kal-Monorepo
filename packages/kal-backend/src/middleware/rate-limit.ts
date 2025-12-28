@@ -2,6 +2,8 @@ import type { UserTier, RateLimitUsage } from "kal-shared";
 import { RATE_LIMITS } from "kal-shared";
 import type { Db } from "mongodb";
 
+import { logger } from "../lib/logger.js";
+
 export interface RateLimitResult {
   limited: boolean;
   retryAfter?: number; // seconds until retry allowed
@@ -14,6 +16,10 @@ export interface RateLimitResult {
 /**
  * Check rate limits for a user based on their tier.
  * Uses soft throttling - returns 429 with Retry-After, not permanent bans.
+ * 
+ * Uses industry-standard MongoDB pattern:
+ * - Composite _id: `${userId}_${date}` for uniqueness
+ * - Atomic findOneAndUpdate with $inc for race-condition safety
  */
 export async function checkRateLimit(
   db: Db,
@@ -27,88 +33,141 @@ export async function checkRateLimit(
   minuteStart.setSeconds(0, 0);
 
   const collection = db.collection<RateLimitUsage>("rate_limit_usage");
+  
+  // Composite _id ensures one document per user per day
+  const compositeId = `${userId}_${today}`;
 
-  // Get current usage
-  let usage = await collection.findOne({ userId, date: today });
+  try {
+    // First, get current usage to check minute window
+    const existingUsage = await collection.findOne({ _id: compositeId as unknown as string });
+    
+    // Check if we're in a new minute window
+    const isNewMinute =
+      !existingUsage?.minuteWindow ||
+      new Date(existingUsage.minuteWindow).getTime() < minuteStart.getTime();
 
-  // Check if we're in a new minute window
-  const isNewMinute =
-    !usage?.minuteWindow ||
-    new Date(usage.minuteWindow).getTime() < minuteStart.getTime();
+    // Use atomic upsert - single operation for both create and update
+    // This prevents race conditions and duplicate key errors
+    const updateDoc = isNewMinute || !existingUsage
+      ? {
+          // New minute or first request: reset minute counter
+          $inc: { dailyCount: 1 },
+          $set: {
+            minuteWindow: minuteStart,
+            minuteCount: 1,
+            updatedAt: now,
+          },
+          $setOnInsert: {
+            userId,
+            date: today,
+          },
+        }
+      : {
+          // Same minute: increment both counters
+          $inc: { dailyCount: 1, minuteCount: 1 },
+          $set: { updatedAt: now },
+        };
 
-  // Update or create usage record
-  if (!usage) {
-    // First request of the day
-    usage = {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      _id: "" as any,
-      userId,
-      date: today,
-      dailyCount: 1,
-      minuteWindow: minuteStart,
-      minuteCount: 1,
-      updatedAt: now,
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await collection.insertOne(usage as any);
-  } else if (isNewMinute) {
-    // New minute - reset minute counter
-    await collection.updateOne(
-      { userId, date: today },
-      {
-        $inc: { dailyCount: 1 },
-        $set: {
-          minuteWindow: minuteStart,
-          minuteCount: 1,
-          updatedAt: now,
-        },
-      }
+    const result = await collection.findOneAndUpdate(
+      { _id: compositeId as unknown as string },
+      updateDoc,
+      { upsert: true, returnDocument: "after" }
     );
-    usage.dailyCount += 1;
-    usage.minuteCount = 1;
-  } else {
-    // Same minute - increment both counters
-    await collection.updateOne(
-      { userId, date: today },
-      {
-        $inc: { dailyCount: 1, minuteCount: 1 },
-        $set: { updatedAt: now },
-      }
-    );
-    usage.dailyCount += 1;
-    usage.minuteCount += 1;
-  }
 
-  // Check daily limit (soft throttle until midnight)
-  if (usage.dailyCount > limits.dailyLimit) {
-    const secondsUntilMidnight = getSecondsUntilMidnight();
+    const usage = result;
+    
+    if (!usage) {
+      // This shouldn't happen with upsert, but handle gracefully
+      logger.warn("Rate limit upsert returned null", { 
+        userId: userId.substring(0, 8), 
+        compositeId 
+      });
+      return {
+        limited: false,
+        dailyCount: 1,
+        dailyLimit: limits.dailyLimit,
+        minuteCount: 1,
+        burstLimit: limits.burstLimit,
+      };
+    }
+
+    // Check daily limit (soft throttle until midnight)
+    if (usage.dailyCount > limits.dailyLimit) {
+      const secondsUntilMidnight = getSecondsUntilMidnight();
+      logger.info("Daily rate limit exceeded", {
+        userId: userId.substring(0, 8),
+        dailyCount: usage.dailyCount,
+        dailyLimit: limits.dailyLimit,
+        tier,
+      });
+      return {
+        limited: true,
+        retryAfter: secondsUntilMidnight,
+        dailyCount: usage.dailyCount,
+        dailyLimit: limits.dailyLimit,
+      };
+    }
+
+    // Check burst limit (soft throttle for remaining seconds in minute)
+    if (usage.minuteCount > limits.burstLimit) {
+      const secondsInMinute = now.getSeconds();
+      const retryAfter = 60 - secondsInMinute;
+      logger.info("Burst rate limit exceeded", {
+        userId: userId.substring(0, 8),
+        minuteCount: usage.minuteCount,
+        burstLimit: limits.burstLimit,
+        tier,
+      });
+      return {
+        limited: true,
+        retryAfter,
+        minuteCount: usage.minuteCount,
+        burstLimit: limits.burstLimit,
+      };
+    }
+
     return {
-      limited: true,
-      retryAfter: secondsUntilMidnight,
+      limited: false,
       dailyCount: usage.dailyCount,
       dailyLimit: limits.dailyLimit,
-    };
-  }
-
-  // Check burst limit (soft throttle for remaining seconds in minute)
-  if (usage.minuteCount > limits.burstLimit) {
-    const secondsInMinute = now.getSeconds();
-    const retryAfter = 60 - secondsInMinute;
-    return {
-      limited: true,
-      retryAfter,
       minuteCount: usage.minuteCount,
       burstLimit: limits.burstLimit,
     };
+  } catch (error) {
+    // Log the error with full context for debugging
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    logger.error("Rate limit check failed", {
+      userId: userId.substring(0, 8),
+      compositeId,
+      tier,
+      error: errorMessage,
+    });
+    
+    // Log additional details for MongoDB-specific errors
+    if (errorMessage.includes("E11000") || errorMessage.includes("duplicate key")) {
+      logger.error("CRITICAL: Duplicate key error in rate_limit_usage - possible _id issue", {
+        compositeId,
+        error: errorMessage,
+      });
+    }
+    
+    // Log stack trace for debugging
+    if (errorStack) {
+      console.error("Rate limit error stack trace:", errorStack);
+    }
+    
+    // Return non-limiting result to avoid blocking users due to DB issues
+    // But log it so we can investigate
+    return {
+      limited: false,
+      dailyCount: 0,
+      dailyLimit: limits.dailyLimit,
+      minuteCount: 0,
+      burstLimit: limits.burstLimit,
+    };
   }
-
-  return {
-    limited: false,
-    dailyCount: usage.dailyCount,
-    dailyLimit: limits.dailyLimit,
-    minuteCount: usage.minuteCount,
-    burstLimit: limits.burstLimit,
-  };
 }
 
 /**

@@ -30,6 +30,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages/kal-backend/dist ./packages/kal-backend/dist
 COPY --from=builder /app/packages/kal-backend/package.json ./packages/kal-backend/
 COPY --from=builder /app/packages/kal-backend/node_modules ./packages/kal-backend/node_modules
+COPY --from=builder /app/packages/kal-backend/scripts ./packages/kal-backend/scripts
 COPY --from=builder /app/packages/kal-shared ./packages/kal-shared
 
 # Copy kal-db for migrations
