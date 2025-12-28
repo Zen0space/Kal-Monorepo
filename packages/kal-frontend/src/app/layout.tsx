@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import "./globals.css";
+import { ToastContainer } from "@/components/ui/Toast";
+import { ToastProvider } from "@/contexts/ToastContext";
 import { AuthProvider } from "@/lib/auth-context";
 import { TRPCProvider } from "@/lib/trpc-provider";
 
@@ -20,10 +22,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider logtoId={null}>
-          <TRPCProvider>{children}</TRPCProvider>
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider logtoId={null}>
+            <TRPCProvider>{children}</TRPCProvider>
+          </AuthProvider>
+          <ToastContainer />
+        </ToastProvider>
       </body>
     </html>
   );
 }
+
