@@ -1,8 +1,11 @@
 // ============================================================================
 // NATURAL FOODS - Generic Malaysian dishes (street vendor, no formal halal cert)
+// Data verified from: snapcalorie.com, mynetdiary.com, MOH Malaysia, family.my
+// Last updated: December 2025
 // ============================================================================
 export const naturalFoods = [
   // === RICE DISHES ===
+  // Verified from snapcalorie.com and ofnoah.sg
   { name: "Nasi Lemak", calories: 494, protein: 13, carbs: 80, fat: 14, serving: "1 plate (350g)", category: "Rice" },
   { name: "Nasi Lemak Ayam Goreng", calories: 744, protein: 28, carbs: 85, fat: 32, serving: "1 plate (450g)", category: "Rice" },
   { name: "Nasi Goreng", calories: 472, protein: 12, carbs: 84, fat: 8, serving: "1 plate (350g)", category: "Rice" },
@@ -17,9 +20,10 @@ export const naturalFoods = [
   { name: "Nasi Tomato", calories: 380, protein: 8, carbs: 65, fat: 10, serving: "1 plate (300g)", category: "Rice" },
   
   // === NOODLE DISHES ===
+  // Verified from thewellnesscorner.com and family.my
   { name: "Mee Goreng", calories: 450, protein: 12, carbs: 55, fat: 20, serving: "1 plate (300g)", category: "Noodles" },
   { name: "Mee Goreng Mamak", calories: 450, protein: 15, carbs: 60, fat: 16, serving: "1 plate (350g)", category: "Noodles" },
-  { name: "Char Kuey Teow", calories: 700, protein: 24, carbs: 85, fat: 30, serving: "1 plate (400g)", category: "Noodles" },
+  { name: "Char Kuey Teow", calories: 744, protein: 23, carbs: 76, fat: 38, serving: "1 plate (384g)", category: "Noodles" },
   { name: "Kuey Teow Goreng", calories: 580, protein: 18, carbs: 65, fat: 28, serving: "1 plate (350g)", category: "Noodles" },
   { name: "Laksa Penang", calories: 436, protein: 18, carbs: 55, fat: 18, serving: "1 bowl (450ml)", category: "Noodles" },
   { name: "Laksa Sarawak", calories: 520, protein: 20, carbs: 52, fat: 26, serving: "1 bowl (450ml)", category: "Noodles" },
@@ -425,4 +429,399 @@ export const naturalFoods = [
   { name: "Milk Full Fat", calories: 150, protein: 8, carbs: 12, fat: 8, serving: "1 glass (250ml)", category: "Basics" },
   { name: "Orange Juice", calories: 110, protein: 2, carbs: 26, fat: 0, serving: "1 glass (250ml)", category: "Basics" },
   { name: "Coffee Black", calories: 5, protein: 0, carbs: 0, fat: 0, serving: "1 cup", category: "Basics" },
+
+  // === MAMAK FAVORITES ===
+  { name: "Maggi Goreng", calories: 520, protein: 14, carbs: 68, fat: 22, serving: "1 plate (350g)", category: "Noodles" },
+  { name: "Maggi Goreng Telur", calories: 620, protein: 20, carbs: 70, fat: 28, serving: "1 plate (400g)", category: "Noodles" },
+  { name: "Maggi Sup", calories: 380, protein: 12, carbs: 55, fat: 12, serving: "1 bowl (400ml)", category: "Noodles" },
+  { name: "Roti Planta", calories: 280, protein: 5, carbs: 38, fat: 12, serving: "1 piece (100g)", category: "Roti" },
+  { name: "Roti Pisang", calories: 350, protein: 6, carbs: 52, fat: 14, serving: "1 piece (130g)", category: "Roti" },
+  { name: "Roti Kaya", calories: 320, protein: 6, carbs: 48, fat: 12, serving: "1 piece (110g)", category: "Roti" },
+  { name: "Roti Tampal", calories: 380, protein: 8, carbs: 45, fat: 18, serving: "1 piece (140g)", category: "Roti" },
+  { name: "Nasi Goreng USA", calories: 680, protein: 25, carbs: 75, fat: 32, serving: "1 plate (450g)", category: "Rice" },
+  { name: "Nasi Goreng Paprik", calories: 550, protein: 22, carbs: 65, fat: 24, serving: "1 plate (400g)", category: "Rice" },
+  { name: "Nasi Goreng Ikan Masin", calories: 480, protein: 18, carbs: 70, fat: 16, serving: "1 plate (380g)", category: "Rice" },
+  { name: "Mee Mamak Basah", calories: 420, protein: 16, carbs: 52, fat: 18, serving: "1 plate (350g)", category: "Noodles" },
+  { name: "Mee Sotong", calories: 480, protein: 22, carbs: 55, fat: 20, serving: "1 plate (380g)", category: "Noodles" },
+  { name: "Sup Kambing Mamak", calories: 350, protein: 28, carbs: 15, fat: 22, serving: "1 bowl (400ml)", category: "Soups" },
+
+  // === NYONYA CUISINE ===
+  { name: "Laksa Nyonya", calories: 580, protein: 22, carbs: 58, fat: 30, serving: "1 bowl (450ml)", category: "Noodles" },
+  { name: "Mee Siam Nyonya", calories: 420, protein: 14, carbs: 55, fat: 18, serving: "1 bowl (380ml)", category: "Noodles" },
+  { name: "Ayam Pongteh", calories: 320, protein: 26, carbs: 12, fat: 20, serving: "1 serving (180g)", category: "Meat" },
+  { name: "Itik Tim", calories: 380, protein: 28, carbs: 8, fat: 26, serving: "1 serving (200g)", category: "Meat" },
+  { name: "Perut Ikan", calories: 280, protein: 18, carbs: 15, fat: 18, serving: "1 serving (180g)", category: "Seafood" },
+  { name: "Pie Tee", calories: 150, protein: 4, carbs: 18, fat: 7, serving: "5 pieces (75g)", category: "Snacks" },
+  { name: "Kuih Pie Tee", calories: 180, protein: 5, carbs: 22, fat: 8, serving: "6 pieces (90g)", category: "Snacks" },
+  { name: "Otak-Otak Nyonya", calories: 140, protein: 12, carbs: 8, fat: 8, serving: "3 pieces (100g)", category: "Snacks" },
+  { name: "Acar Awak", calories: 120, protein: 3, carbs: 18, fat: 5, serving: "1 serving (100g)", category: "Vegetables" },
+  { name: "Sambal Buah Keluak", calories: 180, protein: 6, carbs: 12, fat: 12, serving: "1 serving (80g)", category: "Condiments" },
+
+  // === DIM SUM ===
+  { name: "Char Siu Bao", calories: 280, protein: 10, carbs: 42, fat: 8, serving: "1 piece (100g)", category: "Chinese" },
+  { name: "Lo Mai Kai", calories: 350, protein: 12, carbs: 48, fat: 12, serving: "1 portion (200g)", category: "Chinese" },
+  { name: "Cheong Fun", calories: 180, protein: 5, carbs: 32, fat: 4, serving: "3 rolls (150g)", category: "Chinese" },
+  { name: "Prawn Cheong Fun", calories: 220, protein: 10, carbs: 35, fat: 5, serving: "3 rolls (180g)", category: "Chinese" },
+  { name: "Char Siu Cheong Fun", calories: 250, protein: 12, carbs: 36, fat: 7, serving: "3 rolls (180g)", category: "Chinese" },
+  { name: "Chee Cheong Fun", calories: 160, protein: 4, carbs: 28, fat: 4, serving: "3 rolls (140g)", category: "Chinese" },
+  { name: "Siu Mai", calories: 180, protein: 12, carbs: 14, fat: 9, serving: "4 pieces (100g)", category: "Chinese" },
+  { name: "Har Gow", calories: 150, protein: 10, carbs: 15, fat: 6, serving: "4 pieces (90g)", category: "Chinese" },
+  { name: "Xiao Long Bao", calories: 200, protein: 10, carbs: 18, fat: 10, serving: "4 pieces (100g)", category: "Chinese" },
+  { name: "Char Siu Sou", calories: 220, protein: 8, carbs: 24, fat: 11, serving: "2 pieces (80g)", category: "Chinese" },
+  { name: "Liu Sha Bao", calories: 250, protein: 6, carbs: 35, fat: 10, serving: "1 piece (80g)", category: "Chinese" },
+  { name: "Turnip Cake", calories: 180, protein: 4, carbs: 28, fat: 6, serving: "2 pieces (120g)", category: "Chinese" },
+  { name: "Phoenix Claws", calories: 160, protein: 14, carbs: 8, fat: 8, serving: "4 pieces (100g)", category: "Chinese" },
+
+  // === ECONOMY RICE (Nasi Campur) ITEMS ===
+  { name: "Sayur Campur", calories: 120, protein: 4, carbs: 15, fat: 6, serving: "1 serving (100g)", category: "Vegetables" },
+  { name: "Tauhu Goreng Sambal", calories: 180, protein: 10, carbs: 12, fat: 12, serving: "1 serving (100g)", category: "Vegetables" },
+  { name: "Telur Dadar Goreng", calories: 180, protein: 12, carbs: 4, fat: 14, serving: "1 piece (80g)", category: "Basics" },
+  { name: "Kari Ayam", calories: 280, protein: 22, carbs: 10, fat: 18, serving: "1 serving (150g)", category: "Meat" },
+  { name: "Kari Kambing", calories: 350, protein: 25, carbs: 12, fat: 24, serving: "1 serving (180g)", category: "Meat" },
+  { name: "Daging Hitam", calories: 260, protein: 24, carbs: 10, fat: 14, serving: "1 serving (120g)", category: "Meat" },
+  { name: "Sotong Goreng Tepung", calories: 220, protein: 16, carbs: 18, fat: 10, serving: "1 serving (100g)", category: "Seafood" },
+  { name: "Ikan Keli Goreng", calories: 250, protein: 22, carbs: 8, fat: 15, serving: "1 piece (120g)", category: "Seafood" },
+  { name: "Udang Goreng", calories: 200, protein: 20, carbs: 10, fat: 10, serving: "5 pieces (100g)", category: "Seafood" },
+  { name: "Ayam Goreng Rempah", calories: 350, protein: 28, carbs: 15, fat: 20, serving: "1 piece (150g)", category: "Meat" },
+  { name: "Kicap Manis Ayam", calories: 240, protein: 22, carbs: 12, fat: 12, serving: "1 serving (120g)", category: "Meat" },
+
+  // === INDIAN-MALAYSIAN DISHES ===
+  { name: "Thosai Plain", calories: 100, protein: 3, carbs: 18, fat: 2, serving: "1 piece (70g)", category: "Roti" },
+  { name: "Thosai Masala", calories: 250, protein: 8, carbs: 35, fat: 10, serving: "1 piece (150g)", category: "Roti" },
+  { name: "Thosai Egg", calories: 180, protein: 8, carbs: 22, fat: 7, serving: "1 piece (100g)", category: "Roti" },
+  { name: "Idli", calories: 80, protein: 2, carbs: 16, fat: 0.5, serving: "2 pieces (80g)", category: "Roti" },
+  { name: "Upma", calories: 220, protein: 6, carbs: 38, fat: 6, serving: "1 bowl (200g)", category: "Breakfast" },
+  { name: "Puri", calories: 150, protein: 3, carbs: 20, fat: 7, serving: "2 pieces (60g)", category: "Roti" },
+  { name: "Poori Masala", calories: 320, protein: 8, carbs: 45, fat: 13, serving: "1 plate (200g)", category: "Roti" },
+  { name: "Rasam", calories: 60, protein: 2, carbs: 10, fat: 1, serving: "1 bowl (200ml)", category: "Soups" },
+  { name: "Sambar", calories: 120, protein: 6, carbs: 20, fat: 2, serving: "1 bowl (200ml)", category: "Soups" },
+  { name: "Fish Head Curry", calories: 450, protein: 35, carbs: 15, fat: 30, serving: "1 serving (300g)", category: "Seafood" },
+  { name: "Chicken Varuval", calories: 320, protein: 26, carbs: 8, fat: 22, serving: "1 serving (180g)", category: "Meat" },
+  { name: "Mutton Varuval", calories: 380, protein: 28, carbs: 10, fat: 26, serving: "1 serving (180g)", category: "Meat" },
+  { name: "Briyani Kambing", calories: 750, protein: 35, carbs: 85, fat: 32, serving: "1 plate (500g)", category: "Rice" },
+  { name: "Briyani Ayam", calories: 650, protein: 30, carbs: 80, fat: 26, serving: "1 plate (450g)", category: "Rice" },
+  { name: "Banana Leaf Rice", calories: 700, protein: 20, carbs: 90, fat: 30, serving: "1 plate (500g)", category: "Rice" },
+
+  // === MORE REGIONAL SPECIALTIES ===
+  { name: "Laksa Johor", calories: 550, protein: 22, carbs: 60, fat: 26, serving: "1 bowl (450ml)", category: "Noodles" },
+  { name: "Laksa Kedah", calories: 480, protein: 18, carbs: 52, fat: 24, serving: "1 bowl (400ml)", category: "Noodles" },
+  { name: "Rojak Buah", calories: 250, protein: 4, carbs: 40, fat: 10, serving: "1 serving (250g)", category: "Snacks" },
+  { name: "Rojak Sotong", calories: 320, protein: 18, carbs: 35, fat: 14, serving: "1 serving (280g)", category: "Snacks" },
+  { name: "Cendol Durian", calories: 380, protein: 5, carbs: 65, fat: 14, serving: "1 bowl (300ml)", category: "Desserts" },
+  { name: "ABC Special", calories: 400, protein: 6, carbs: 75, fat: 10, serving: "1 bowl (350ml)", category: "Desserts" },
+  { name: "Pulut Durian", calories: 450, protein: 6, carbs: 65, fat: 20, serving: "1 serving (200g)", category: "Desserts" },
+  { name: "Bubur Kacang Hijau", calories: 280, protein: 10, carbs: 50, fat: 5, serving: "1 bowl (300ml)", category: "Desserts" },
+  { name: "Bubur Pulut Hitam", calories: 320, protein: 6, carbs: 60, fat: 8, serving: "1 bowl (300ml)", category: "Desserts" },
+  { name: "Teh Tarik Peng", calories: 180, protein: 2, carbs: 28, fat: 5, serving: "1 glass (350ml)", category: "Drinks" },
+  { name: "Kopi Tarik Peng", calories: 200, protein: 3, carbs: 32, fat: 6, serving: "1 glass (350ml)", category: "Drinks" },
+
+  // === KOPITIAM CLASSICS ===
+  // Verified from snapcalorie.com and malaysiafact.com
+  { name: "Kopi Gao", calories: 150, protein: 2, carbs: 24, fat: 5, serving: "1 cup (200ml)", category: "Drinks" },
+  { name: "Kopi Peng Gao", calories: 180, protein: 3, carbs: 28, fat: 6, serving: "1 glass (300ml)", category: "Drinks" },
+  { name: "Teh Gao", calories: 140, protein: 2, carbs: 22, fat: 4, serving: "1 cup (200ml)", category: "Drinks" },
+  { name: "Kopi O Peng", calories: 70, protein: 0, carbs: 18, fat: 0, serving: "1 glass (300ml)", category: "Drinks" },
+  { name: "Teh O Peng", calories: 80, protein: 0, carbs: 20, fat: 0, serving: "1 glass (300ml)", category: "Drinks" },
+  { name: "Kopi O Kosong", calories: 5, protein: 0, carbs: 0, fat: 0, serving: "1 cup (200ml)", category: "Drinks" },
+  { name: "Teh O Kosong", calories: 5, protein: 0, carbs: 0, fat: 0, serving: "1 cup (200ml)", category: "Drinks" },
+  { name: "Milo Kosong", calories: 120, protein: 4, carbs: 22, fat: 2, serving: "1 cup (200ml)", category: "Drinks" },
+  { name: "Milo Dinosaur", calories: 320, protein: 6, carbs: 50, fat: 8, serving: "1 glass (350ml)", category: "Drinks" },
+  { name: "Milo Godzilla", calories: 400, protein: 8, carbs: 60, fat: 14, serving: "1 glass (400ml)", category: "Drinks" },
+  { name: "Horlicks Peng", calories: 200, protein: 6, carbs: 35, fat: 4, serving: "1 glass (300ml)", category: "Drinks" },
+  { name: "Ovaltine Peng", calories: 190, protein: 5, carbs: 32, fat: 4, serving: "1 glass (300ml)", category: "Drinks" },
+
+
+  // === FRESH FRUITS (Additional) ===
+  { name: "Cempedak", calories: 98, protein: 1.5, carbs: 24, fat: 0.5, serving: "100g", category: "Fruits" },
+  { name: "Salak (Snake Fruit)", calories: 82, protein: 0.8, carbs: 20, fat: 0.4, serving: "100g", category: "Fruits" },
+  { name: "Pulasan", calories: 75, protein: 1, carbs: 18, fat: 0.3, serving: "100g", category: "Fruits" },
+  { name: "Duku", calories: 63, protein: 1, carbs: 15, fat: 0.2, serving: "100g", category: "Fruits" },
+  { name: "Mata Kucing", calories: 65, protein: 1.2, carbs: 16, fat: 0.1, serving: "100g", category: "Fruits" },
+  { name: "Buah Naga (Dragon Fruit)", calories: 60, protein: 1.2, carbs: 13, fat: 0.4, serving: "100g", category: "Fruits" },
+  { name: "Starfruit (Belimbing)", calories: 31, protein: 1, carbs: 6, fat: 0.3, serving: "100g", category: "Fruits" },
+  { name: "Pomelo (Limau Bali)", calories: 38, protein: 0.8, carbs: 9, fat: 0.1, serving: "100g", category: "Fruits" },
+  { name: "Soursop (Durian Belanda)", calories: 66, protein: 1, carbs: 17, fat: 0.3, serving: "100g", category: "Fruits" },
+  { name: "Chiku", calories: 83, protein: 0.4, carbs: 20, fat: 1.1, serving: "100g", category: "Fruits" },
+
+  // === INDONESIAN-MALAYSIAN DISHES ===
+  // Verified from snapcalorie.com
+  { name: "Ayam Penyet", calories: 350, protein: 30, carbs: 20, fat: 18, serving: "1 piece (150g)", category: "Meat" },
+  { name: "Nasi Ayam Penyet", calories: 650, protein: 35, carbs: 80, fat: 25, serving: "1 plate (450g)", category: "Rice" },
+  { name: "Nasi Padang", calories: 664, protein: 30, carbs: 70, fat: 28, serving: "1 plate (380g)", category: "Rice" },
+  { name: "Gulai Ayam", calories: 320, protein: 25, carbs: 10, fat: 22, serving: "1 serving (150g)", category: "Meat" },
+  { name: "Soto Ayam", calories: 350, protein: 22, carbs: 35, fat: 14, serving: "1 bowl (400ml)", category: "Soups" },
+  { name: "Soto Daging", calories: 420, protein: 28, carbs: 35, fat: 20, serving: "1 bowl (400ml)", category: "Soups" },
+  { name: "Bakso", calories: 280, protein: 15, carbs: 35, fat: 10, serving: "1 bowl (350ml)", category: "Soups" },
+  { name: "Mie Ayam", calories: 420, protein: 18, carbs: 55, fat: 16, serving: "1 bowl (350g)", category: "Noodles" },
+  { name: "Gado Gado", calories: 380, protein: 15, carbs: 35, fat: 22, serving: "1 plate (300g)", category: "Vegetables" },
+  { name: "Nasi Uduk", calories: 450, protein: 12, carbs: 70, fat: 15, serving: "1 plate (350g)", category: "Rice" },
+
+  // === CHINESE-MALAYSIAN DISHES ===
+  // Verified from multiple sources
+  { name: "Lor Mee", calories: 480, protein: 18, carbs: 58, fat: 20, serving: "1 bowl (400ml)", category: "Noodles" },
+  { name: "Fried Carrot Cake", calories: 350, protein: 8, carbs: 45, fat: 16, serving: "1 plate (200g)", category: "Snacks" },
+  { name: "Oyster Omelette", calories: 320, protein: 14, carbs: 25, fat: 20, serving: "1 plate (180g)", category: "Seafood" },
+  { name: "Fried Kway Teow", calories: 650, protein: 20, carbs: 70, fat: 35, serving: "1 plate (380g)", category: "Noodles" },
+  { name: "Sang Har Mee", calories: 580, protein: 25, carbs: 55, fat: 30, serving: "1 bowl (400ml)", category: "Noodles" },
+  { name: "Yee Mee", calories: 420, protein: 15, carbs: 52, fat: 18, serving: "1 bowl (350ml)", category: "Noodles" },
+  { name: "Kai Si Hor Fun", calories: 380, protein: 18, carbs: 50, fat: 12, serving: "1 bowl (400ml)", category: "Noodles" },
+  { name: "Foo Yong Egg", calories: 280, protein: 18, carbs: 12, fat: 18, serving: "1 serving (150g)", category: "Basics" },
+  { name: "Sweet Sour Pork", calories: 380, protein: 20, carbs: 35, fat: 18, serving: "1 serving (180g)", category: "Meat" },
+  { name: "Steamed Fish Cantonese", calories: 250, protein: 35, carbs: 8, fat: 10, serving: "1 serving (200g)", category: "Seafood" },
+
+  // === STREET FOOD & SNACKS ===
+  // Verified from healthguru.sg and snapcalorie.com
+  { name: "Popiah Fresh", calories: 188, protein: 5, carbs: 24, fat: 7, serving: "1 roll (100g)", category: "Snacks" },
+  { name: "Popiah Goreng", calories: 220, protein: 4, carbs: 28, fat: 10, serving: "1 roll (80g)", category: "Snacks" },
+  { name: "Yong Tau Fu (6 pcs)", calories: 350, protein: 20, carbs: 35, fat: 15, serving: "6 pieces (250g)", category: "Chinese" },
+  { name: "Sardine Puff", calories: 250, protein: 8, carbs: 28, fat: 12, serving: "1 piece (75g)", category: "Snacks" },
+  { name: "Cakoi (Yew Char Kueh)", calories: 200, protein: 4, carbs: 26, fat: 9, serving: "1 pair (70g)", category: "Snacks" },
+  { name: "Satay Celup", calories: 450, protein: 25, carbs: 30, fat: 28, serving: "10 sticks (200g)", category: "Meat" },
+
+  // === DESSERTS ===
+  // Verified from snapcalorie.com and family.my
+  { name: "Ais Kacang (ABC)", calories: 350, protein: 5, carbs: 70, fat: 6, serving: "1 bowl (350ml)", category: "Desserts" },
+  { name: "Apam Balik Crispy", calories: 280, protein: 6, carbs: 45, fat: 10, serving: "1 piece (100g)", category: "Kuih" },
+  { name: "Apam Balik Tebal", calories: 380, protein: 8, carbs: 60, fat: 14, serving: "1 piece (150g)", category: "Kuih" },
+  { name: "Kuih Cara Manis", calories: 80, protein: 2, carbs: 14, fat: 2, serving: "3 pieces (45g)", category: "Kuih" },
+  { name: "Ondeh Ondeh", calories: 120, protein: 2, carbs: 22, fat: 3, serving: "4 pieces (60g)", category: "Kuih" },
+  { name: "Cucur Badak", calories: 200, protein: 4, carbs: 35, fat: 6, serving: "2 pieces (100g)", category: "Kuih" },
+
+  // === DIM SUM (Updated/Verified) ===
+  // Verified from snapcalorie.com and carbmanager.com
+  { name: "Har Gow (Prawn Dumpling)", calories: 45, protein: 4, carbs: 4, fat: 2, serving: "1 piece (25g)", category: "Chinese" },
+  { name: "Siu Mai (Pork Dumpling)", calories: 45, protein: 4, carbs: 3, fat: 2, serving: "1 piece (25g)", category: "Chinese" },
+  { name: "Char Siu Pao", calories: 250, protein: 8, carbs: 38, fat: 8, serving: "1 piece (90g)", category: "Chinese" },
+  { name: "Lor Mai Gai", calories: 380, protein: 14, carbs: 52, fat: 14, serving: "1 piece (200g)", category: "Chinese" },
+  { name: "Chee Cheong Fun Plain", calories: 120, protein: 2, carbs: 24, fat: 2, serving: "1 serving (100g)", category: "Chinese" },
+  { name: "Spring Roll Fresh", calories: 80, protein: 3, carbs: 12, fat: 2, serving: "1 piece (50g)", category: "Chinese" },
+  { name: "Spring Roll Fried", calories: 150, protein: 4, carbs: 18, fat: 7, serving: "1 piece (60g)", category: "Chinese" },
+  { name: "Wonton Fried", calories: 80, protein: 4, carbs: 8, fat: 4, serving: "4 pieces (60g)", category: "Chinese" },
+  { name: "Wonton Soup", calories: 180, protein: 12, carbs: 18, fat: 6, serving: "1 bowl (250ml)", category: "Soups" },
+  { name: "Chicken Feet Dim Sum", calories: 150, protein: 12, carbs: 6, fat: 10, serving: "4 pieces (100g)", category: "Chinese" },
+  { name: "Egg Tart", calories: 220, protein: 4, carbs: 26, fat: 12, serving: "1 piece (70g)", category: "Desserts" },
+  { name: "Portuguese Egg Tart", calories: 250, protein: 5, carbs: 28, fat: 14, serving: "1 piece (80g)", category: "Desserts" },
+
+  // === MORE KUIH & TRADITIONAL ===
+  { name: "Kuih Makmur", calories: 80, protein: 1, carbs: 10, fat: 4, serving: "1 piece (25g)", category: "Kuih" },
+  { name: "Putu Piring", calories: 120, protein: 2, carbs: 25, fat: 2, serving: "2 pieces (70g)", category: "Kuih" },
+
+  // === ADDITIONAL RICE DISHES ===
+  { name: "Nasi Hujan Panas", calories: 380, protein: 7, carbs: 60, fat: 13, serving: "1 plate (280g)", category: "Rice" },
+  { name: "Nasi Bukhari", calories: 580, protein: 25, carbs: 70, fat: 22, serving: "1 plate (450g)", category: "Rice" },
+  { name: "Nasi Berlauk", calories: 550, protein: 22, carbs: 70, fat: 20, serving: "1 plate (400g)", category: "Rice" },
+
+  // === BREAKFAST ITEMS ===
+  { name: "Nasi Lemak Bungkus", calories: 350, protein: 8, carbs: 55, fat: 12, serving: "1 packet (200g)", category: "Breakfast" },
+  { name: "Ketupat", calories: 180, protein: 4, carbs: 40, fat: 1, serving: "2 pieces (150g)", category: "Basics" },
+  { name: "Roti Boom", calories: 380, protein: 7, carbs: 52, fat: 16, serving: "1 piece (110g)", category: "Roti" },
+
+  // === DURIAN VARIETIES ===
+  // Verified from snapcalorie.com and Wikipedia
+  { name: "Durian D24", calories: 147, protein: 1.5, carbs: 27, fat: 5, serving: "100g", category: "Fruits" },
+  { name: "Durian Musang King", calories: 160, protein: 2, carbs: 29, fat: 5.5, serving: "100g", category: "Fruits" },
+  { name: "Durian D197 (Musang King)", calories: 160, protein: 2, carbs: 29, fat: 5.5, serving: "100g", category: "Fruits" },
+  { name: "Durian Red Prawn", calories: 155, protein: 1.8, carbs: 28, fat: 5.2, serving: "100g", category: "Fruits" },
+  { name: "Durian Black Thorn (Duri Hitam)", calories: 158, protein: 1.8, carbs: 28, fat: 5.4, serving: "100g", category: "Fruits" },
+  { name: "Durian XO", calories: 152, protein: 1.6, carbs: 27, fat: 5, serving: "100g", category: "Fruits" },
+  { name: "Durian Kampung", calories: 145, protein: 1.4, carbs: 26, fat: 4.8, serving: "100g", category: "Fruits" },
+
+  // === SEAFOOD DISHES ===
+  { name: "Udang Galah Masak Lemak", calories: 350, protein: 25, carbs: 15, fat: 22, serving: "1 serving (180g)", category: "Seafood" },
+  { name: "Sotong Masak Hitam", calories: 280, protein: 22, carbs: 15, fat: 16, serving: "1 serving (180g)", category: "Seafood" },
+  { name: "Kepah Masak Cili", calories: 220, protein: 18, carbs: 12, fat: 14, serving: "1 serving (150g)", category: "Seafood" },
+  { name: "Kerang Bakar", calories: 200, protein: 20, carbs: 8, fat: 10, serving: "1 serving (150g)", category: "Seafood" },
+  { name: "Ketam Masak Lemak Cili Api", calories: 380, protein: 22, carbs: 15, fat: 28, serving: "1 serving (250g)", category: "Seafood" },
+  { name: "Butter Prawn", calories: 420, protein: 25, carbs: 22, fat: 28, serving: "1 serving (200g)", category: "Seafood" },
+  { name: "Salted Egg Squid", calories: 380, protein: 20, carbs: 25, fat: 24, serving: "1 serving (180g)", category: "Seafood" },
+  { name: "Steam Fish Teochew Style", calories: 280, protein: 38, carbs: 10, fat: 10, serving: "1 serving (250g)", category: "Seafood" },
+  { name: "Assam Pedas Ikan", calories: 320, protein: 30, carbs: 15, fat: 16, serving: "1 serving (250g)", category: "Seafood" },
+
+  // === VEGETABLE DISHES ===
+  { name: "Kailan Ikan Masin", calories: 150, protein: 6, carbs: 10, fat: 10, serving: "1 serving (120g)", category: "Vegetables" },
+  { name: "Sawi Masak Sos Tiram", calories: 100, protein: 4, carbs: 8, fat: 6, serving: "1 serving (100g)", category: "Vegetables" },
+  { name: "Ulam Raja Salad", calories: 80, protein: 3, carbs: 12, fat: 2, serving: "1 serving (100g)", category: "Vegetables" },
+  { name: "Kerabu Taugeh", calories: 120, protein: 4, carbs: 15, fat: 5, serving: "1 serving (120g)", category: "Vegetables" },
+  { name: "Terung Goreng Berlada", calories: 180, protein: 3, carbs: 15, fat: 12, serving: "1 serving (120g)", category: "Vegetables" },
+
+  // === MORE NOODLE DISHES ===
+  { name: "Prawn Mee Soup", calories: 450, protein: 22, carbs: 52, fat: 18, serving: "1 bowl (400ml)", category: "Noodles" },
+  { name: "Prawn Mee Dry", calories: 520, protein: 24, carbs: 55, fat: 24, serving: "1 plate (350g)", category: "Noodles" },
+  { name: "Asam Laksa", calories: 400, protein: 15, carbs: 55, fat: 14, serving: "1 bowl (450ml)", category: "Noodles" },
+  { name: "Curry Mee Hong Kong", calories: 580, protein: 24, carbs: 55, fat: 30, serving: "1 bowl (450ml)", category: "Noodles" },
+  { name: "Kon Lo Mee", calories: 450, protein: 16, carbs: 58, fat: 18, serving: "1 bowl (350g)", category: "Noodles" },
+  { name: "Fish Ball Noodle Soup", calories: 320, protein: 15, carbs: 48, fat: 8, serving: "1 bowl (400ml)", category: "Noodles" },
+  { name: "Fish Head Bee Hoon", calories: 480, protein: 28, carbs: 50, fat: 20, serving: "1 bowl (450ml)", category: "Noodles" },
+  { name: "Ipoh Hor Fun", calories: 380, protein: 18, carbs: 52, fat: 12, serving: "1 bowl (400ml)", category: "Noodles" },
+  { name: "Ipoh Chicken Rice Hor Fun", calories: 420, protein: 22, carbs: 55, fat: 14, serving: "1 bowl (420ml)", category: "Noodles" },
+  { name: "Cantonese Fried Noodles", calories: 520, protein: 20, carbs: 58, fat: 24, serving: "1 plate (350g)", category: "Noodles" },
+  { name: "Moonlight Hor Fun", calories: 580, protein: 25, carbs: 60, fat: 28, serving: "1 plate (400g)", category: "Noodles" },
+  { name: "Koay Chiap", calories: 420, protein: 20, carbs: 48, fat: 18, serving: "1 bowl (400ml)", category: "Noodles" },
+
+  // === MORE DRINKS ===
+  // Verified from homage.com.my and snapcalorie.com
+  { name: "Teh Ais Limau", calories: 120, protein: 0, carbs: 30, fat: 0, serving: "1 glass (350ml)", category: "Drinks" },
+  { name: "Sirap Selasih", calories: 180, protein: 1, carbs: 45, fat: 0, serving: "1 glass (350ml)", category: "Drinks" },
+  { name: "Air Kelapa Muda", calories: 50, protein: 0.5, carbs: 12, fat: 0.2, serving: "1 glass (250ml)", category: "Drinks" },
+  { name: "Air Jagung", calories: 160, protein: 2, carbs: 38, fat: 1, serving: "1 glass (300ml)", category: "Drinks" },
+  { name: "Soya Bean Fresh", calories: 120, protein: 8, carbs: 12, fat: 5, serving: "1 glass (300ml)", category: "Drinks" },
+  { name: "Barley Water", calories: 100, protein: 1, carbs: 24, fat: 0, serving: "1 glass (300ml)", category: "Drinks" },
+  { name: "Asam Boi", calories: 120, protein: 0, carbs: 30, fat: 0, serving: "1 glass (300ml)", category: "Drinks" },
+  { name: "Lai Chi Kang", calories: 220, protein: 3, carbs: 48, fat: 2, serving: "1 bowl (300ml)", category: "Drinks" },
+  { name: "Michael Jackson (Soya + Cincau)", calories: 140, protein: 5, carbs: 28, fat: 3, serving: "1 glass (300ml)", category: "Drinks" },
+
+  // === MORE DESSERTS ===
+  { name: "Tong Sui (Red Bean)", calories: 220, protein: 6, carbs: 45, fat: 2, serving: "1 bowl (250ml)", category: "Desserts" },
+  { name: "Cheng Tng", calories: 180, protein: 3, carbs: 40, fat: 1, serving: "1 bowl (250ml)", category: "Desserts" },
+  { name: "Tau Foo Fah", calories: 120, protein: 5, carbs: 22, fat: 2, serving: "1 bowl (200ml)", category: "Desserts" },
+  { name: "Ais Krim Potong", calories: 100, protein: 2, carbs: 18, fat: 3, serving: "1 piece (60g)", category: "Desserts" },
+  { name: "Ais Cream Malaysia", calories: 80, protein: 1, carbs: 15, fat: 2, serving: "1 scoop (50g)", category: "Desserts" },
+  { name: "Tapai Pulut", calories: 180, protein: 2, carbs: 40, fat: 1, serving: "1 serving (100g)", category: "Desserts" },
+  { name: "Durian Crepe", calories: 320, protein: 4, carbs: 40, fat: 16, serving: "1 piece (100g)", category: "Desserts" },
+  { name: "Durian Puff", calories: 280, protein: 3, carbs: 35, fat: 14, serving: "1 piece (80g)", category: "Desserts" },
+
+  // === EAST MALAYSIAN SPECIALTIES ===
+  { name: "Hinava (Sabah)", calories: 180, protein: 20, carbs: 8, fat: 8, serving: "1 serving (150g)", category: "Seafood" },
+  { name: "Pinasakan (Sabah)", calories: 220, protein: 25, carbs: 10, fat: 10, serving: "1 serving (180g)", category: "Seafood" },
+  { name: "Bosou (Sabah)", calories: 150, protein: 12, carbs: 15, fat: 5, serving: "1 serving (100g)", category: "Meat" },
+  { name: "Tuaran Mee", calories: 450, protein: 18, carbs: 58, fat: 18, serving: "1 plate (350g)", category: "Noodles" },
+  { name: "Kolo Mee Sarawak", calories: 420, protein: 16, carbs: 55, fat: 16, serving: "1 bowl (350g)", category: "Noodles" },
+  { name: "Mee Jawa Sarawak", calories: 480, protein: 18, carbs: 58, fat: 20, serving: "1 bowl (380g)", category: "Noodles" },
+  { name: "Nasi Dagang Terengganu", calories: 550, protein: 20, carbs: 72, fat: 20, serving: "1 plate (400g)", category: "Rice" },
+  { name: "Nasi Kerabu Kelantan", calories: 480, protein: 18, carbs: 60, fat: 18, serving: "1 plate (380g)", category: "Rice" },
+
+  // === PERANAKAN/NYONYA CUISINE ===
+  { name: "Nyonya Laksa", calories: 580, protein: 22, carbs: 55, fat: 32, serving: "1 bowl (450ml)", category: "Noodles" },
+  { name: "Babi Pongteh", calories: 350, protein: 30, carbs: 18, fat: 20, serving: "1 serving (200g)", category: "Meat" },
+  { name: "Nyonya Kuih Lapis", calories: 180, protein: 2, carbs: 35, fat: 5, serving: "1 piece (80g)", category: "Kuih" },
+  { name: "Kuih Ang Ku", calories: 150, protein: 3, carbs: 30, fat: 3, serving: "1 piece (60g)", category: "Kuih" },
+
+  // === MORE HAWKER FARE ===
+  { name: "Chee Cheong Fun with Sauce", calories: 180, protein: 4, carbs: 35, fat: 3, serving: "1 serving (150g)", category: "Chinese" },
+  { name: "Economy Rice (1 meat 2 veg)", calories: 550, protein: 25, carbs: 70, fat: 20, serving: "1 plate (400g)", category: "Rice" },
+  { name: "Economy Rice (2 meat 1 veg)", calories: 650, protein: 35, carbs: 65, fat: 28, serving: "1 plate (420g)", category: "Rice" },
+  { name: "Mixed Rice Vegetarian", calories: 400, protein: 15, carbs: 65, fat: 12, serving: "1 plate (350g)", category: "Rice" },
+  { name: "Vegetarian Bee Hoon", calories: 320, protein: 10, carbs: 55, fat: 8, serving: "1 plate (280g)", category: "Noodles" },
+  { name: "Thunder Tea Rice", calories: 380, protein: 12, carbs: 62, fat: 10, serving: "1 bowl (350g)", category: "Rice" },
+  { name: "Yam Rice", calories: 420, protein: 10, carbs: 72, fat: 12, serving: "1 plate (350g)", category: "Rice" },
+  { name: "Olive Rice", calories: 400, protein: 8, carbs: 68, fat: 12, serving: "1 plate (300g)", category: "Rice" },
+
+  // === INTERNATIONAL - ITALIAN ===
+  // Verified from snapcalorie.com and mynetdiary.com
+  { name: "Spaghetti Bolognese", calories: 430, protein: 22, carbs: 55, fat: 14, serving: "1 plate (350g)", category: "Italian" },
+  { name: "Spaghetti Carbonara", calories: 580, protein: 22, carbs: 58, fat: 28, serving: "1 plate (350g)", category: "Italian" },
+  { name: "Fettuccine Alfredo", calories: 620, protein: 18, carbs: 55, fat: 35, serving: "1 plate (350g)", category: "Italian" },
+  { name: "Penne Arrabiata", calories: 420, protein: 12, carbs: 65, fat: 14, serving: "1 plate (300g)", category: "Italian" },
+  { name: "Lasagna", calories: 550, protein: 28, carbs: 45, fat: 30, serving: "1 piece (250g)", category: "Italian" },
+  { name: "Pizza Margherita", calories: 240, protein: 10, carbs: 32, fat: 8, serving: "1 slice (100g)", category: "Italian" },
+  { name: "Pizza Pepperoni", calories: 310, protein: 14, carbs: 32, fat: 16, serving: "1 slice (110g)", category: "Italian" },
+  { name: "Pizza Hawaiian", calories: 280, protein: 12, carbs: 35, fat: 12, serving: "1 slice (105g)", category: "Italian" },
+  { name: "Risotto", calories: 420, protein: 12, carbs: 58, fat: 16, serving: "1 plate (300g)", category: "Italian" },
+  { name: "Minestrone Soup", calories: 180, protein: 8, carbs: 28, fat: 4, serving: "1 bowl (350ml)", category: "Italian" },
+  { name: "Tiramisu", calories: 350, protein: 6, carbs: 38, fat: 20, serving: "1 piece (120g)", category: "Italian" },
+  { name: "Panna Cotta", calories: 280, protein: 4, carbs: 32, fat: 16, serving: "1 cup (120g)", category: "Italian" },
+  { name: "Bruschetta", calories: 150, protein: 4, carbs: 18, fat: 7, serving: "2 pieces (80g)", category: "Italian" },
+  { name: "Caprese Salad", calories: 180, protein: 10, carbs: 8, fat: 12, serving: "1 serving (150g)", category: "Italian" },
+  { name: "Gnocchi", calories: 380, protein: 10, carbs: 52, fat: 14, serving: "1 plate (250g)", category: "Italian" },
+
+  // === INTERNATIONAL - MEXICAN ===
+  { name: "Beef Tacos", calories: 320, protein: 18, carbs: 28, fat: 16, serving: "2 tacos (180g)", category: "Mexican" },
+  { name: "Chicken Tacos", calories: 280, protein: 20, carbs: 26, fat: 12, serving: "2 tacos (170g)", category: "Mexican" },
+  { name: "Beef Burrito", calories: 580, protein: 28, carbs: 62, fat: 24, serving: "1 burrito (350g)", category: "Mexican" },
+  { name: "Chicken Burrito", calories: 520, protein: 32, carbs: 58, fat: 18, serving: "1 burrito (340g)", category: "Mexican" },
+  { name: "Quesadilla Cheese", calories: 450, protein: 20, carbs: 38, fat: 26, serving: "1 quesadilla (200g)", category: "Mexican" },
+  { name: "Nachos with Cheese", calories: 480, protein: 12, carbs: 52, fat: 26, serving: "1 plate (250g)", category: "Mexican" },
+  { name: "Guacamole", calories: 160, protein: 2, carbs: 8, fat: 14, serving: "1/2 cup (100g)", category: "Mexican" },
+  { name: "Churros", calories: 280, protein: 4, carbs: 38, fat: 14, serving: "4 pieces (80g)", category: "Mexican" },
+  { name: "Enchiladas", calories: 480, protein: 22, carbs: 45, fat: 24, serving: "2 pieces (280g)", category: "Mexican" },
+  { name: "Fajitas", calories: 420, protein: 30, carbs: 35, fat: 18, serving: "1 plate (300g)", category: "Mexican" },
+
+  // === INTERNATIONAL - INDIAN (Non-Malaysian) ===
+  { name: "Butter Chicken", calories: 480, protein: 32, carbs: 18, fat: 32, serving: "1 serving (250g)", category: "Indian" },
+  { name: "Palak Paneer", calories: 350, protein: 18, carbs: 12, fat: 26, serving: "1 serving (200g)", category: "Indian" },
+  { name: "Dal Makhani", calories: 280, protein: 12, carbs: 35, fat: 12, serving: "1 serving (200g)", category: "Indian" },
+  { name: "Chicken Tikka Masala", calories: 420, protein: 30, carbs: 15, fat: 28, serving: "1 serving (250g)", category: "Indian" },
+  { name: "Lamb Rogan Josh", calories: 450, protein: 35, carbs: 12, fat: 30, serving: "1 serving (250g)", category: "Indian" },
+  { name: "Aloo Gobi", calories: 220, protein: 6, carbs: 28, fat: 10, serving: "1 serving (200g)", category: "Indian" },
+  { name: "Samosa Vegetable", calories: 180, protein: 4, carbs: 22, fat: 9, serving: "2 pieces (100g)", category: "Indian" },
+  { name: "Pakora", calories: 250, protein: 6, carbs: 28, fat: 14, serving: "6 pieces (120g)", category: "Indian" },
+  { name: "Chicken Biryani", calories: 550, protein: 28, carbs: 65, fat: 20, serving: "1 plate (400g)", category: "Indian" },
+  { name: "Lamb Biryani", calories: 620, protein: 32, carbs: 62, fat: 28, serving: "1 plate (420g)", category: "Indian" },
+  { name: "Garlic Naan", calories: 280, protein: 8, carbs: 45, fat: 8, serving: "1 piece (100g)", category: "Indian" },
+  { name: "Paratha", calories: 200, protein: 5, carbs: 28, fat: 9, serving: "1 piece (70g)", category: "Indian" },
+
+  // === INTERNATIONAL - MIDDLE EASTERN ===
+  { name: "Shawarma Chicken", calories: 520, protein: 35, carbs: 45, fat: 22, serving: "1 wrap (280g)", category: "Middle Eastern" },
+  { name: "Shawarma Lamb", calories: 580, protein: 32, carbs: 42, fat: 32, serving: "1 wrap (290g)", category: "Middle Eastern" },
+  { name: "Hummus", calories: 180, protein: 8, carbs: 18, fat: 10, serving: "1/2 cup (120g)", category: "Middle Eastern" },
+  { name: "Falafel", calories: 280, protein: 12, carbs: 32, fat: 14, serving: "5 pieces (150g)", category: "Middle Eastern" },
+  { name: "Kebab Lamb", calories: 320, protein: 28, carbs: 8, fat: 20, serving: "1 skewer (150g)", category: "Middle Eastern" },
+  { name: "Kebab Chicken", calories: 250, protein: 32, carbs: 6, fat: 12, serving: "1 skewer (140g)", category: "Middle Eastern" },
+  { name: "Baba Ganoush", calories: 150, protein: 4, carbs: 12, fat: 10, serving: "1/2 cup (120g)", category: "Middle Eastern" },
+  { name: "Tabbouleh", calories: 120, protein: 4, carbs: 18, fat: 4, serving: "1 cup (150g)", category: "Middle Eastern" },
+  { name: "Fattoush Salad", calories: 180, protein: 4, carbs: 22, fat: 9, serving: "1 bowl (200g)", category: "Middle Eastern" },
+  { name: "Stuffed Grape Leaves", calories: 150, protein: 3, carbs: 22, fat: 6, serving: "5 pieces (100g)", category: "Middle Eastern" },
+  { name: "Baklava", calories: 280, protein: 4, carbs: 35, fat: 15, serving: "1 piece (60g)", category: "Middle Eastern" },
+
+  // === INTERNATIONAL - AMERICAN ===
+  { name: "Classic Cheeseburger", calories: 550, protein: 28, carbs: 42, fat: 32, serving: "1 burger (220g)", category: "American" },
+  { name: "Double Cheeseburger", calories: 720, protein: 42, carbs: 45, fat: 45, serving: "1 burger (300g)", category: "American" },
+  { name: "Bacon Cheeseburger", calories: 620, protein: 35, carbs: 42, fat: 38, serving: "1 burger (250g)", category: "American" },
+  { name: "Buffalo Wings", calories: 380, protein: 28, carbs: 8, fat: 28, serving: "8 wings (200g)", category: "American" },
+  { name: "BBQ Ribs", calories: 550, protein: 35, carbs: 25, fat: 38, serving: "1/2 rack (300g)", category: "American" },
+  { name: "Mac and Cheese", calories: 420, protein: 16, carbs: 48, fat: 20, serving: "1 cup (250g)", category: "American" },
+  { name: "Clam Chowder", calories: 280, protein: 12, carbs: 25, fat: 16, serving: "1 bowl (300ml)", category: "American" },
+  { name: "Philly Cheesesteak", calories: 580, protein: 32, carbs: 45, fat: 32, serving: "1 sandwich (280g)", category: "American" },
+  { name: "Hot Dog", calories: 320, protein: 12, carbs: 28, fat: 18, serving: "1 hot dog (150g)", category: "American" },
+  { name: "Pancakes Stack", calories: 420, protein: 10, carbs: 62, fat: 16, serving: "3 pancakes (200g)", category: "American" },
+  { name: "French Toast", calories: 380, protein: 12, carbs: 45, fat: 18, serving: "2 slices (180g)", category: "American" },
+  { name: "Eggs Benedict", calories: 480, protein: 22, carbs: 28, fat: 32, serving: "1 serving (220g)", category: "American" },
+  { name: "Caesar Salad", calories: 250, protein: 12, carbs: 15, fat: 18, serving: "1 bowl (200g)", category: "American" },
+  { name: "Cobb Salad", calories: 380, protein: 28, carbs: 15, fat: 26, serving: "1 bowl (300g)", category: "American" },
+  { name: "Apple Pie", calories: 280, protein: 3, carbs: 42, fat: 12, serving: "1 slice (120g)", category: "American" },
+  { name: "Cheesecake", calories: 350, protein: 6, carbs: 32, fat: 24, serving: "1 slice (100g)", category: "American" },
+  { name: "Brownie", calories: 280, protein: 4, carbs: 38, fat: 14, serving: "1 piece (80g)", category: "American" },
+
+  // === INTERNATIONAL - MORE JAPANESE ===
+  { name: "Tonkatsu", calories: 380, protein: 25, carbs: 28, fat: 22, serving: "1 piece (180g)", category: "Japanese" },
+  { name: "Chicken Katsu", calories: 350, protein: 28, carbs: 25, fat: 18, serving: "1 piece (170g)", category: "Japanese" },
+  { name: "Gyudon (Beef Bowl)", calories: 520, protein: 25, carbs: 65, fat: 18, serving: "1 bowl (400g)", category: "Japanese" },
+  { name: "Katsudon", calories: 620, protein: 32, carbs: 68, fat: 24, serving: "1 bowl (450g)", category: "Japanese" },
+  { name: "Oyakodon", calories: 480, protein: 28, carbs: 55, fat: 16, serving: "1 bowl (400g)", category: "Japanese" },
+  { name: "Udon Soup", calories: 380, protein: 14, carbs: 62, fat: 8, serving: "1 bowl (450ml)", category: "Japanese" },
+  { name: "Yakitori", calories: 220, protein: 22, carbs: 8, fat: 12, serving: "4 skewers (120g)", category: "Japanese" },
+  { name: "Takoyaki", calories: 280, protein: 10, carbs: 35, fat: 12, serving: "8 pieces (160g)", category: "Japanese" },
+  { name: "Okonomiyaki", calories: 520, protein: 18, carbs: 55, fat: 26, serving: "1 piece (300g)", category: "Japanese" },
+  { name: "Edamame (Salted)", calories: 120, protein: 12, carbs: 9, fat: 5, serving: "1 cup (100g)", category: "Japanese" },
+  { name: "Mochi Ice Cream", calories: 100, protein: 2, carbs: 18, fat: 2, serving: "1 piece (45g)", category: "Japanese" },
+  { name: "Matcha Latte", calories: 180, protein: 8, carbs: 25, fat: 6, serving: "1 cup (350ml)", category: "Japanese" },
+
+  // === INTERNATIONAL - GREEK ===
+  { name: "Gyros Pita", calories: 480, protein: 28, carbs: 42, fat: 24, serving: "1 pita (250g)", category: "Greek" },
+  { name: "Moussaka", calories: 420, protein: 22, carbs: 28, fat: 26, serving: "1 piece (200g)", category: "Greek" },
+  { name: "Souvlaki", calories: 280, protein: 28, carbs: 12, fat: 14, serving: "2 skewers (150g)", category: "Greek" },
+  { name: "Greek Salad", calories: 180, protein: 6, carbs: 12, fat: 14, serving: "1 bowl (200g)", category: "Greek" },
+  { name: "Tzatziki", calories: 80, protein: 4, carbs: 6, fat: 5, serving: "1/2 cup (100g)", category: "Greek" },
+  { name: "Spanakopita", calories: 280, protein: 10, carbs: 22, fat: 18, serving: "1 piece (100g)", category: "Greek" },
+  { name: "Dolma", calories: 160, protein: 4, carbs: 24, fat: 6, serving: "5 pieces (100g)", category: "Greek" },
+
+  // === INTERNATIONAL - FRENCH ===
+  // Verified from field-fare.com and mynetdiary.com
+  { name: "Croissant", calories: 255, protein: 5, carbs: 27, fat: 14, serving: "1 piece (60g)", category: "French" },
+  { name: "Pain au Chocolat", calories: 340, protein: 6, carbs: 38, fat: 20, serving: "1 piece (70g)", category: "French" },
+  { name: "French Onion Soup", calories: 280, protein: 12, carbs: 25, fat: 16, serving: "1 bowl (350ml)", category: "French" },
+  { name: "Croque Monsieur", calories: 450, protein: 22, carbs: 32, fat: 28, serving: "1 sandwich (180g)", category: "French" },
+  { name: "Quiche Lorraine", calories: 380, protein: 14, carbs: 25, fat: 26, serving: "1 slice (120g)", category: "French" },
+  { name: "Crepe (Sweet)", calories: 280, protein: 6, carbs: 42, fat: 10, serving: "1 crepe (100g)", category: "French" },
+  { name: "Ratatouille", calories: 150, protein: 4, carbs: 18, fat: 8, serving: "1 cup (200g)", category: "French" },
+  { name: "Escargot", calories: 180, protein: 12, carbs: 4, fat: 14, serving: "6 pieces (80g)", category: "French" },
+  { name: "Beef Bourguignon", calories: 420, protein: 32, carbs: 18, fat: 26, serving: "1 cup (250g)", category: "French" },
+  { name: "Creme Brulee", calories: 320, protein: 5, carbs: 32, fat: 20, serving: "1 serving (120g)", category: "French" },
+
+  // === INTERNATIONAL - SPANISH ===
+  { name: "Paella", calories: 450, protein: 25, carbs: 55, fat: 16, serving: "1 plate (350g)", category: "Spanish" },
+  { name: "Spanish Omelette (Tortilla)", calories: 280, protein: 14, carbs: 22, fat: 16, serving: "1 slice (150g)", category: "Spanish" },
+  { name: "Patatas Bravas", calories: 320, protein: 5, carbs: 42, fat: 16, serving: "1 plate (200g)", category: "Spanish" },
+  { name: "Gambas al Ajillo", calories: 280, protein: 22, carbs: 5, fat: 20, serving: "1 serving (150g)", category: "Spanish" },
+  { name: "Gazpacho", calories: 80, protein: 2, carbs: 12, fat: 3, serving: "1 bowl (250ml)", category: "Spanish" },
 ];
