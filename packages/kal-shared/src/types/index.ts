@@ -6,7 +6,7 @@ export type UserTier = 'free' | 'tier_1' | 'tier_2';
 export interface User {
   _id: string;
   logtoId: string;
-  email: string;
+  email: string | null;
   name?: string;
   tier: UserTier;
   createdAt: Date;
