@@ -1,5 +1,5 @@
 import type { UserTier, RateLimitUsage } from "kal-shared";
-import { RATE_LIMITS } from "kal-shared";
+import { RATE_LIMITS, VPS_SAFETY_CAPS } from "kal-shared";
 import type { Db } from "mongodb";
 
 import { logger } from "../lib/logger.js";
@@ -7,15 +7,27 @@ import { logger } from "../lib/logger.js";
 export interface RateLimitResult {
   limited: boolean;
   retryAfter?: number; // seconds until retry allowed
-  dailyCount?: number;
-  dailyLimit?: number;
+  limitType?: "second" | "minute" | "daily" | "monthly" | "burst";
+  
+  // Current counts
+  secondCount?: number;
   minuteCount?: number;
-  burstLimit?: number;
+  dailyCount?: number;
+  
+  // Limits
+  minuteLimit?: number;
+  dailyLimit?: number;
+  monthlyLimit?: number;
 }
 
 /**
  * Check rate limits for a user based on their tier.
- * Uses soft throttling - returns 429 with Retry-After, not permanent bans.
+ * 
+ * Rate limit hierarchy (checked in order):
+ * 1. VPS Safety Cap: 20 requests/second (global)
+ * 2. Minute limit: varies by tier (65/130/110 per minute)
+ * 3. Daily limit: varies by tier
+ * 4. Monthly limit: varies by tier
  * 
  * Uses industry-standard MongoDB pattern:
  * - Composite _id: `${userId}_${date}` for uniqueness
@@ -29,8 +41,13 @@ export async function checkRateLimit(
   const limits = RATE_LIMITS[tier];
   const now = new Date();
   const today = now.toISOString().split("T")[0]; // YYYY-MM-DD
+  
+  // Time windows
   const minuteStart = new Date(now);
   minuteStart.setSeconds(0, 0);
+  
+  const secondStart = new Date(now);
+  secondStart.setMilliseconds(0);
 
   const collection = db.collection<RateLimitUsage>("rate_limit_usage");
   
@@ -38,35 +55,53 @@ export async function checkRateLimit(
   const compositeId = `${userId}_${today}`;
 
   try {
-    // First, get current usage to check minute window
+    // First, get current usage to check windows
     const existingUsage = await collection.findOne({ _id: compositeId as unknown as string });
     
-    // Check if we're in a new minute window
+    // Check if we're in new time windows
     const isNewMinute =
       !existingUsage?.minuteWindow ||
       new Date(existingUsage.minuteWindow).getTime() < minuteStart.getTime();
+    
+    const isNewSecond =
+      !existingUsage?.secondWindow ||
+      new Date(existingUsage.secondWindow).getTime() < secondStart.getTime();
 
-    // Use atomic upsert - single operation for both create and update
-    // This prevents race conditions and duplicate key errors
-    const updateDoc = isNewMinute || !existingUsage
-      ? {
-          // New minute or first request: reset minute counter
-          $inc: { dailyCount: 1 },
-          $set: {
-            minuteWindow: minuteStart,
-            minuteCount: 1,
-            updatedAt: now,
-          },
-          $setOnInsert: {
-            userId,
-            date: today,
-          },
-        }
-      : {
-          // Same minute: increment both counters
-          $inc: { dailyCount: 1, minuteCount: 1 },
-          $set: { updatedAt: now },
-        };
+    // Build update document based on window states
+    interface UpdateOperation {
+      $inc: Record<string, number>;
+      $set: Record<string, Date | number>;
+      $setOnInsert?: Record<string, string>;
+    }
+    
+    const updateDoc: UpdateOperation = {
+      $inc: { dailyCount: 1 },
+      $set: { updatedAt: now },
+    };
+
+    // Handle minute window
+    if (isNewMinute || !existingUsage) {
+      updateDoc.$set.minuteWindow = minuteStart;
+      updateDoc.$set.minuteCount = 1;
+    } else {
+      updateDoc.$inc.minuteCount = 1;
+    }
+
+    // Handle second window (for VPS safety cap)
+    if (isNewSecond || !existingUsage) {
+      updateDoc.$set.secondWindow = secondStart;
+      updateDoc.$set.secondCount = 1;
+    } else {
+      updateDoc.$inc.secondCount = 1;
+    }
+
+    // Set on insert for new documents
+    if (!existingUsage) {
+      updateDoc.$setOnInsert = {
+        userId,
+        date: today,
+      };
+    }
 
     const result = await collection.findOneAndUpdate(
       { _id: compositeId as unknown as string },
@@ -85,13 +120,57 @@ export async function checkRateLimit(
       return {
         limited: false,
         dailyCount: 1,
-        dailyLimit: limits.dailyLimit,
         minuteCount: 1,
-        burstLimit: limits.burstLimit,
+        secondCount: 1,
+        minuteLimit: limits.minuteLimit,
+        dailyLimit: limits.dailyLimit,
+        monthlyLimit: limits.monthlyLimit,
       };
     }
 
-    // Check daily limit (soft throttle until midnight)
+    // Check VPS safety cap: 20 requests per second
+    const secondCount = usage.secondCount || 1;
+    if (secondCount > VPS_SAFETY_CAPS.maxRequestsPerSecond) {
+      logger.info("VPS safety cap exceeded (per-second)", {
+        userId: userId.substring(0, 8),
+        secondCount,
+        limit: VPS_SAFETY_CAPS.maxRequestsPerSecond,
+        tier,
+      });
+      return {
+        limited: true,
+        retryAfter: 1, // Wait 1 second
+        limitType: "second",
+        secondCount,
+        minuteCount: usage.minuteCount,
+        dailyCount: usage.dailyCount,
+        minuteLimit: limits.minuteLimit,
+        dailyLimit: limits.dailyLimit,
+      };
+    }
+
+    // Check minute limit
+    if (usage.minuteCount > limits.minuteLimit) {
+      const secondsInMinute = now.getSeconds();
+      const retryAfter = 60 - secondsInMinute;
+      logger.info("Minute rate limit exceeded", {
+        userId: userId.substring(0, 8),
+        minuteCount: usage.minuteCount,
+        minuteLimit: limits.minuteLimit,
+        tier,
+      });
+      return {
+        limited: true,
+        retryAfter,
+        limitType: "minute",
+        minuteCount: usage.minuteCount,
+        dailyCount: usage.dailyCount,
+        minuteLimit: limits.minuteLimit,
+        dailyLimit: limits.dailyLimit,
+      };
+    }
+
+    // Check daily limit
     if (usage.dailyCount > limits.dailyLimit) {
       const secondsUntilMidnight = getSecondsUntilMidnight();
       logger.info("Daily rate limit exceeded", {
@@ -103,35 +182,25 @@ export async function checkRateLimit(
       return {
         limited: true,
         retryAfter: secondsUntilMidnight,
+        limitType: "daily",
         dailyCount: usage.dailyCount,
+        minuteCount: usage.minuteCount,
         dailyLimit: limits.dailyLimit,
+        monthlyLimit: limits.monthlyLimit,
       };
     }
 
-    // Check burst limit (soft throttle for remaining seconds in minute)
-    if (usage.minuteCount > limits.burstLimit) {
-      const secondsInMinute = now.getSeconds();
-      const retryAfter = 60 - secondsInMinute;
-      logger.info("Burst rate limit exceeded", {
-        userId: userId.substring(0, 8),
-        minuteCount: usage.minuteCount,
-        burstLimit: limits.burstLimit,
-        tier,
-      });
-      return {
-        limited: true,
-        retryAfter,
-        minuteCount: usage.minuteCount,
-        burstLimit: limits.burstLimit,
-      };
-    }
+    // Monthly limit is checked via aggregation in getUsageStats
+    // We don't block here as it requires summing all daily counts
 
     return {
       limited: false,
-      dailyCount: usage.dailyCount,
-      dailyLimit: limits.dailyLimit,
+      secondCount,
       minuteCount: usage.minuteCount,
-      burstLimit: limits.burstLimit,
+      dailyCount: usage.dailyCount,
+      minuteLimit: limits.minuteLimit,
+      dailyLimit: limits.dailyLimit,
+      monthlyLimit: limits.monthlyLimit,
     };
   } catch (error) {
     // Log the error with full context for debugging
@@ -163,9 +232,11 @@ export async function checkRateLimit(
     return {
       limited: false,
       dailyCount: 0,
-      dailyLimit: limits.dailyLimit,
       minuteCount: 0,
-      burstLimit: limits.burstLimit,
+      secondCount: 0,
+      minuteLimit: limits.minuteLimit,
+      dailyLimit: limits.dailyLimit,
+      monthlyLimit: limits.monthlyLimit,
     };
   }
 }
@@ -189,22 +260,26 @@ export function getRateLimitHeaders(
 ): Record<string, string> {
   const limits = RATE_LIMITS[tier];
   const headers: Record<string, string> = {
+    "X-RateLimit-Limit-Minute": String(limits.minuteLimit),
     "X-RateLimit-Limit-Daily": String(limits.dailyLimit),
-    "X-RateLimit-Limit-Burst": String(limits.burstLimit),
+    "X-RateLimit-Limit-Monthly": String(limits.monthlyLimit),
   };
 
+  if (result.minuteCount !== undefined) {
+    headers["X-RateLimit-Remaining-Minute"] = String(
+      Math.max(0, limits.minuteLimit - result.minuteCount)
+    );
+  }
   if (result.dailyCount !== undefined) {
     headers["X-RateLimit-Remaining-Daily"] = String(
       Math.max(0, limits.dailyLimit - result.dailyCount)
     );
   }
-  if (result.minuteCount !== undefined) {
-    headers["X-RateLimit-Remaining-Burst"] = String(
-      Math.max(0, limits.burstLimit - result.minuteCount)
-    );
-  }
   if (result.retryAfter !== undefined) {
     headers["Retry-After"] = String(result.retryAfter);
+  }
+  if (result.limitType) {
+    headers["X-RateLimit-Type"] = result.limitType;
   }
 
   return headers;

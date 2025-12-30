@@ -111,9 +111,12 @@ function ApiKeysContent() {
   const dailyUsed = stats?.dailyUsed || 0;
   const dailyRemaining = Math.max(0, limits.dailyLimit - dailyUsed);
   const dailyPercentage = Math.min(100, (dailyUsed / limits.dailyLimit) * 100);
+  const monthlyUsed = stats?.monthlyUsed || 0;
+  const monthlyRemaining = Math.max(0, limits.monthlyLimit - monthlyUsed);
+  const monthlyPercentage = Math.min(100, (monthlyUsed / limits.monthlyLimit) * 100);
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-5xl">
+    <div className="p-4 md:p-6 lg:p-8 w-full">
       <div className="mb-6 md:mb-8">
         <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2">API Keys</h1>
         <p className="text-content-secondary text-sm md:text-base">Manage your API keys and view rate limit analytics</p>
@@ -122,7 +125,7 @@ function ApiKeysContent() {
       {/* Usage Stats */}
       <section className="mb-6 md:mb-8">
         <h2 className="text-base md:text-lg font-semibold text-content-primary mb-3 md:mb-4">Rate Limit Analytics</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+        <div className="grid-auto-fit-md">
           <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-content-secondary text-xs md:text-sm">Current Tier</span>
@@ -130,8 +133,9 @@ function ApiKeysContent() {
                 {tier === "free" ? "Free" : tier === "tier_1" ? "Tier 1" : "Tier 2"}
               </span>
             </div>
-            <p className="text-content-muted text-xs md:text-sm">{limits.dailyLimit} requests/day</p>
-            <p className="text-content-muted text-xs md:text-sm">{limits.burstLimit} requests/minute</p>
+            <p className="text-content-muted text-xs md:text-sm">{limits.minuteLimit} requests/minute</p>
+            <p className="text-content-muted text-xs md:text-sm">{limits.dailyLimit.toLocaleString()} requests/day</p>
+            <p className="text-content-muted text-xs md:text-sm">{limits.monthlyLimit.toLocaleString()} requests/month</p>
           </div>
 
           <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
@@ -148,7 +152,21 @@ function ApiKeysContent() {
             <p className="text-content-muted text-xs md:text-sm">{dailyRemaining} requests remaining</p>
           </div>
 
-          <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6 sm:col-span-2 lg:col-span-1">
+          <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-content-secondary text-xs md:text-sm">Monthly Usage</span>
+              <span className="text-accent font-semibold text-sm md:text-base">{monthlyUsed.toLocaleString()} / {limits.monthlyLimit.toLocaleString()}</span>
+            </div>
+            <div className="h-2 bg-dark-elevated rounded-full overflow-hidden mb-2">
+              <div 
+                className="h-full bg-accent rounded-full transition-all duration-300" 
+                style={{ width: `${monthlyPercentage}%` }}
+              />
+            </div>
+            <p className="text-content-muted text-xs md:text-sm">{monthlyRemaining.toLocaleString()} requests remaining</p>
+          </div>
+
+          <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-content-secondary text-xs md:text-sm">Active Keys</span>
               <span className="text-accent font-semibold text-xl md:text-2xl">{stats?.activeKeyCount || 0}</span>

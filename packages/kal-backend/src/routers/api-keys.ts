@@ -155,6 +155,7 @@ export const apiKeysRouter = router({
    */
   getUsageStats: protectedProcedure.query(async ({ ctx }) => {
     const today = new Date().toISOString().split("T")[0];
+    const currentMonth = today.substring(0, 7); // YYYY-MM format
 
     // Get today's usage
     const usage = await ctx.db
@@ -163,6 +164,27 @@ export const apiKeysRouter = router({
         userId: ctx.userId,
         date: today,
       });
+
+    // Get monthly usage by aggregating all daily records for the current month
+    const monthlyAggregation = await ctx.db
+      .collection<RateLimitUsage>("rate_limit_usage")
+      .aggregate([
+        {
+          $match: {
+            userId: ctx.userId,
+            date: { $regex: `^${currentMonth}` }, // Match all dates starting with YYYY-MM
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalMonthlyUsage: { $sum: "$dailyCount" },
+          },
+        },
+      ])
+      .toArray();
+
+    const monthlyUsed = monthlyAggregation[0]?.totalMonthlyUsage || 0;
 
     // Get user's tier info
     const user = ctx.user;
@@ -178,6 +200,7 @@ export const apiKeysRouter = router({
     return {
       tier: user?.tier || "free",
       dailyUsed: usage?.dailyCount || 0,
+      monthlyUsed,
       activeKeyCount,
     };
   }),
