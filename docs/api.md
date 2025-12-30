@@ -302,21 +302,39 @@ All endpoints return consistent error responses:
 
 ## Rate Limits
 
-API requests are rate-limited per API key:
+API requests are rate-limited per API key with multiple levels of protection:
 
-| Tier   | Daily Limit | Monthly Limit | Burst Limit   |
-| ------ | ----------- | ------------- | ------------- |
-| Free   | 100         | 3,000         | 10 req/minute |
-| Tier 1 | 250         | 7,000         | 30 req/minute |
-| Tier 2 | 700         | 20,000        | 50 req/minute |
+### Tier Limits
+
+| Tier   | Per Minute | Per Day | Per Month | Burst Bonus | Max Burst |
+| ------ | ---------- | ------- | --------- | ----------- | --------- |
+| Free   | 65         | 3,300   | 95,000    | +15         | 80        |
+| Tier 1 | 130        | 6,600   | 195,000   | +30         | 160       |
+| Tier 2 | 145        | 7,500   | 215,000   | +45         | 190       |
+
+### Burst Configuration
+
+- **Burst Window:** 10 seconds
+- **Burst Bonus:** Extra requests allowed within the burst window
+- **Max Burst Total:** Maximum requests allowed including burst bonus
+
+### VPS Safety Caps (Global)
+
+- **Max Requests Per Second:** 20 req/sec
+- **Max Concurrent Per API Key:** 5 requests
+
+### Rate Limit Headers
 
 Rate limit headers are included in all responses:
 
 ```
-X-RateLimit-Limit-Daily: 100
-X-RateLimit-Remaining-Daily: 95
-X-RateLimit-Limit-Burst: 10
-X-RateLimit-Remaining-Burst: 8
+X-RateLimit-Limit-Minute: 65
+X-RateLimit-Remaining-Minute: 60
+X-RateLimit-Limit-Daily: 3300
+X-RateLimit-Remaining-Daily: 3295
+X-RateLimit-Limit-Monthly: 95000
+Retry-After: 5
+X-RateLimit-Type: minute
 ```
 
 ---

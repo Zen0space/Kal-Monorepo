@@ -133,9 +133,9 @@ function ApiKeysContent() {
                 {tier === "free" ? "Free" : tier === "tier_1" ? "Tier 1" : "Tier 2"}
               </span>
             </div>
-            <p className="text-content-muted text-xs md:text-sm">{limits.dailyLimit} requests/day</p>
+            <p className="text-content-muted text-xs md:text-sm">{limits.minuteLimit} requests/minute</p>
+            <p className="text-content-muted text-xs md:text-sm">{limits.dailyLimit.toLocaleString()} requests/day</p>
             <p className="text-content-muted text-xs md:text-sm">{limits.monthlyLimit.toLocaleString()} requests/month</p>
-            <p className="text-content-muted text-xs md:text-sm">{limits.burstLimit} requests/minute</p>
           </div>
 
           <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">

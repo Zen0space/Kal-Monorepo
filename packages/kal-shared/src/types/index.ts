@@ -17,24 +17,75 @@ export interface User {
 // Rate Limiting
 // ===================
 export interface RateLimitConfig {
-  dailyLimit: number;
-  monthlyLimit: number;
-  burstLimit: number; // per minute
+  // Base limits
+  minuteLimit: number;       // requests per minute
+  dailyLimit: number;        // requests per day
+  monthlyLimit: number;      // requests per month
+  
+  // Burst configuration
+  burstBonus: number;        // extra requests allowed during burst
+  burstWindowSeconds: number; // burst window duration (typically 10 seconds)
+  maxBurstTotal: number;     // max total requests including burst
 }
 
 export const RATE_LIMITS: Record<UserTier, RateLimitConfig> = {
-  free: { dailyLimit: 100, monthlyLimit: 3000, burstLimit: 10 },
-  tier_1: { dailyLimit: 250, monthlyLimit: 7000, burstLimit: 30 },
-  tier_2: { dailyLimit: 700, monthlyLimit: 20000, burstLimit: 50 },
+  free: {
+    minuteLimit: 65,
+    dailyLimit: 3300,
+    monthlyLimit: 95000,
+    burstBonus: 15,
+    burstWindowSeconds: 10,
+    maxBurstTotal: 80,
+  },
+  tier_1: {
+    minuteLimit: 130,
+    dailyLimit: 6600,
+    monthlyLimit: 195000,
+    burstBonus: 30,
+    burstWindowSeconds: 10,
+    maxBurstTotal: 160,
+  },
+  tier_2: {
+    minuteLimit: 145,
+    dailyLimit: 7500,
+    monthlyLimit: 215000,
+    burstBonus: 45,
+    burstWindowSeconds: 10,
+    maxBurstTotal: 190,
+  },
+};
+
+// VPS Safety Caps - Global limits to protect the server
+export interface VpsSafetyCaps {
+  maxRequestsPerSecond: number;
+  maxConcurrentPerApiKey: number;
+}
+
+export const VPS_SAFETY_CAPS: VpsSafetyCaps = {
+  maxRequestsPerSecond: 20,
+  maxConcurrentPerApiKey: 5,
 };
 
 export interface RateLimitUsage {
   _id: string;
   userId: string;
   date: string; // YYYY-MM-DD format
+  
+  // Daily tracking
   dailyCount: number;
+  
+  // Minute tracking
   minuteWindow: Date;
   minuteCount: number;
+  
+  // Second tracking (for VPS safety cap)
+  secondWindow?: Date;
+  secondCount?: number;
+  
+  // Burst window tracking
+  burstWindowStart?: Date;
+  burstCount?: number;
+  
   updatedAt: Date;
 }
 

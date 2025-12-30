@@ -116,8 +116,8 @@ function SettingsContent({ nameProp, emailProp }: { nameProp?: string | null; em
               <p className="text-content-primary font-medium text-sm md:text-base">{limits.monthlyLimit.toLocaleString()}</p>
             </div>
             <div>
-              <p className="text-content-muted text-xs md:text-sm">Rate Limit</p>
-              <p className="text-content-primary font-medium text-sm md:text-base">{limits.burstLimit}/min</p>
+              <p className="text-content-muted text-xs md:text-sm">Per Minute</p>
+              <p className="text-content-primary font-medium text-sm md:text-base">{limits.minuteLimit}/min</p>
             </div>
           </div>
         </div>
