@@ -18,13 +18,14 @@ export interface User {
 // ===================
 export interface RateLimitConfig {
   dailyLimit: number;
+  monthlyLimit: number;
   burstLimit: number; // per minute
 }
 
 export const RATE_LIMITS: Record<UserTier, RateLimitConfig> = {
-  free: { dailyLimit: 100, burstLimit: 10 },
-  tier_1: { dailyLimit: 250, burstLimit: 30 },
-  tier_2: { dailyLimit: 700, burstLimit: 50 },
+  free: { dailyLimit: 100, monthlyLimit: 3000, burstLimit: 10 },
+  tier_1: { dailyLimit: 250, monthlyLimit: 7000, burstLimit: 30 },
+  tier_2: { dailyLimit: 700, monthlyLimit: 20000, burstLimit: 50 },
 };
 
 export interface RateLimitUsage {

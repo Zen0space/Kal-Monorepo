@@ -304,15 +304,19 @@ All endpoints return consistent error responses:
 
 API requests are rate-limited per API key:
 
-- **Free tier:** 100 requests/day
-- **Premium tier:** 10,000 requests/day
+| Tier   | Daily Limit | Monthly Limit | Burst Limit   |
+| ------ | ----------- | ------------- | ------------- |
+| Free   | 100         | 3,000         | 10 req/minute |
+| Tier 1 | 250         | 7,000         | 30 req/minute |
+| Tier 2 | 700         | 20,000        | 50 req/minute |
 
 Rate limit headers are included in all responses:
 
 ```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1703548800
+X-RateLimit-Limit-Daily: 100
+X-RateLimit-Remaining-Daily: 95
+X-RateLimit-Limit-Burst: 10
+X-RateLimit-Remaining-Burst: 8
 ```
 
 ---
