@@ -881,3 +881,138 @@ html {
   }
 }
 
+/* ============================================
+   Auto-Fit Responsive Grid Utilities
+   These work on ANY screen resolution automatically
+   ============================================ */
+
+/* CSS Custom Properties for responsive breakpoints */
+:root {
+  /* Grid column minimum sizes */
+  --grid-min-xs: 150px;
+  --grid-min-sm: 200px;
+  --grid-min-md: 280px;
+  --grid-min-lg: 320px;
+  --grid-min-xl: 400px;
+  
+  /* Responsive max-widths */
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+  --container-3xl: 1920px;
+  --container-4xl: 2560px;
+}
+
+/* Auto-fit grids - automatically adjust columns based on available space */
+.grid-auto-fit-xs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-xs), 1fr));
+  gap: 0.75rem;
+}
+
+.grid-auto-fit-sm {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-sm), 1fr));
+  gap: 1rem;
+}
+
+.grid-auto-fit-md {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-md), 1fr));
+  gap: 1rem;
+}
+
+.grid-auto-fit-lg {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-lg), 1fr));
+  gap: 1rem;
+}
+
+.grid-auto-fit-xl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-xl), 1fr));
+  gap: 1rem;
+}
+
+/* Responsive gap variations */
+@media (min-width: 768px) {
+  .grid-auto-fit-xs,
+  .grid-auto-fit-sm,
+  .grid-auto-fit-md,
+  .grid-auto-fit-lg,
+  .grid-auto-fit-xl {
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid-auto-fit-xs,
+  .grid-auto-fit-sm,
+  .grid-auto-fit-md,
+  .grid-auto-fit-lg,
+  .grid-auto-fit-xl {
+    gap: 1.5rem;
+  }
+}
+
+/* Fluid container that expands on larger screens */
+.container-fluid {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .container-fluid {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-fluid {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Responsive container with max-width that scales with screen size */
+.container-responsive {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1920px) {
+  .container-responsive {
+    max-width: calc(100% - 4rem);
+  }
+}
+
+@media (min-width: 2560px) {
+  .container-responsive {
+    max-width: calc(100% - 8rem);
+  }
+}
+
+/* Ultra-wide specific adjustments */
+@media (min-width: 1920px) {
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+@media (min-width: 2560px) {
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+}

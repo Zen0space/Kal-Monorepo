@@ -58,7 +58,7 @@ function SettingsContent({ nameProp, emailProp }: { nameProp?: string | null; em
   const limits = RATE_LIMITS[tier];
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-3xl">
+    <div className="p-4 md:p-6 lg:p-8 w-full max-w-3xl">
       <div className="mb-6 md:mb-8">
         <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2">Account Settings</h1>
         <p className="text-content-secondary text-sm md:text-base">Manage your account information</p>
@@ -106,14 +106,18 @@ function SettingsContent({ nameProp, emailProp }: { nameProp?: string | null; em
               {tier.toUpperCase().replace("_", " ")}
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-dark-border">
+          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-dark-border">
             <div>
               <p className="text-content-muted text-xs md:text-sm">Daily Limit</p>
-              <p className="text-content-primary font-medium text-sm md:text-base">{limits.dailyLimit.toLocaleString()} requests</p>
+              <p className="text-content-primary font-medium text-sm md:text-base">{limits.dailyLimit.toLocaleString()}</p>
             </div>
             <div>
-              <p className="text-content-muted text-xs md:text-sm">Rate Limit</p>
-              <p className="text-content-primary font-medium text-sm md:text-base">{limits.burstLimit} req/min</p>
+              <p className="text-content-muted text-xs md:text-sm">Monthly Limit</p>
+              <p className="text-content-primary font-medium text-sm md:text-base">{limits.monthlyLimit.toLocaleString()}</p>
+            </div>
+            <div>
+              <p className="text-content-muted text-xs md:text-sm">Per Minute</p>
+              <p className="text-content-primary font-medium text-sm md:text-base">{limits.minuteLimit}/min</p>
             </div>
           </div>
         </div>
