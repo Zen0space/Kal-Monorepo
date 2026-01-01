@@ -13,10 +13,21 @@ export function Footer() {
             <span className="text-lg font-semibold text-content-primary">Kal</span>
           </Link>
 
-          {/* Tagline */}
-          <p className="text-content-muted text-sm">
-            Simple calorie tracking for everyone
-          </p>
+          {/* Legal Links */}
+          <div className="flex gap-6 text-sm text-content-muted">
+            <Link
+              href="/privacy"
+              className="hover:text-accent transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href="/terms"
+              className="hover:text-accent transition-colors"
+            >
+              Terms of Service
+            </Link>
+          </div>
 
           {/* Copyright */}
           <p className="text-content-muted text-sm">
