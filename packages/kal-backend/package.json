@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@logto/express": "^3.0.12",
+    "kal-baml": "workspace:*",
     "@trpc/server": "^11.0.0-rc.682",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

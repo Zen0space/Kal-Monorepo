@@ -68,6 +68,9 @@ importers:
       express-session:
         specifier: ^1.18.2
         version: 1.18.2
+      kal-baml:
+        specifier: workspace:*
+        version: link:../kal-baml
       kal-shared:
         specifier: workspace:*
         version: link:../kal-shared
@@ -102,6 +105,19 @@ importers:
       tsx:
         specifier: ^4.19.2
         version: 4.21.0
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/kal-baml:
+    dependencies:
+      '@boundaryml/baml':
+        specifier: ^0.70.0
+        version: 0.70.5
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.19.3
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
@@ -176,6 +192,61 @@ importers:
       mongodb:
         specifier: ^6.12.0
         version: 6.21.0
+      postcss:
+        specifier: ^8.4.49
+        version: 8.5.6
+      tailwindcss:
+        specifier: ^3.4.17
+        version: 3.4.19(tsx@4.21.0)(yaml@2.8.2)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/kal-frontend-chat:
+    dependencies:
+      '@logto/next':
+        specifier: ^4.2.7
+        version: 4.2.7(next@15.5.9(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))
+      '@tanstack/react-query':
+        specifier: ^5.62.11
+        version: 5.90.12(react@19.2.3)
+      '@trpc/client':
+        specifier: ^11.0.0-rc.682
+        version: 11.8.1(@trpc/server@11.8.1(typescript@5.9.3))(typescript@5.9.3)
+      '@trpc/react-query':
+        specifier: ^11.0.0-rc.682
+        version: 11.8.1(@tanstack/react-query@5.90.12(react@19.2.3))(@trpc/client@11.8.1(@trpc/server@11.8.1(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.8.1(typescript@5.9.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
+      kal-shared:
+        specifier: workspace:*
+        version: link:../kal-shared
+      next:
+        specifier: ^15.1.2
+        version: 15.5.9(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.3
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.3(react@19.2.3)
+      react-feather:
+        specifier: ^2.0.10
+        version: 2.0.10(react@19.2.3)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.19.3
+      '@types/react':
+        specifier: ^19.0.2
+        version: 19.2.7
+      '@types/react-dom':
+        specifier: ^19.0.2
+        version: 19.2.3(@types/react@19.2.7)
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.4.23(postcss@8.5.6)
+      kal-backend:
+        specifier: workspace:*
+        version: link:../kal-backend
       postcss:
         specifier: ^8.4.49
         version: 8.5.6
@@ -268,6 +339,53 @@ packages:
   '@babel/types@7.28.5':
     resolution: {integrity: sha512-qQ5m48eI/MFLQ5PxQj4PFaprjyCTLI37ElWMmNs0K8Lk3dVeOdNpB3ks8jc7yM5CDmVC73eMVk/trk3fgmrUpA==}
     engines: {node: '>=6.9.0'}
+
+  '@boundaryml/baml-darwin-arm64@0.70.5':
+    resolution: {integrity: sha512-kaDSBEdj3L9tgx/xHvdSpKB5dGEiEvY6s/PWR+MiSwohEEzQXCkj6RvHgQ+bPH3vnQV95ThzpILZwn5ANos/AA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@boundaryml/baml-darwin-x64@0.70.5':
+    resolution: {integrity: sha512-7H4WwikCLuG+90yMJvAtIQCrjEP3mzGjd0CKXFoDnOsZvJeo0hBn9Uaf/HArlLAfPGJjcaHuuC+19SKn2H8OJA==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@boundaryml/baml-linux-arm64-gnu@0.70.5':
+    resolution: {integrity: sha512-ci5lSLj+3TEtezsIBUrA5kzGE6LC8vJASyRGtdt2TaIQZoi1fzAJxhWsMB+M+Gv1X+KCacmyRlLKHEkZ1ZV9tQ==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@boundaryml/baml-linux-arm64-musl@0.70.5':
+    resolution: {integrity: sha512-CC2JLay4gworu04AI4Akbm96JICwkAVaK64kwapPDtKc44Q+HRboYMQ8CTilEYKYOQXvEbLVjj85JF2ik+WKug==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@boundaryml/baml-linux-x64-gnu@0.70.5':
+    resolution: {integrity: sha512-IZzGRZMlWER1RtqPosoa3jIT3Jpqq2D/NFQqxCPpRlYWUaQvaOyWapvxT4ox9j5XW7OKSi+S7+AYddZqWdWW4Q==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@boundaryml/baml-linux-x64-musl@0.70.5':
+    resolution: {integrity: sha512-Ja3OTQxcp7x7k4PUsadorDdHkOmGHfhyxos0rdymJ4V9LhuNmgfLgEEKugA+9ULDIERZqiAWVlBgGhuQtjpUrw==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@boundaryml/baml-win32-x64-msvc@0.70.5':
+    resolution: {integrity: sha512-AxWglPFnTqO4sbd1qBsZTY1yuFasZQYaRtrjvnxcyfE13DDnXlD0pgjHZmgeqnfwX0k6bnAgJST8iCATgrMPVg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  '@boundaryml/baml@0.70.5':
+    resolution: {integrity: sha512-Zvx4X7/MBASwswbek/qB/YbepfTpttZFhFktQPGAooZGT0ejPZImkbEPGDf1JEQ3BfQtyTOsDbMEsANNqyDMrQ==}
+    engines: {node: '>= 10'}
+    hasBin: true
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -2625,6 +2743,39 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
+
+  '@boundaryml/baml-darwin-arm64@0.70.5':
+    optional: true
+
+  '@boundaryml/baml-darwin-x64@0.70.5':
+    optional: true
+
+  '@boundaryml/baml-linux-arm64-gnu@0.70.5':
+    optional: true
+
+  '@boundaryml/baml-linux-arm64-musl@0.70.5':
+    optional: true
+
+  '@boundaryml/baml-linux-x64-gnu@0.70.5':
+    optional: true
+
+  '@boundaryml/baml-linux-x64-musl@0.70.5':
+    optional: true
+
+  '@boundaryml/baml-win32-x64-msvc@0.70.5':
+    optional: true
+
+  '@boundaryml/baml@0.70.5':
+    dependencies:
+      '@scarf/scarf': 1.4.0
+    optionalDependencies:
+      '@boundaryml/baml-darwin-arm64': 0.70.5
+      '@boundaryml/baml-darwin-x64': 0.70.5
+      '@boundaryml/baml-linux-arm64-gnu': 0.70.5
+      '@boundaryml/baml-linux-arm64-musl': 0.70.5
+      '@boundaryml/baml-linux-x64-gnu': 0.70.5
+      '@boundaryml/baml-linux-x64-musl': 0.70.5
+      '@boundaryml/baml-win32-x64-msvc': 0.70.5
 
   '@colors/colors@1.5.0':
     optional: true

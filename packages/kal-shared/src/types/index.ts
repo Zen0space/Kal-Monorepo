@@ -96,6 +96,7 @@ export interface LogtoUserInfo {
   sub: string; // Logto user ID
   email?: string;
   name?: string;
+  username?: string;
   picture?: string;
 }
 
@@ -158,3 +159,36 @@ export interface PaginatedResponse<T> {
   page: number;
   pageSize: number;
 }
+
+// ===================
+// Chat (BAML + GLM 4.6)
+// ===================
+export type ChatRole = 'User' | 'Assistant';
+
+export interface ChatThread {
+  _id: string;
+  userId: string;           // Logto user ID
+  title: string;            // Auto-generated from first message
+  createdAt: Date;
+  updatedAt: Date;
+  messageCount: number;
+}
+
+export interface ChatMessage {
+  _id: string;
+  threadId: string;         // Reference to chat_threads
+  userId: string;           // Logto user ID
+  role: ChatRole;
+  content: string;
+  createdAt: Date;
+}
+
+// For API responses
+export interface ChatThreadPreview {
+  _id: string;
+  title: string;
+  updatedAt: Date;
+  messageCount: number;
+  lastMessage?: string;     // Preview of last message content
+}
+
