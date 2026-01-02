@@ -6,6 +6,8 @@ WORKDIR /app
 COPY pnpm-workspace.yaml ./
 COPY package.json pnpm-lock.yaml ./
 COPY packages/kal-shared/package.json ./packages/kal-shared/
+COPY packages/kal-db/package.json ./packages/kal-db/
+COPY packages/kal-baml/package.json ./packages/kal-baml/
 COPY packages/kal-backend/package.json ./packages/kal-backend/
 COPY packages/kal-frontend-chat/package.json ./packages/kal-frontend-chat/
 RUN pnpm install --frozen-lockfile
@@ -15,11 +17,14 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages ./packages
 COPY packages/kal-shared ./packages/kal-shared
+COPY packages/kal-db ./packages/kal-db
+COPY packages/kal-baml ./packages/kal-baml
 COPY packages/kal-backend ./packages/kal-backend
 COPY packages/kal-frontend-chat ./packages/kal-frontend-chat
 COPY tsconfig.json ./
 
 RUN pnpm --filter kal-shared build || true
+RUN pnpm --filter kal-baml build || true
 
 # Build arguments for Next.js (NEXT_PUBLIC_* are embedded at build time)
 ARG NEXT_PUBLIC_LOGTO_ENDPOINT
