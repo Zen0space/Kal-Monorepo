@@ -11,7 +11,7 @@ enum Role {
 
 // Single chat message
 class ChatMessage {
-  role Role
+  role string
   content string
 }
 

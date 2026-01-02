@@ -15,7 +15,7 @@
     "clean": "rm -rf dist baml_client"
   },
   "dependencies": {
-    "@boundaryml/baml": "^0.70.0"
+    "@boundaryml/baml": "^0.216.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

@@ -39,15 +39,13 @@ export interface SmartChatInput {
 // Helper Functions
 // ============================================
 
-function toRole(role: 'User' | 'Assistant' | 'System'): Role {
-  return Role[role];
-}
+
 
 function toMessages(
   messages: Array<{ role: 'User' | 'Assistant' | 'System'; content: string }>
 ): ChatMessage[] {
   return messages.map((m) => ({
-    role: toRole(m.role),
+    role: m.role.toLowerCase(),
     content: m.content,
   }));
 }
