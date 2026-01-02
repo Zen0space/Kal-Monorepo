@@ -2,6 +2,7 @@ import { CreateFoodEntrySchema, GetEntriesSchema, DeleteEntrySchema } from "kal-
 import { ObjectId } from "mongodb";
 import { z } from "zod";
 
+import { buildSearchQuery } from "../lib/search.js";
 import { router, publicProcedure, protectedProcedure } from "../lib/trpc.js";
 
 
@@ -10,9 +11,10 @@ export const foodRouter = router({
   search: publicProcedure
     .input(z.object({ query: z.string().min(1) }))
     .query(async ({ input, ctx }) => {
+      const searchQuery = buildSearchQuery(input.query);
       const foods = await ctx.db
         .collection("foods")
-        .find({ name: { $regex: input.query, $options: "i" } })
+        .find(searchQuery)
         .limit(20)
         .toArray();
 

@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "module": "ESNext",
+    "target": "ES2022",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "baseUrl": ".",
+    "noEmit": false,
+    "paths": {
+      "baml_client/*": ["./baml_client/baml_client/*"]
+    }
+  },
+  "include": ["src/**/*", "baml_client/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
