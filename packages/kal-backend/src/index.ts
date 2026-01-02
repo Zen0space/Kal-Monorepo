@@ -9,6 +9,7 @@ import session from "express-session";
 import { createContext } from "./lib/context.js";
 import { connectDB } from "./lib/db.js";
 import { logtoConfig, validateLogtoConfig } from "./lib/logto.js";
+import { requestTimeout, configureServerTimeouts } from "./middleware/timeout.js";
 import { apiRouter } from "./routers/api.js";
 import { appRouter } from "./routers/index.js";
 
@@ -107,6 +108,9 @@ async function main() {
   );
   app.use(express.json());
   app.use(cookieParser());
+
+  // Request timeout middleware (scalable - uses native req.setTimeout)
+  app.use(requestTimeout());
 
   // Session middleware (required for Logto)
   app.use(
@@ -286,12 +290,15 @@ async function main() {
     })
   );
 
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`📡 tRPC endpoint: http://localhost:${PORT}/trpc`);
     console.log(`🌐 REST API: http://localhost:${PORT}/api`);
     console.log(`📚 API Docs: http://localhost:${PORT}/docs`);
   });
+
+  // Configure server-level timeouts for scalability
+  configureServerTimeouts(server);
 }
 
 // Helper to get base URL for examples

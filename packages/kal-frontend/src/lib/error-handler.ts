@@ -7,6 +7,7 @@
 
 export type ErrorType = 
   | 'network'
+  | 'timeout'
   | 'unauthorized'
   | 'forbidden'
   | 'not_found'
@@ -52,13 +53,28 @@ export function parseError(error: unknown): ParsedError {
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
     
+    // Check for timeout errors first (more specific than network)
+    if (
+      error.name === 'TimeoutError' ||
+      error.name === 'AbortError' ||
+      message.includes('timeout') ||
+      message.includes('aborted')
+    ) {
+      return {
+        type: 'timeout',
+        message: 'Request timed out. Please check your connection and try again.',
+        title: 'Request Timeout',
+        shouldLogout: false,
+        retryable: true,
+      };
+    }
+
     // Network errors
     if (
       message.includes('network') ||
       message.includes('fetch') ||
       message.includes('failed to fetch') ||
-      message.includes('econnrefused') ||
-      message.includes('timeout')
+      message.includes('econnrefused')
     ) {
       return {
         type: 'network',
