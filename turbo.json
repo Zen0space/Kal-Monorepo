@@ -21,7 +21,7 @@
       "cache": false
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": ["^typecheck", "^build", "generate"]
     },
     "clean": {
       "cache": false

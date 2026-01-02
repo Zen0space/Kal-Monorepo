@@ -25,6 +25,7 @@ export default [
       "**/migrations/**/*.js",
       "**/postcss.config.js",
       "**/tailwind.config.ts",
+      "**/baml_client/**",
     ],
   },
 
@@ -35,6 +36,7 @@ export default [
   {
     files: [
       "packages/kal-backend/**/*.ts",
+      "packages/kal-baml/**/*.ts",
       "packages/kal-db/**/*.ts",
       "packages/kal-shared/**/*.ts",
     ],
@@ -96,7 +98,12 @@ export default [
 
   // React/Next.js TypeScript files (frontend)
   {
-    files: ["packages/kal-frontend/**/*.ts", "packages/kal-frontend/**/*.tsx"],
+    files: [
+      "packages/kal-frontend/**/*.ts",
+      "packages/kal-frontend/**/*.tsx",
+      "packages/kal-frontend-chat/**/*.ts",
+      "packages/kal-frontend-chat/**/*.tsx",
+    ],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
