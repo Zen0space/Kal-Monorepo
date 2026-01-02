@@ -109,8 +109,12 @@ const endpoints: EndpointExample[] = [
     id: "halal-brands",
     method: "GET",
     path: "/api/halal/brands",
-    description: "Get all available halal food brands.",
-    example: '/api/halal/brands',
+    description: "Get all available halal food brands. Optionally filter by name or include product counts.",
+    params: [
+      { name: "q", type: "string", required: false, description: "Filter brands by name (e.g., 'ramly')" },
+      { name: "withCount", type: "string", required: false, description: "Set to 'true' to include product count per brand" },
+    ],
+    example: '/api/halal/brands?q=ramly&withCount=true',
     section: "halal",
   },
   {

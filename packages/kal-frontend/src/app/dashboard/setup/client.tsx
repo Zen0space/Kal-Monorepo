@@ -54,10 +54,9 @@ interface Snippet {
   language: string;
 }
 
-// API Playground Component
-function ApiPlayground({ apiKey }: { apiKey?: string }) {
+// API Playground Component - uses shared API key from parent
+function ApiPlayground({ apiKey, onApiKeyChange }: { apiKey: string; onApiKeyChange: (key: string) => void }) {
   const { isMobile } = useBreakpoint();
-  const [testApiKey, setTestApiKey] = useState(apiKey || "");
   const [query, setQuery] = useState("nasi lemak");
   const [endpoint, setEndpoint] = useState<"foods" | "halal">("foods");
   const [loading, setLoading] = useState(false);
@@ -66,7 +65,7 @@ function ApiPlayground({ apiKey }: { apiKey?: string }) {
   const [responseTime, setResponseTime] = useState<number | null>(null);
 
   const handleTest = async () => {
-    if (!testApiKey.trim()) {
+    if (!apiKey.trim()) {
       setError("Please enter an API key");
       return;
     }
@@ -89,7 +88,7 @@ function ApiPlayground({ apiKey }: { apiKey?: string }) {
     try {
       const res = await fetch(url, {
         headers: {
-          "X-API-Key": testApiKey,
+          "X-API-Key": apiKey,
         },
       });
       
@@ -124,8 +123,8 @@ function ApiPlayground({ apiKey }: { apiKey?: string }) {
             </label>
             <input
               type="password"
-              value={testApiKey}
-              onChange={(e) => setTestApiKey(e.target.value)}
+              value={apiKey}
+              onChange={(e) => onApiKeyChange(e.target.value)}
               placeholder="kal_xxxxxxxxxxxxxxxxxxxxxxxx"
               className="w-full px-3 md:px-4 py-2 md:py-3 bg-dark-elevated border border-dark-border rounded-lg text-content-primary placeholder-content-muted focus:ring-2 focus:ring-accent/50 focus:border-accent/50 text-sm md:text-base font-mono"
             />
@@ -241,10 +240,289 @@ function ApiPlayground({ apiKey }: { apiKey?: string }) {
   );
 }
 
+// Interactive API Endpoints component with Try it functionality
+interface EndpointData {
+  id: string;
+  method: string;
+  path: string;
+  description: string;
+  params?: { name: string; type: string; required: boolean; description: string }[];
+  defaultExample: string;
+  section: "natural" | "halal" | "general";
+}
+
+const endpointsData: EndpointData[] = [
+  // Natural Foods
+  {
+    id: "foods-search",
+    method: "GET",
+    path: "/api/foods/search",
+    description: "Search natural Malaysian foods by name",
+    params: [{ name: "q", type: "string", required: true, description: "Search query" }],
+    defaultExample: "/api/foods/search?q=nasi",
+    section: "natural",
+  },
+  {
+    id: "foods-list",
+    method: "GET",
+    path: "/api/foods",
+    description: "List natural foods with pagination and filtering",
+    params: [
+      { name: "category", type: "string", required: false, description: "Filter by category" },
+      { name: "limit", type: "integer", required: false, description: "Max results (default: 50, max: 200)" },
+      { name: "offset", type: "integer", required: false, description: "Pagination offset (default: 0)" },
+    ],
+    defaultExample: "/api/foods?limit=5",
+    section: "natural",
+  },
+  {
+    id: "foods-single",
+    method: "GET",
+    path: "/api/foods/:id",
+    description: "Get a single natural food by ID",
+    params: [{ name: "id", type: "string", required: true, description: "Food ID (MongoDB ObjectId)" }],
+    defaultExample: "/api/foods/507f1f77bcf86cd799439011",
+    section: "natural",
+  },
+  {
+    id: "categories",
+    method: "GET",
+    path: "/api/categories",
+    description: "Get all natural food categories",
+    defaultExample: "/api/categories",
+    section: "natural",
+  },
+  // Halal Foods
+  {
+    id: "halal-search",
+    method: "GET",
+    path: "/api/halal/search",
+    description: "Search JAKIM certified halal foods",
+    params: [{ name: "q", type: "string", required: true, description: "Search query" }],
+    defaultExample: "/api/halal/search?q=ramly",
+    section: "halal",
+  },
+  {
+    id: "halal-list",
+    method: "GET",
+    path: "/api/halal",
+    description: "List halal foods with filtering and pagination",
+    params: [
+      { name: "brand", type: "string", required: false, description: "Filter by brand" },
+      { name: "category", type: "string", required: false, description: "Filter by category" },
+      { name: "limit", type: "integer", required: false, description: "Max results (default: 50, max: 200)" },
+      { name: "offset", type: "integer", required: false, description: "Pagination offset (default: 0)" },
+    ],
+    defaultExample: "/api/halal?brand=Ramly&limit=5",
+    section: "halal",
+  },
+  {
+    id: "halal-single",
+    method: "GET",
+    path: "/api/halal/:id",
+    description: "Get a single halal food by ID",
+    params: [{ name: "id", type: "string", required: true, description: "Food ID (MongoDB ObjectId)" }],
+    defaultExample: "/api/halal/507f1f77bcf86cd799439011",
+    section: "halal",
+  },
+  {
+    id: "halal-brands",
+    method: "GET",
+    path: "/api/halal/brands",
+    description: "Get halal brands, optionally filter or include counts",
+    params: [
+      { name: "q", type: "string", required: false, description: "Filter brands by name" },
+      { name: "withCount", type: "string", required: false, description: "Set to 'true' to include product count" },
+    ],
+    defaultExample: "/api/halal/brands?q=ramly",
+    section: "halal",
+  },
+  // General
+  {
+    id: "stats",
+    method: "GET",
+    path: "/api/stats",
+    description: "Get database statistics and counts",
+    defaultExample: "/api/stats",
+    section: "general",
+  },
+];
+
+function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
+  const [activeEndpoint, setActiveEndpoint] = useState<string | null>(null);
+  const [tryUrls, setTryUrls] = useState<Record<string, string>>({});
+  const [responses, setResponses] = useState<Record<string, { data: string; error: boolean; time: number } | null>>({});
+  const [loadingEndpoint, setLoadingEndpoint] = useState<string | null>(null);
+
+  const getTryUrl = (endpointId: string, defaultExample: string) => {
+    return tryUrls[endpointId] ?? defaultExample;
+  };
+
+  const setTryUrl = (endpointId: string, url: string) => {
+    setTryUrls(prev => ({ ...prev, [endpointId]: url }));
+  };
+
+  const runEndpoint = async (endpoint: EndpointData) => {
+    if (!apiKey.trim()) {
+      setResponses(prev => ({
+        ...prev,
+        [endpoint.id]: { data: "Please enter an API key above", error: true, time: 0 }
+      }));
+      return;
+    }
+
+    setLoadingEndpoint(endpoint.id);
+    const startTime = performance.now();
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://kalori-api.my";
+    const path = getTryUrl(endpoint.id, endpoint.defaultExample);
+    
+    try {
+      const res = await fetch(`${baseUrl}${path}`, {
+        headers: { "X-API-Key": apiKey },
+      });
+      const endTime = performance.now();
+      const data = await res.json();
+      
+      setResponses(prev => ({
+        ...prev,
+        [endpoint.id]: {
+          data: JSON.stringify(data, null, 2),
+          error: !res.ok,
+          time: Math.round(endTime - startTime)
+        }
+      }));
+    } catch (err) {
+      setResponses(prev => ({
+        ...prev,
+        [endpoint.id]: {
+          data: `Network error: ${err instanceof Error ? err.message : "Unknown"}`,
+          error: true,
+          time: 0
+        }
+      }));
+    } finally {
+      setLoadingEndpoint(null);
+    }
+  };
+
+  const naturalEndpoints = endpointsData.filter(e => e.section === "natural");
+  const halalEndpoints = endpointsData.filter(e => e.section === "halal");
+  const generalEndpoints = endpointsData.filter(e => e.section === "general");
+
+  const renderEndpoint = (endpoint: EndpointData, color: string) => {
+    const isActive = activeEndpoint === endpoint.id;
+    const response = responses[endpoint.id];
+    const isLoading = loadingEndpoint === endpoint.id;
+
+    return (
+      <div key={endpoint.id} className="border-b border-dark-border last:border-b-0">
+        <button
+          onClick={() => setActiveEndpoint(isActive ? null : endpoint.id)}
+          className="w-full px-4 py-3 flex items-center justify-between hover:bg-dark-elevated/50 transition-colors text-left"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <span className={`px-2 py-0.5 text-xs font-bold rounded flex-shrink-0 ${color} text-dark`}>
+              {endpoint.method}
+            </span>
+            <code className="text-sm text-content-secondary truncate">{endpoint.path}</code>
+          </div>
+          <svg 
+            className={`w-4 h-4 text-content-muted transition-transform flex-shrink-0 ${isActive ? 'rotate-180' : ''}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {isActive && (
+          <div className="px-4 pb-4 space-y-4">
+            <p className="text-xs md:text-sm text-content-muted">{endpoint.description}</p>
+
+            {/* Parameters */}
+            {endpoint.params && (
+              <div className="text-xs md:text-sm">
+                <span className="text-content-muted">Params: </span>
+                {endpoint.params.map((p, i) => (
+                  <span key={p.name}>
+                    <code className="text-accent">{p.name}</code>
+                    {p.required && <span className="text-red-400">*</span>}
+                    {i < endpoint.params!.length - 1 && ", "}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Try it input */}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={getTryUrl(endpoint.id, endpoint.defaultExample)}
+                onChange={(e) => setTryUrl(endpoint.id, e.target.value)}
+                className="flex-1 bg-dark-elevated border border-dark-border rounded-lg px-3 py-2 font-mono text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50"
+              />
+              <button
+                onClick={() => runEndpoint(endpoint)}
+                disabled={isLoading}
+                className={`px-4 py-2 ${color} text-dark text-sm font-semibold rounded-lg hover:opacity-90 transition-colors disabled:opacity-50`}
+              >
+                {isLoading ? "..." : "Run"}
+              </button>
+            </div>
+
+            {/* Response */}
+            {response && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs md:text-sm text-content-muted font-medium">Response</span>
+                  {response.time > 0 && (
+                    <span className="text-xs text-content-muted bg-dark-elevated px-2 py-0.5 rounded">{response.time}ms</span>
+                  )}
+                </div>
+                <pre className={`bg-dark-elevated border border-dark-border rounded-lg p-3 text-xs md:text-sm overflow-x-auto max-h-48 overflow-y-auto ${response.error ? 'text-red-400' : 'text-content-secondary'}`}>
+                  {response.data}
+                </pre>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="divide-y divide-dark-border">
+      {/* Natural Foods */}
+      <div className="p-4">
+        <h3 className="text-sm md:text-base font-semibold text-accent mb-3">Natural Foods</h3>
+        <div className="bg-dark-elevated/30 rounded-xl overflow-hidden border border-dark-border">
+          {naturalEndpoints.map(e => renderEndpoint(e, "bg-accent"))}
+        </div>
+      </div>
+
+      {/* Halal Foods */}
+      <div className="p-4">
+        <h3 className="text-sm md:text-base font-semibold text-emerald-400 mb-3">Halal Certified</h3>
+        <div className="bg-dark-elevated/30 rounded-xl overflow-hidden border border-dark-border">
+          {halalEndpoints.map(e => renderEndpoint(e, "bg-emerald-500"))}
+        </div>
+      </div>
+
+      {/* General */}
+      <div className="p-4">
+        <h3 className="text-sm md:text-base font-semibold text-accent mb-3">General</h3>
+        <div className="bg-dark-elevated/30 rounded-xl overflow-hidden border border-dark-border">
+          {generalEndpoints.map(e => renderEndpoint(e, "bg-accent"))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SetupContent() {
   const { isMobile } = useBreakpoint();
   const [activeTab, setActiveTab] = useState<TabType>("playground");
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [sharedApiKey, setSharedApiKey] = useState("");
   const { data: apiKeys } = trpc.apiKeys.list.useQuery();
   
   const firstKeyPrefix = apiKeys?.[0]?.keyPrefix || "kal_xxxxxxxx";
@@ -621,104 +899,155 @@ export async function GET(request: NextRequest) {
   const snippets = getSnippets();
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-4xl">
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2 flex items-center gap-2">
-          <Terminal size={isMobile ? 20 : 24} /> Setup Guide
-        </h1>
-        <p className="text-content-secondary text-sm md:text-base">Get started using the Kal API in your project</p>
-      </div>
+    <div className="p-4 md:p-6 lg:p-8 w-full">
+      {/* 50/50 split on large screens */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-8">
+        {/* Main Content - Left Column */}
+        <div className="min-w-0">
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2 flex items-center gap-2">
+              <Terminal size={isMobile ? 20 : 24} /> Setup Guide
+            </h1>
+            <p className="text-content-secondary text-sm md:text-base">Get started using the Kal API in your project</p>
+          </div>
 
-      {/* API Key Reminder */}
-      <div className="bg-accent/10 border border-accent/30 rounded-xl p-3 md:p-4 mb-6">
-        <p className="text-accent text-xs md:text-sm">
-          <strong>Your API Key:</strong> Make sure you have generated an API key from the{" "}
-          <a href="/dashboard/api-keys" className="underline hover:no-underline">API Keys page</a>.
-          {apiKeys && apiKeys.length > 0 && (
-            <span className="block mt-1 text-content-secondary">
-              You have {apiKeys.length} active key(s). Latest: <code className="bg-dark-elevated px-1.5 md:px-2 py-0.5 rounded text-xs">{firstKeyPrefix}...</code>
-            </span>
-          )}
-        </p>
-      </div>
+          {/* API Key Reminder */}
+          <div className="bg-accent/10 border border-accent/30 rounded-xl p-3 md:p-4 mb-6">
+            <p className="text-accent text-xs md:text-sm">
+              <strong>Your API Key:</strong> Make sure you have generated an API key from the{" "}
+              <a href="/dashboard/api-keys" className="underline hover:no-underline">API Keys page</a>.
+              {apiKeys && apiKeys.length > 0 && (
+                <span className="block mt-1 text-content-secondary">
+                  You have {apiKeys.length} active key(s). Latest: <code className="bg-dark-elevated px-1.5 md:px-2 py-0.5 rounded text-xs">{firstKeyPrefix}...</code>
+                </span>
+              )}
+            </p>
+          </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 md:gap-2 mb-6 overflow-x-auto pb-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`
-              px-3 md:px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap
-              transition-colors
-              ${activeTab === tab.id
-                ? "bg-accent text-dark"
-                : "bg-dark-surface border border-dark-border text-content-secondary hover:text-content-primary hover:border-accent/30"
-              }
-            `}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+          {/* Tabs */}
+          <div className="flex gap-1 md:gap-2 mb-6 overflow-x-auto pb-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`
+                  px-3 md:px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap
+                  transition-colors
+                  ${activeTab === tab.id
+                    ? "bg-accent text-dark"
+                    : "bg-dark-surface border border-dark-border text-content-secondary hover:text-content-primary hover:border-accent/30"
+                  }
+                `}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-      {/* Content */}
-      {activeTab === "playground" ? (
-        <ApiPlayground />
-      ) : (
-        <div className="space-y-4 md:space-y-6">
-          {snippets.map((snippet, index) => (
-            <div key={index} className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden">
-              <div className="flex items-start md:items-center justify-between px-3 md:px-4 py-2 md:py-3 bg-dark-elevated border-b border-dark-border gap-2">
-                <div>
-                  <h3 className="font-medium text-content-primary text-sm md:text-base">{snippet.title}</h3>
-                  {"description" in snippet && snippet.description && (
-                    <p className="text-content-muted text-xs mt-0.5">{snippet.description}</p>
-                  )}
+          {/* Content */}
+          {activeTab === "playground" ? (
+            <ApiPlayground apiKey={sharedApiKey} onApiKeyChange={setSharedApiKey} />
+          ) : (
+            <div className="space-y-4 md:space-y-6">
+              {snippets.map((snippet, index) => (
+                <div key={index} className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden">
+                  <div className="flex items-start md:items-center justify-between px-3 md:px-4 py-2 md:py-3 bg-dark-elevated border-b border-dark-border gap-2">
+                    <div>
+                      <h3 className="font-medium text-content-primary text-sm md:text-base">{snippet.title}</h3>
+                      {"description" in snippet && snippet.description && (
+                        <p className="text-content-muted text-xs mt-0.5">{snippet.description}</p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => copyToClipboard(snippet.code, index)}
+                      className="flex items-center gap-1 text-xs md:text-sm text-content-muted hover:text-content-primary transition-colors p-1 flex-shrink-0"
+                    >
+                      {copiedIndex === index ? (
+                        <>
+                          <Check size={isMobile ? 12 : 14} className="text-accent" /> Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={isMobile ? 12 : 14} /> Copy
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <pre className="p-3 md:p-4 overflow-x-auto text-xs md:text-sm">
+                    <code className={`language-${snippet.language} text-content-secondary`}>
+                      {snippet.code}
+                    </code>
+                  </pre>
                 </div>
-                <button
-                  onClick={() => copyToClipboard(snippet.code, index)}
-                  className="flex items-center gap-1 text-xs md:text-sm text-content-muted hover:text-content-primary transition-colors p-1 flex-shrink-0"
-                >
-                  {copiedIndex === index ? (
-                    <>
-                      <Check size={isMobile ? 12 : 14} className="text-accent" /> Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={isMobile ? 12 : 14} /> Copy
-                    </>
-                  )}
-                </button>
-              </div>
-              <pre className="p-3 md:p-4 overflow-x-auto text-xs md:text-sm">
-                <code className={`language-${snippet.language} text-content-secondary`}>
-                  {snippet.code}
-                </code>
-              </pre>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          )}
 
-      {/* Additional Resources */}
-      <div className="mt-6 md:mt-8 bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-        <h3 className="font-medium text-content-primary mb-3 text-sm md:text-base">Need more help?</h3>
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-          <a 
-            href="/api-docs" 
-            className="text-accent hover:underline text-xs md:text-sm"
-          >
-            View API Documentation →
-          </a>
-          <a 
-            href="https://github.com/Zen0space/Kal-Monorepo" 
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-accent hover:underline text-xs md:text-sm"
-          >
-            GitHub Repository →
-          </a>
+          {/* Additional Resources */}
+          <div className="mt-6 md:mt-8 bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
+            <h3 className="font-medium text-content-primary mb-3 text-sm md:text-base">Need more help?</h3>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <a 
+                href="/api-docs" 
+                className="text-accent hover:underline text-xs md:text-sm"
+              >
+                View API Documentation →
+              </a>
+              <a 
+                href="https://github.com/Zen0space/Kal-Monorepo" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent hover:underline text-xs md:text-sm"
+              >
+                GitHub Repository →
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* API Quick Reference - Right Column (Interactive) */}
+        <div className="xl:block">
+          <div className="sticky top-24">
+            <div className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden">
+              {/* Header - No duplicate API key input */}
+              <div className="px-4 py-3 md:px-5 md:py-4 bg-dark-elevated border-b border-dark-border">
+                <h2 className="font-semibold text-content-primary flex items-center gap-2 text-sm md:text-base">
+                  <svg className="w-4 h-4 md:w-5 md:h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  API Quick Reference
+                </h2>
+                <p className="text-xs md:text-sm text-content-muted mt-1">
+                  {sharedApiKey ? (
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-accent"></span>
+                      API key ready — click endpoints to test
+                    </span>
+                  ) : (
+                    <span>Enter API key in Test API panel to try endpoints</span>
+                  )}
+                </p>
+              </div>
+
+              {/* Scrollable Endpoints List */}
+              <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
+                <InteractiveEndpoints apiKey={sharedApiKey} />
+              </div>
+
+              {/* View Full Docs Link */}
+              <div className="p-3 border-t border-dark-border">
+                <a 
+                  href="/api-docs" 
+                  className="flex items-center justify-center gap-2 w-full py-2 px-3 bg-accent/10 border border-accent/30 rounded-lg text-accent text-sm font-medium hover:bg-accent/20 transition-colors"
+                >
+                  View Full Documentation
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
