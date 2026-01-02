@@ -53,7 +53,7 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
     })
   );
 
-  const { data: messagesData, isLoading: messagesLoading } =
+  const { data: messagesData, isLoading: messagesLoading, refetch: refetchMessages } =
     trpc.chat.getMessages.useQuery(
       { threadId: currentThreadId ?? "" },
       { enabled: !!currentThreadId && isAuthenticated }
@@ -98,28 +98,10 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
         },
       ]);
     },
-    onSuccess: (response) => {
+    onSuccess: () => {
       console.log('[Chat] Message sent successfully');
-      // Replace temp message with real one and add AI response
-      setMessages((prev) => {
-        // Remove any temp messages
-        const filtered = prev.filter((m) => !m._id.startsWith("temp-"));
-        return [
-          ...filtered,
-          {
-            _id: response.userMessage._id,
-            role: "User" as const,
-            content: response.userMessage.content,
-            createdAt: new Date(response.userMessage.createdAt),
-          },
-          {
-            _id: response.assistantMessage._id,
-            role: "Assistant" as const,
-            content: response.assistantMessage.content,
-            createdAt: new Date(response.assistantMessage.createdAt),
-          },
-        ];
-      });
+      // Refetch messages to get the updated list including assistant response
+      refetchMessages();
       refetchThreads();
     },
     onError: (error) => {

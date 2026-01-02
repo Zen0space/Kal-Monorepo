@@ -172,7 +172,7 @@ export const chatRouter = router({
       // Call AI with conversation context
       const aiResponse = await quickChat(
         content,
-        'You are a helpful AI assistant. Be concise and helpful.'
+        'You are a helpful AI assistant. Be concise and helpful. Always respond in English only.'
       );
 
       // Save assistant message

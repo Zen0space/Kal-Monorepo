@@ -48,6 +48,76 @@ services:
     networks:
       - kal-network
 
+  backend:
+    build:
+      context: ..
+      dockerfile: packages/kal-backend/Dockerfile
+    container_name: kal-backend
+    ports:
+      - "${BACKEND_PORT:-4000}:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@mongodb:27017/${MONGODB_DATABASE}?authSource=admin
+      - LOGTO_ENDPOINT=${LOGTO_ENDPOINT}
+      - LOGTO_APP_ID=${LOGTO_APP_ID}
+      - LOGTO_APP_SECRET=${LOGTO_APP_SECRET}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - GLM_API_BASE_URL=${GLM_API_BASE_URL}
+      - GLM_API_KEY=${GLM_API_KEY}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - CHAT_FRONTEND_URL=${CHAT_FRONTEND_URL}
+    depends_on:
+      - mongodb
+      - logto
+    networks:
+      - kal-network
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: packages/kal-frontend/Dockerfile
+      args:
+        - NEXT_PUBLIC_LOGTO_ENDPOINT=${NEXT_PUBLIC_LOGTO_ENDPOINT}
+        - NEXT_PUBLIC_LOGTO_APP_ID=${NEXT_PUBLIC_LOGTO_APP_ID}
+        - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - LOGTO_APP_SECRET=${LOGTO_APP_SECRET}
+        - SESSION_SECRET=${SESSION_SECRET}
+    container_name: kal-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - LOGTO_APP_SECRET=${LOGTO_APP_SECRET}
+      - SESSION_SECRET=${SESSION_SECRET}
+    depends_on:
+      - backend
+    networks:
+      - kal-network
+
+  frontend-chat:
+    build:
+      context: ..
+      dockerfile: packages/kal-frontend-chat/Dockerfile
+      args:
+        - NEXT_PUBLIC_LOGTO_ENDPOINT=${NEXT_PUBLIC_LOGTO_ENDPOINT}
+        - NEXT_PUBLIC_LOGTO_APP_ID=${NEXT_PUBLIC_LOGTO_APP_ID}
+        - NEXT_PUBLIC_APP_URL=${CHAT_FRONTEND_URL}
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - LOGTO_APP_SECRET=${LOGTO_APP_SECRET}
+        - SESSION_SECRET=${SESSION_SECRET}
+    container_name: kal-frontend-chat
+    ports:
+      - "${CHAT_FRONTEND_PORT:-3003}:3003"
+    environment:
+      - NODE_ENV=production
+      - LOGTO_APP_SECRET=${LOGTO_APP_SECRET}
+      - SESSION_SECRET=${SESSION_SECRET}
+    depends_on:
+      - backend
+    networks:
+      - kal-network
+
 volumes:
   mongodb_data:
   postgres_data:
