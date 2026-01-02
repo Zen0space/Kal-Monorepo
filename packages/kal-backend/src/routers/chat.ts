@@ -3,6 +3,7 @@ import {
   classifyIntent,
   parseRecipe,
   type ParsedRecipe,
+  type RecipeIngredient,
   UserIntent,
 } from 'kal-baml';
 import type { ChatMessage, ChatThread, ChatThreadPreview } from 'kal-shared';
@@ -234,7 +235,7 @@ export const chatRouter = router({
           console.log('[Tool: recipe] Using cached recipe:', cachedRecipe.name);
 
           // Search for all ingredients
-          const ingredients = cachedRecipe.ingredients.map((i) => ({
+          const ingredients = cachedRecipe.ingredients.map((i: RecipeIngredient) => ({
             name: i.name,
             quantity: i.quantity,
           }));
@@ -272,7 +273,7 @@ export const chatRouter = router({
                 recentRecipes.set(threadId, parsedRecipe);
 
                 // Search for all ingredients
-                const ingredients = parsedRecipe.ingredients.map((i) => ({
+                const ingredients = parsedRecipe.ingredients.map((i: RecipeIngredient) => ({
                   name: i.name,
                   quantity: i.quantity,
                 }));
@@ -353,7 +354,7 @@ ${recipeContext}`;
 
             // Calculate nutrition for all ingredients
             console.log('[Tool: recipe] Calculating nutrition for', parsedRecipe.ingredients.length, 'ingredients');
-            const ingredients = parsedRecipe.ingredients.map((i) => ({
+            const ingredients = parsedRecipe.ingredients.map((i: RecipeIngredient) => ({
               name: i.name,
               quantity: i.quantity,
             }));
