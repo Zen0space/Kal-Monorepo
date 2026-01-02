@@ -5,6 +5,7 @@ import { httpBatchLink } from "@trpc/client";
 import { useRef, useState, useCallback } from "react";
 
 import { useAuth } from "./auth-context";
+import { fetchWithTimeout } from "./fetch-with-timeout";
 import { trpc } from "./trpc";
 
 import { useToast } from "@/contexts/ToastContext";
@@ -72,7 +73,8 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
         httpBatchLink({
           url: `${getBaseUrl()}/trpc`,
           fetch(url, options) {
-            return fetch(url, {
+            // Use fetchWithTimeout for request timeout handling
+            return fetchWithTimeout(url, {
               ...options,
               credentials: "include",
             });
