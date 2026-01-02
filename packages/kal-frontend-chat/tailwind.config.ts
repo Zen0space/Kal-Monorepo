@@ -18,7 +18,7 @@ const config: Config = {
         },
         // Chat-specific colors
         chat: {
-          user: "#2563eb",      // Blue for user messages
+          user: "#10b981",      // Green for user messages
           assistant: "#262626", // Dark gray for assistant
           input: "#1a1a1a",
         },
@@ -39,8 +39,8 @@ const config: Config = {
         sans: ["Inter", "system-ui", "sans-serif"],
       },
       animation: {
-        "fade-in": "fadeIn 0.3s ease-out",
-        "slide-up": "slideUp 0.3s ease-out",
+        "fade-in": "fadeIn 0.5s ease-out",
+        "slide-up": "slideUp 0.5s ease-out",
         "pulse-dot": "pulseDot 1.5s infinite",
       },
       keyframes: {
@@ -49,7 +49,7 @@ const config: Config = {
           "100%": { opacity: "1" },
         },
         slideUp: {
-          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "0%": { opacity: "0", transform: "translateY(20px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         pulseDot: {

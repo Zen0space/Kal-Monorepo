@@ -41,28 +41,38 @@ export function ChatInput({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-t border-dark-border">
-      <div className="flex items-end gap-3 max-w-3xl mx-auto">
-        <div className="flex-1 relative">
-          <textarea
-            ref={textareaRef}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            disabled={disabled}
-            rows={1}
-            className="w-full px-4 py-3 bg-dark-elevated border border-dark-border rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-content-primary placeholder-content-muted transition-all"
-          />
+    <div className="absolute bottom-6 left-0 right-0 px-4 pointer-events-none">
+      <form 
+        onSubmit={handleSubmit} 
+        className="max-w-3xl mx-auto pointer-events-auto"
+      >
+        <div className="flex items-end gap-3 p-2 rounded-3xl bg-dark-elevated/80 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-300 focus-within:bg-dark-elevated focus-within:border-accent/40 focus-within:shadow-accent/5">
+          <div className="flex-1 relative">
+            <textarea
+              ref={textareaRef}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder}
+              disabled={disabled}
+              rows={1}
+              className="w-full pl-5 pr-4 py-3 bg-transparent border-none resize-none focus:outline-none focus:ring-0 text-content-primary placeholder-content-muted/70 transition-all max-h-48"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={!message.trim() || disabled}
+            className="p-3 mr-1 mb-1 bg-accent hover:bg-accent-hover disabled:bg-white/5 disabled:cursor-not-allowed disabled:text-content-muted text-white rounded-full transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md"
+          >
+            <Send className="w-5 h-5 ml-0.5" />
+          </button>
         </div>
-        <button
-          type="submit"
-          disabled={!message.trim() || disabled}
-          className="p-3 bg-accent hover:bg-accent-hover disabled:bg-dark-elevated disabled:cursor-not-allowed rounded-xl transition-colors"
-        >
-          <Send className="w-5 h-5 text-white" />
-        </button>
-      </div>
-    </form>
+        <div className="text-center mt-3">
+          <p className="text-[10px] text-content-muted/50">
+            AI can make mistakes. Please verify important information.
+          </p>
+        </div>
+      </form>
+    </div>
   );
 }

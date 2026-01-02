@@ -1,3 +1,7 @@
+// ============================================
+// Core Chat Functions
+// ============================================
+
 // Simple chat completion
 function Chat(messages: ChatMessage[], system_prompt: string?) -> ChatResponse {
   client GLM46
@@ -21,7 +25,7 @@ function StructuredChat(messages: ChatMessage[], system_prompt: string?, extract
   prompt #"
     {{ _.role("system") }}
     {{ system_prompt | default("You are a helpful AI assistant. Always respond in English only.") }}
-    
+
     Instructions:
     - Provide a clear, helpful answer
     {% if extract_sources %}
@@ -54,4 +58,3 @@ function QuickChat(user_message: string, system_prompt: string?) -> string {
     {{ _.role("assistant") }}
   "#
 }
-

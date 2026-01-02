@@ -14,9 +14,10 @@ interface Message {
 interface MessageListProps {
   messages: Message[];
   isLoading?: boolean;
+  thinkingStatus?: string;
 }
 
-export function MessageList({ messages, isLoading = false }: MessageListProps) {
+export function MessageList({ messages, isLoading = false, thinkingStatus }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom on new messages
@@ -25,8 +26,8 @@ export function MessageList({ messages, isLoading = false }: MessageListProps) {
   }, [messages, isLoading]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4">
-      <div className="max-w-3xl mx-auto space-y-4">
+    <div className="flex-1 overflow-y-auto px-4 py-8 pb-36 custom-scrollbar scroll-smooth">
+      <div className="max-w-3xl mx-auto">
         {messages.length === 0 && !isLoading && (
           <div className="text-center py-20">
             <div className="text-4xl mb-4">💬</div>
@@ -48,7 +49,7 @@ export function MessageList({ messages, isLoading = false }: MessageListProps) {
           />
         ))}
 
-        {isLoading && <TypingIndicator />}
+        {isLoading && <TypingIndicator status={thinkingStatus} />}
 
         <div ref={bottomRef} />
       </div>

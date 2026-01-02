@@ -4,8 +4,8 @@ import { Providers } from "./providers";
 import { getUser } from "@/lib/actions";
 
 export const metadata: Metadata = {
-  title: "Kalori Chat",
-  description: "AI-powered chat assistant by Kalori",
+  title: ".kal AI",
+  description: "Your intelligent coding companion",
 };
 
 export default async function RootLayout({

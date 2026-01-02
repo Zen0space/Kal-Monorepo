@@ -1,6 +1,7 @@
 "use client";
 
-import { LogIn, LogOut, User } from "react-feather";
+import { LogIn, LogOut } from "react-feather";
+import { trpc } from "@/lib/trpc";
 
 interface HeaderProps {
   user?: {
@@ -13,25 +14,42 @@ interface HeaderProps {
 }
 
 export function Header({ user, isAuthenticated, onSignIn, onSignOut }: HeaderProps) {
+  const { data: userInfo, isLoading } = trpc.apiKeys.getMe.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+
+  const displayName = userInfo?.name || user?.name || user?.email || "User";
+  const displayInitial = (displayName[0] || "U").toUpperCase();
+
   return (
-    <header className="h-14 border-b border-dark-border flex items-center justify-between px-4">
-      <h1 className="text-lg font-semibold text-content-primary flex items-center gap-2">
-        <span className="text-accent">🍃</span> Kalori Chat
-      </h1>
+    <header className="h-16 bg-dark-surface border-b border-dark-border flex items-center justify-between px-6">
+      <div className="flex items-center gap-2">
+        <div className="w-3 h-3 rounded-full bg-accent" />
+        <span className="text-xl font-bold text-content-primary">Kal AI</span>
+      </div>
       
       <div className="flex items-center gap-3">
         {isAuthenticated ? (
           <>
-            <div className="flex items-center gap-2 text-sm text-content-secondary">
-              <User className="w-4 h-4" />
-              <span>{user?.name || user?.email || "User"}</span>
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-accent to-accent-muted flex items-center justify-center text-white text-xs font-bold">
+                {isLoading ? (
+                  <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  displayInitial
+                )}
+              </div>
+              <span className="text-sm text-content-secondary">
+                {isLoading ? "..." : displayName}
+              </span>
             </div>
             <button
               onClick={onSignOut}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-content-secondary hover:text-content-primary hover:bg-dark-elevated rounded-lg transition-colors"
+              className="p-2 text-content-secondary hover:text-content-primary hover:bg-dark-elevated rounded-lg transition-colors"
+              title="Sign Out"
             >
-              <LogOut className="w-4 h-4" />
-              Sign Out
+              <LogOut className="w-5 h-5" />
             </button>
           </>
         ) : (

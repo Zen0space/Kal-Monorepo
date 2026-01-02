@@ -6,36 +6,28 @@ interface MessageBubbleProps {
   timestamp?: Date;
 }
 
-export function MessageBubble({ role, content, timestamp }: MessageBubbleProps) {
+export function MessageBubble({ role, content }: MessageBubbleProps) {
   const isUser = role === "User";
 
-  return (
-    <div
-      className={`flex ${isUser ? "justify-end" : "justify-start"} animate-fade-in`}
-    >
-      <div
-        className={`max-w-[80%] md:max-w-[70%] px-4 py-3 rounded-2xl ${
-          isUser
-            ? "bg-chat-user text-white rounded-br-md"
-            : "bg-chat-assistant text-content-primary rounded-bl-md"
-        }`}
-      >
-        <p className="whitespace-pre-wrap break-words text-sm md:text-base">
-          {content}
-        </p>
-        {timestamp && (
-          <p
-            className={`text-xs mt-1 ${
-              isUser ? "text-blue-200" : "text-content-muted"
-            }`}
-          >
-            {timestamp.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+  if (isUser) {
+    // User message: right-aligned with gradient matching user avatar
+    return (
+      <div className="flex w-full justify-end mb-4 animate-fade-in">
+        <div className="max-w-[85%] md:max-w-[70%] px-4 py-2.5 bg-gradient-to-br from-accent to-accent-muted rounded-2xl">
+          <p className="text-[15px] leading-relaxed text-white whitespace-pre-wrap">
+            {content}
           </p>
-        )}
+        </div>
       </div>
+    );
+  }
+
+  // Assistant message: left-aligned, no bubble, just clean text
+  return (
+    <div className="w-full mb-4 animate-fade-in">
+      <p className="text-[15px] md:text-base leading-relaxed text-content-primary whitespace-pre-wrap">
+        {content}
+      </p>
     </div>
   );
 }

@@ -36,6 +36,7 @@ interface ChatPageProps {
 export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
   const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [thinkingStatus, setThinkingStatus] = useState<string | undefined>(undefined);
 
   // Only fetch if authenticated
   const {
@@ -86,6 +87,9 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
 
   const sendMessageMutation = trpc.chat.sendMessage.useMutation({
     onMutate: async ({ content }) => {
+      console.log('[Chat Stream] Sending message:', content.slice(0, 50));
+      // Show thinking indicator
+      setThinkingStatus('Checking Kalori API...');
       // Optimistically add user message immediately
       const tempId = `temp-${Date.now()}`;
       setMessages((prev) => [
@@ -99,13 +103,15 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
       ]);
     },
     onSuccess: () => {
-      console.log('[Chat] Message sent successfully');
+      console.log('[Chat Stream] Response received');
+      setThinkingStatus(undefined);
       // Refetch messages to get the updated list including assistant response
       refetchMessages();
       refetchThreads();
     },
     onError: (error) => {
-      console.error('[Chat] sendMessage error:', error);
+      console.error('[Chat Stream] Error:', error);
+      setThinkingStatus(undefined);
       // Remove temp message on error
       setMessages((prev) => prev.filter((m) => !m._id.startsWith("temp-")));
     },
@@ -200,7 +206,7 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
         isLoading={threadsLoading}
       />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col relative bg-dark">
         <Header
           user={user}
           isAuthenticated={true}
@@ -211,6 +217,7 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
         <MessageList
           messages={messages}
           isLoading={sendMessageMutation.isPending || messagesLoading}
+          thinkingStatus={thinkingStatus}
         />
 
         <ChatInput

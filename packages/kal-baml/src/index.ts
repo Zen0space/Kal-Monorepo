@@ -2,5 +2,42 @@
 export * from '../baml_client/baml_client/index.js';
 
 // Export convenience wrapper functions
-export { chat, quickChat, structuredChat, analyzeFood } from './chat.js';
-export type { ChatInput, ChatResult } from './chat.js';
+export {
+  // Core chat
+  chat,
+  quickChat,
+  smartChat,
+  streamQuickChat,
+  structuredChat,
+  // Thinking & Intent
+  classifyIntent,
+  think,
+  // Recipe
+  parseRecipe,
+  generateRecipe,
+  extractFoodSearchTerm,
+  normalizeIngredientName,
+  // Nutrition
+  analyzeFood,
+  estimateNutrition,
+  summarizeNutrition,
+  // Enums
+  Role,
+  UserIntent,
+} from './chat.js';
+
+// Export types
+export type {
+  ChatInput,
+  ChatResult,
+  SmartChatInput,
+  ChatMessage,
+  ChatResponse,
+  StructuredChatResponse,
+  NutritionAnalysis,
+  NutritionItem,
+  NutritionSummary,
+  ParsedRecipe,
+  IntentClassification,
+  ThinkingResult,
+} from './chat.js';

@@ -3,6 +3,7 @@ import type { User } from "kal-shared";
 
 import { getDB } from "../lib/db.js";
 import { logger } from "../lib/logger.js";
+import { buildSearchQuery } from "../lib/search.js";
 import { validateApiKeyMiddleware } from "../middleware/api-key-middleware.js";
 
 const router: RouterType = Router();
@@ -61,9 +62,10 @@ router.get("/foods/search", async (req: AuthRequest, res: Response) => {
     }
 
     const db = getDB();
+    const searchQuery = buildSearchQuery(q);
     const foods = await db
       .collection("foods")
-      .find({ name: { $regex: q, $options: "i" } })
+      .find(searchQuery)
       .limit(20)
       .toArray();
 
@@ -248,9 +250,10 @@ router.get("/halal/search", async (req: AuthRequest, res: Response) => {
     }
 
     const db = getDB();
+    const searchQuery = buildSearchQuery(q);
     const foods = await db
       .collection("halal_foods")
-      .find({ name: { $regex: q, $options: "i" } })
+      .find(searchQuery)
       .limit(20)
       .toArray();
 

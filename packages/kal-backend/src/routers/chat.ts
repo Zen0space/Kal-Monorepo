@@ -1,9 +1,22 @@
-import { quickChat } from 'kal-baml';
+import {
+  smartChat,
+  classifyIntent,
+  parseRecipe,
+  type ParsedRecipe,
+  UserIntent,
+} from 'kal-baml';
+import type { ChatMessage, ChatThread, ChatThreadPreview } from 'kal-shared';
 import { ObjectId } from 'mongodb';
 import { z } from 'zod';
 
-import type { ChatMessage, ChatThread, ChatThreadPreview } from 'kal-shared';
-
+import {
+  isFoodQuery,
+  isRecipeNutritionQuery,
+  searchKaloriApi,
+  searchRecipeIngredients,
+  formatNutritionForChat,
+  calculateTotalNutrition,
+} from '../lib/kalori-api-tool.js';
 import { router, protectedProcedure } from '../lib/trpc.js';
 
 // Helper to ensure user is authenticated
@@ -14,6 +27,9 @@ function requireUser(user: { logtoId: string } | null): { logtoId: string } {
   return user;
 }
 
+// Store recent recipes in memory for quick reference (per thread)
+const recentRecipes = new Map<string, ParsedRecipe>();
+
 // ===================
 // Thread Management
 // ===================
@@ -23,7 +39,7 @@ export const chatRouter = router({
   createThread: protectedProcedure.mutation(async ({ ctx }) => {
     const user = requireUser(ctx.user);
     console.log('[Chat] createThread called by user:', user.logtoId);
-    
+
     const now = new Date();
     const thread = {
       userId: user.logtoId,
@@ -110,6 +126,9 @@ export const chatRouter = router({
         .collection('chat_threads')
         .deleteOne({ _id: new ObjectId(threadId) });
 
+      // Clear any cached recipes for this thread
+      recentRecipes.delete(threadId);
+
       return { success: true };
     }),
 
@@ -129,8 +148,12 @@ export const chatRouter = router({
       const user = requireUser(ctx.user);
       const { threadId, content } = input;
       const now = new Date();
-      
-      console.log('[Chat] sendMessage called:', { user: user.logtoId, threadId, content: content.slice(0, 50) });
+
+      console.log('[Chat] sendMessage called:', {
+        user: user.logtoId,
+        threadId,
+        content: content.slice(0, 50),
+      });
 
       // Verify thread ownership
       const thread = await ctx.db.collection('chat_threads').findOne({
@@ -155,8 +178,11 @@ export const chatRouter = router({
       const userMsgResult = await ctx.db
         .collection('chat_messages')
         .insertOne(userMessage);
-      
-      console.log('[Chat] User message saved:', userMsgResult.insertedId.toString());
+
+      console.log(
+        '[Chat] User message saved:',
+        userMsgResult.insertedId.toString()
+      );
 
       // Get recent conversation history for context (last 10 messages)
       const recentMessages = await ctx.db
@@ -169,11 +195,192 @@ export const chatRouter = router({
       // Reverse to chronological order
       recentMessages.reverse();
 
-      // Call AI with conversation context
-      const aiResponse = await quickChat(
-        content,
-        'You are a helpful AI assistant. Be concise and helpful. Always respond in English only.'
-      );
+      // Build conversation context for intent classification
+      const conversationContext = recentMessages
+        .slice(-5)
+        .map((m) => `${m.role}: ${(m.content as string).slice(0, 100)}`)
+        .join('\n');
+
+      // Classify intent to determine how to handle the message
+      console.log('[Thinking] Classifying user intent...');
+      let intentResult;
+      try {
+        intentResult = await classifyIntent(content, conversationContext);
+        console.log('[Thinking] Intent:', intentResult.intent, 'Confidence:', intentResult.confidence);
+      } catch (error) {
+        console.log('[Thinking] Intent classification failed, using fallback');
+        intentResult = {
+          intent: UserIntent.GeneralChat,
+          confidence: 0.5,
+          reasoning: 'Fallback',
+          extracted_food_terms: [],
+          requires_api_lookup: isFoodQuery(content),
+          requires_recipe_parse: false,
+        };
+      }
+
+      // Process based on intent
+      let foodContext = '';
+      let recipeContext = '';
+
+      // Check if user is asking about a recipe's nutrition
+      if (isRecipeNutritionQuery(content)) {
+        console.log('[Tool: recipe] Recipe nutrition query detected');
+
+        // Check if we have a recent recipe for this thread
+        const cachedRecipe = recentRecipes.get(threadId);
+
+        if (cachedRecipe) {
+          console.log('[Tool: recipe] Using cached recipe:', cachedRecipe.name);
+
+          // Search for all ingredients
+          const ingredients = cachedRecipe.ingredients.map((i) => ({
+            name: i.name,
+            quantity: i.quantity,
+          }));
+
+          console.log('[Tool: recipe] Searching nutrition for', ingredients.length, 'ingredients');
+          const nutritionResults = await searchRecipeIngredients(ingredients);
+
+          // Calculate totals
+          const totals = calculateTotalNutrition(nutritionResults);
+
+          // Format for context
+          foodContext = `Recipe: ${cachedRecipe.name}\n\nIngredient nutrition:\n${formatNutritionForChat(nutritionResults)}`;
+          foodContext += `\n\n**Total Nutrition:**\n- Calories: ${totals.totalCalories} cal\n- Protein: ${totals.totalProtein}g\n- Carbs: ${totals.totalCarbs}g\n- Fat: ${totals.totalFat}g`;
+          if (totals.hasEstimates) {
+            foodContext += '\n\n_Note: Some values are AI estimates as the ingredients were not found in our database._';
+          }
+        } else {
+          // Try to find a recipe in recent messages
+          console.log('[Tool: recipe] No cached recipe, looking in conversation...');
+
+          // Look for recipe in recent assistant messages
+          const recentAssistantMessages = recentMessages
+            .filter((m) => m.role === 'Assistant')
+            .slice(-3);
+
+          for (const msg of recentAssistantMessages) {
+            const msgContent = msg.content as string;
+            if (
+              msgContent.includes('Ingredients') ||
+              msgContent.includes('Recipe')
+            ) {
+              console.log('[Tool: recipe] Found recipe in conversation, parsing...');
+              try {
+                const parsedRecipe = await parseRecipe(msgContent);
+                recentRecipes.set(threadId, parsedRecipe);
+
+                // Search for all ingredients
+                const ingredients = parsedRecipe.ingredients.map((i) => ({
+                  name: i.name,
+                  quantity: i.quantity,
+                }));
+
+                console.log('[Tool: recipe] Searching nutrition for', ingredients.length, 'ingredients');
+                const nutritionResults = await searchRecipeIngredients(ingredients);
+                const totals = calculateTotalNutrition(nutritionResults);
+
+                foodContext = `Recipe: ${parsedRecipe.name}\n\nIngredient nutrition:\n${formatNutritionForChat(nutritionResults)}`;
+                foodContext += `\n\n**Total Nutrition:**\n- Calories: ${totals.totalCalories} cal\n- Protein: ${totals.totalProtein}g\n- Carbs: ${totals.totalCarbs}g\n- Fat: ${totals.totalFat}g`;
+                if (totals.hasEstimates) {
+                  foodContext += '\n\n_Note: Some values are AI estimates._';
+                }
+                break;
+              } catch (error) {
+                console.log('[Tool: recipe] Failed to parse recipe:', error);
+              }
+            }
+          }
+        }
+      }
+      // Handle recipe requests - save for later nutrition queries
+      else if (
+        intentResult.intent === UserIntent.RecipeRequest ||
+        content.toLowerCase().includes('recipe')
+      ) {
+        console.log('[Tool: recipe] Recipe request detected');
+        recipeContext = 'User is asking for a recipe. After providing the recipe, they may ask about its nutrition.';
+      }
+      // Handle food queries
+      else if (
+        intentResult.requires_api_lookup ||
+        isFoodQuery(content)
+      ) {
+        console.log('[Tool: api_checker] Food query detected, searching API...');
+        const foodResults = await searchKaloriApi(content);
+
+        if (foodResults.length > 0) {
+          foodContext = formatNutritionForChat(foodResults);
+          console.log('[Tool: api_checker] Added', foodResults.length, 'results to context');
+        }
+      }
+
+      // Build messages for SmartChat
+      const chatMessages = recentMessages.map((m) => ({
+        role: m.role as 'User' | 'Assistant' | 'System',
+        content: m.content as string,
+      }));
+
+      // Build enhanced system prompt
+      const systemPrompt = `You are Kal, a helpful AI nutrition assistant powered by Kalori. You help users with:
+- Food nutrition information (calories, protein, carbs, fat)
+- Recipe suggestions with Malaysian/halal food focus
+- Healthy eating advice
+
+Always respond in English. Be friendly, concise, and accurate.
+${recipeContext}`;
+
+      // Generate AI response using SmartChat with full context
+      console.log('[Streaming] Generating AI response with SmartChat...');
+      let aiResponse = await smartChat({
+        messages: chatMessages,
+        systemPrompt,
+        foodContext: foodContext || undefined,
+      });
+      console.log('[Streaming] Response generated:', aiResponse.slice(0, 50) + '...');
+
+      // If this was a recipe response, parse it and append nutrition summary
+      if (
+        intentResult.intent === UserIntent.RecipeRequest ||
+        aiResponse.toLowerCase().includes('ingredients')
+      ) {
+        try {
+          const parsedRecipe = await parseRecipe(aiResponse);
+          if (parsedRecipe.ingredients.length > 0) {
+            console.log('[Tool: recipe] Caching recipe:', parsedRecipe.name);
+            recentRecipes.set(threadId, parsedRecipe);
+
+            // Calculate nutrition for all ingredients
+            console.log('[Tool: recipe] Calculating nutrition for', parsedRecipe.ingredients.length, 'ingredients');
+            const ingredients = parsedRecipe.ingredients.map((i) => ({
+              name: i.name,
+              quantity: i.quantity,
+            }));
+
+            const nutritionResults = await searchRecipeIngredients(ingredients);
+            const totals = calculateTotalNutrition(nutritionResults);
+
+            // Build nutrition summary
+            let nutritionSummary = '\n\n---\n\n**Nutrition Summary (estimated per serving):**\n';
+            nutritionSummary += `- **Calories:** ${totals.totalCalories} cal\n`;
+            nutritionSummary += `- **Protein:** ${totals.totalProtein}g\n`;
+            nutritionSummary += `- **Carbs:** ${totals.totalCarbs}g\n`;
+            nutritionSummary += `- **Fat:** ${totals.totalFat}g\n`;
+
+            if (totals.hasEstimates) {
+              nutritionSummary += '\n_Some values are estimated as ingredients were not found in our database._';
+            }
+
+            // Append to response
+            aiResponse += nutritionSummary;
+            console.log('[Tool: recipe] Nutrition summary appended');
+          }
+        } catch (error) {
+          console.log('[Tool: recipe] Failed to parse/calculate nutrition:', error);
+          // Not a recipe or failed to parse - that's okay
+        }
+      }
 
       // Save assistant message
       const assistantMessage: Omit<ChatMessage, '_id'> = {
@@ -197,7 +404,8 @@ export const chatRouter = router({
 
       // Auto-generate title from first message
       if (isFirstMessage) {
-        updateData.title = content.slice(0, 50) + (content.length > 50 ? '...' : '');
+        updateData.title =
+          content.slice(0, 50) + (content.length > 50 ? '...' : '');
       }
 
       await ctx.db
