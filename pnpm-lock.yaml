@@ -68,6 +68,9 @@ importers:
       express-session:
         specifier: ^1.18.2
         version: 1.18.2
+      kal-baml:
+        specifier: workspace:*
+        version: link:../kal-baml
       kal-shared:
         specifier: workspace:*
         version: link:../kal-shared
@@ -77,6 +80,9 @@ importers:
       swagger-ui-express:
         specifier: ^5.0.1
         version: 5.0.1(express@4.22.1)
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
       zod:
         specifier: ^3.24.1
         version: 3.25.76
@@ -99,9 +105,25 @@ importers:
       '@types/swagger-ui-express':
         specifier: ^4.1.8
         version: 4.1.8
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
       tsx:
         specifier: ^4.19.2
         version: 4.21.0
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/kal-baml:
+    dependencies:
+      '@boundaryml/baml':
+        specifier: ^0.216.0
+        version: 0.216.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.19.3
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
@@ -176,6 +198,61 @@ importers:
       mongodb:
         specifier: ^6.12.0
         version: 6.21.0
+      postcss:
+        specifier: ^8.4.49
+        version: 8.5.6
+      tailwindcss:
+        specifier: ^3.4.17
+        version: 3.4.19(tsx@4.21.0)(yaml@2.8.2)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/kal-frontend-chat:
+    dependencies:
+      '@logto/next':
+        specifier: ^4.2.7
+        version: 4.2.7(next@15.5.9(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))
+      '@tanstack/react-query':
+        specifier: ^5.62.11
+        version: 5.90.12(react@19.2.3)
+      '@trpc/client':
+        specifier: ^11.0.0-rc.682
+        version: 11.8.1(@trpc/server@11.8.1(typescript@5.9.3))(typescript@5.9.3)
+      '@trpc/react-query':
+        specifier: ^11.0.0-rc.682
+        version: 11.8.1(@tanstack/react-query@5.90.12(react@19.2.3))(@trpc/client@11.8.1(@trpc/server@11.8.1(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.8.1(typescript@5.9.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
+      kal-shared:
+        specifier: workspace:*
+        version: link:../kal-shared
+      next:
+        specifier: ^15.1.2
+        version: 15.5.9(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.3
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.3(react@19.2.3)
+      react-feather:
+        specifier: ^2.0.10
+        version: 2.0.10(react@19.2.3)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.19.3
+      '@types/react':
+        specifier: ^19.0.2
+        version: 19.2.7
+      '@types/react-dom':
+        specifier: ^19.0.2
+        version: 19.2.3(@types/react@19.2.7)
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.4.23(postcss@8.5.6)
+      kal-backend:
+        specifier: workspace:*
+        version: link:../kal-backend
       postcss:
         specifier: ^8.4.49
         version: 8.5.6
@@ -268,6 +345,59 @@ packages:
   '@babel/types@7.28.5':
     resolution: {integrity: sha512-qQ5m48eI/MFLQ5PxQj4PFaprjyCTLI37ElWMmNs0K8Lk3dVeOdNpB3ks8jc7yM5CDmVC73eMVk/trk3fgmrUpA==}
     engines: {node: '>=6.9.0'}
+
+  '@boundaryml/baml-darwin-arm64@0.216.0':
+    resolution: {integrity: sha512-2YA6ENb9V40cMA06FXMAA4OpTXnkxyeLI3DUSOaPK1GcchCYEXBLgyCZGuytFii5VmJtXq96B8rcbpGs8IDDPA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@boundaryml/baml-darwin-x64@0.216.0':
+    resolution: {integrity: sha512-9WfPEnUZXaeBS40RDViTNUHb/I91qP6GTpLtPqt+Wd4n+mfecr3971PZ9O0JQaw2Q7b7kcyBvx8ArRm0YGu5hg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@boundaryml/baml-linux-arm64-gnu@0.216.0':
+    resolution: {integrity: sha512-eaCIGQRzz9ipFttSQ4bbfaehYkB+Oe9C/+ptAArBFJrqXB79Wg7Echh23YbiqtCRl71nyJIkD7QQ9muJrXhLrA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@boundaryml/baml-linux-arm64-musl@0.216.0':
+    resolution: {integrity: sha512-alv6p1tcXdYR9XSdRXVoV/mMLoDgNDJaSrIQe0YsqY2+d2Q1inbpOhX4bfbOpK/t77BuvNZwHF1wHYOhIWQHnQ==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@boundaryml/baml-linux-x64-gnu@0.216.0':
+    resolution: {integrity: sha512-WlsZnSpDxCg4jaAoZ+kIUg7h5TlVjYJZxBuUZ+q51uqy3XGCUPFrx54FXFjkdvtbLtH0VRlW5UXLxyLXXKtolg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@boundaryml/baml-linux-x64-musl@0.216.0':
+    resolution: {integrity: sha512-ia/+4AarNAD++OMaiBloNguZJJ7QqsQnv5BP9mcfggIEj4Ztwr+xiQfStLEp8ITg2Bpu1XRLoYRoT/D8AsRBPQ==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@boundaryml/baml-win32-arm64-msvc@0.216.0':
+    resolution: {integrity: sha512-pC2DZD//sdvYalMYk0qJm6VrmSA/qirPonI3ylaKpAXDRXfWNNEfG4ARv0ZcyenXaaiYcUb0BVfk2Sp5z9dhzw==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@boundaryml/baml-win32-x64-msvc@0.216.0':
+    resolution: {integrity: sha512-9TpH2/A/mH9aWz7nUY77cqBatnpQMDXGAAG4OjX2zOuCtr/PVVvDp7auzfEq+WIo8N6drXMPSTdtLZD8kWCMng==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  '@boundaryml/baml@0.216.0':
+    resolution: {integrity: sha512-Y5pfNpc99U0loYVDvFmHxNWActt50MW/g4T7ORVPZ5riWu7hrPzV7mQpXnTx3uDwU/8uOCchBGJF7tXz6XvBEA==}
+    engines: {node: '>= 10'}
+    hasBin: true
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -836,6 +966,9 @@ packages:
 
   '@types/whatwg-url@11.0.5':
     resolution: {integrity: sha512-coYR071JRaHa+xoEvvYqvnIHaVqaYrLPbsufM9BF63HkwI5Lgmy2QR8Q5K/lYDYo5AK82wOvSOS0UsLTpTG7uQ==}
+
+  '@types/ws@8.18.1':
+    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
 
   '@typescript-eslint/eslint-plugin@8.50.1':
     resolution: {integrity: sha512-PKhLGDq3JAg0Jk/aK890knnqduuI/Qj+udH7wCf0217IGi4gt+acgCyPVe79qoT+qKUvHMDQkwJeKW9fwl8Cyw==}
@@ -2501,6 +2634,18 @@ packages:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
 
+  ws@8.18.3:
+    resolution: {integrity: sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
 
@@ -2625,6 +2770,43 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
+
+  '@boundaryml/baml-darwin-arm64@0.216.0':
+    optional: true
+
+  '@boundaryml/baml-darwin-x64@0.216.0':
+    optional: true
+
+  '@boundaryml/baml-linux-arm64-gnu@0.216.0':
+    optional: true
+
+  '@boundaryml/baml-linux-arm64-musl@0.216.0':
+    optional: true
+
+  '@boundaryml/baml-linux-x64-gnu@0.216.0':
+    optional: true
+
+  '@boundaryml/baml-linux-x64-musl@0.216.0':
+    optional: true
+
+  '@boundaryml/baml-win32-arm64-msvc@0.216.0':
+    optional: true
+
+  '@boundaryml/baml-win32-x64-msvc@0.216.0':
+    optional: true
+
+  '@boundaryml/baml@0.216.0':
+    dependencies:
+      '@scarf/scarf': 1.4.0
+    optionalDependencies:
+      '@boundaryml/baml-darwin-arm64': 0.216.0
+      '@boundaryml/baml-darwin-x64': 0.216.0
+      '@boundaryml/baml-linux-arm64-gnu': 0.216.0
+      '@boundaryml/baml-linux-arm64-musl': 0.216.0
+      '@boundaryml/baml-linux-x64-gnu': 0.216.0
+      '@boundaryml/baml-linux-x64-musl': 0.216.0
+      '@boundaryml/baml-win32-arm64-msvc': 0.216.0
+      '@boundaryml/baml-win32-x64-msvc': 0.216.0
 
   '@colors/colors@1.5.0':
     optional: true
@@ -3071,6 +3253,10 @@ snapshots:
   '@types/whatwg-url@11.0.5':
     dependencies:
       '@types/webidl-conversions': 7.0.3
+
+  '@types/ws@8.18.1':
+    dependencies:
+      '@types/node': 22.19.3
 
   '@typescript-eslint/eslint-plugin@8.50.1(@typescript-eslint/parser@8.50.1(eslint@9.39.2(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.2(jiti@1.21.7))(typescript@5.9.3)':
     dependencies:
@@ -5048,6 +5234,8 @@ snapshots:
       isexe: 2.0.0
 
   word-wrap@1.2.5: {}
+
+  ws@8.18.3: {}
 
   yallist@3.1.1: {}
 

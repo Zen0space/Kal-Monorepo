@@ -97,8 +97,10 @@ async function main() {
     cors({
       origin: [
         "http://localhost:3000",
+        "http://localhost:3003", // Chat frontend
         process.env.NEXT_PUBLIC_APP_URL,
         process.env.FRONTEND_URL,
+        process.env.CHAT_FRONTEND_URL,
       ].filter((url): url is string => !!url),
       credentials: true,
     })

@@ -1,0 +1,9 @@
+# Dependencies
+node_modules/
+dist/
+
+# BAML generated client (regenerated from baml_src)
+baml_client/
+
+# IDE
+.turbo/
