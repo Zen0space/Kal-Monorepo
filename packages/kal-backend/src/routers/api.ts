@@ -351,18 +351,51 @@ router.get("/halal", async (req: AuthRequest, res: Response) => {
 
 /**
  * GET /api/halal/brands
- * Get all halal food brands
+ * Get all halal food brands or filter by name
+ * Query params:
+ *   - q (optional) - search/filter brands by name
+ *   - withCount (optional) - include product count per brand if "true"
  */
 router.get("/halal/brands", async (req: AuthRequest, res: Response) => {
   try {
+    const { q, withCount } = req.query;
     const db = getDB();
-    const brands = await db.collection("halal_foods").distinct("brand");
+    
+    let brands = await db.collection("halal_foods").distinct("brand");
+    brands = brands.filter(Boolean).sort();
+    
+    // Filter brands by query if provided
+    if (q && typeof q === "string") {
+      const searchTerm = q.toLowerCase();
+      brands = brands.filter((brand: string) => 
+        brand.toLowerCase().includes(searchTerm)
+      );
+    }
 
-    logSuccess(req, res, { count: brands.length });
+    // If withCount is requested, get product count per brand
+    if (withCount === "true") {
+      const brandsWithCount = await Promise.all(
+        brands.map(async (brand: string) => {
+          const count = await db.collection("halal_foods").countDocuments({ brand });
+          return { name: brand, productCount: count };
+        })
+      );
+      
+      logSuccess(req, res, { count: brandsWithCount.length, query: q as string });
+      
+      return res.json({
+        success: true,
+        data: brandsWithCount,
+        count: brandsWithCount.length,
+      });
+    }
+
+    logSuccess(req, res, { count: brands.length, query: q as string });
 
     return res.json({
       success: true,
-      data: brands.filter(Boolean).sort(),
+      data: brands,
+      count: brands.length,
     });
   } catch (error) {
     logError(req, 500, (error as Error).message);
