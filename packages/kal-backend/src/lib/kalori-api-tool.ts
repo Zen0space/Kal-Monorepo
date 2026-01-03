@@ -118,38 +118,52 @@ export async function searchMultipleFoods(foodNames: string[]): Promise<Map<stri
     }
   };
 
-  // Search all foods in parallel with progressive normalization
-  const searchPromises = foodNames.map(async (foodName) => {
-    const originalQuery = foodName.toLowerCase().trim();
-    console.log(`[Tool: api_checker] Searching for: ${originalQuery}`);
+  // Process foods in batches to avoid rate limiting on BAML/GLM API
+  // Batch size of 3 keeps us under typical rate limits
+  const BATCH_SIZE = 3;
+  const batches: string[][] = [];
+  for (let i = 0; i < foodNames.length; i += BATCH_SIZE) {
+    batches.push(foodNames.slice(i, i + BATCH_SIZE));
+  }
 
-    // Step 1: Try original name first
-    let result = await searchSingleQuery(originalQuery);
-    if (result) {
-      console.log(`[Tool: api_checker] Found "${foodName}" with original query`);
-      return { name: foodName, result };
-    }
+  for (const batch of batches) {
+    const batchPromises = batch.map(async (foodName) => {
+      const originalQuery = foodName.toLowerCase().trim();
+      console.log(`[Tool: api_checker] Searching for: ${originalQuery}`);
 
-    // Step 2: If not found, normalize with AI and try again
-    console.log(`[Tool: api_checker] Normalizing "${foodName}" with AI...`);
-    const normalizedQuery = await normalizeIngredientName(foodName);
-
-    if (normalizedQuery !== originalQuery) {
-      console.log(`[Tool: api_checker] AI normalized: "${originalQuery}" -> "${normalizedQuery}"`);
-      result = await searchSingleQuery(normalizedQuery);
+      // Step 1: Try original name first
+      let result = await searchSingleQuery(originalQuery);
       if (result) {
-        console.log(`[Tool: api_checker] Found "${foodName}" with normalized query`);
+        console.log(`[Tool: api_checker] Found "${foodName}" with original query`);
         return { name: foodName, result };
       }
+
+      // Step 2: If not found, normalize with AI and try again
+      console.log(`[Tool: api_checker] Normalizing "${foodName}" with AI...`);
+      const normalizedQuery = await normalizeIngredientName(foodName);
+
+      if (normalizedQuery !== originalQuery) {
+        console.log(`[Tool: api_checker] AI normalized: "${originalQuery}" -> "${normalizedQuery}"`);
+        result = await searchSingleQuery(normalizedQuery);
+        if (result) {
+          console.log(`[Tool: api_checker] Found "${foodName}" with normalized query`);
+          return { name: foodName, result };
+        }
+      }
+
+      // Not found with either query
+      console.log(`[Tool: api_checker] "${foodName}" not found in database`);
+      return { name: foodName, result: null };
+    });
+
+    const batchResults = await Promise.all(batchPromises);
+    batchResults.forEach(({ name, result }) => results.set(name, result));
+
+    // Small delay between batches to avoid rate limits
+    if (batches.indexOf(batch) < batches.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
-
-    // Not found with either query
-    console.log(`[Tool: api_checker] "${foodName}" not found in database`);
-    return { name: foodName, result: null };
-  });
-
-  const searchResults = await Promise.all(searchPromises);
-  searchResults.forEach(({ name, result }) => results.set(name, result));
+  }
 
   return results;
 }
