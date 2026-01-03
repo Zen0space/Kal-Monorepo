@@ -1,5 +1,6 @@
-import { getUser } from "@/lib/actions";
 import { ChatPage } from "./ChatPage";
+
+import { getUser } from "@/lib/actions";
 
 export default async function Home() {
   const context = await getUser();

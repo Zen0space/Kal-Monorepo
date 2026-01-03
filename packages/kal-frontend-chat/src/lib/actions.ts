@@ -1,6 +1,7 @@
 "use server";
 
 import { signIn, signOut, getLogtoContext } from "@logto/next/server-actions";
+
 import { getLogtoConfig } from "./logto";
 
 export async function handleSignIn() {

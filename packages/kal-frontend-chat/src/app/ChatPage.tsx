@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MessageList } from "@/components/chat/MessageList";
+import { LogIn } from "react-feather";
+
 import { ChatInput } from "@/components/chat/ChatInput";
-import { Sidebar } from "@/components/sidebar/Sidebar";
+import { MessageList } from "@/components/chat/MessageList";
 import { Header } from "@/components/Header";
+import { Sidebar } from "@/components/sidebar/Sidebar";
 import { handleSignIn, handleSignOut } from "@/lib/actions";
 import { trpc } from "@/lib/trpc";
-import { LogIn } from "react-feather";
+
 
 interface Message {
   _id: string;
@@ -76,7 +78,7 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
 
   const createThreadMutation = trpc.chat.createThread.useMutation({
     onSuccess: (newThread) => {
-      console.log('[Chat] Thread created:', newThread._id);
+      console.info('[Chat] Thread created:', newThread._id);
       setCurrentThreadId(newThread._id);
       setMessages([]);
       refetchThreads();
@@ -88,7 +90,7 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
 
   const sendMessageMutation = trpc.chat.sendMessage.useMutation({
     onMutate: async ({ content }) => {
-      console.log('[Chat Stream] Sending message:', content.slice(0, 50));
+      console.info('[Chat Stream] Sending message:', content.slice(0, 50));
       // Show thinking indicator (status cycles automatically in TypingIndicator)
       setThinkingStatus(undefined);
       // Optimistically add user message immediately
@@ -104,7 +106,7 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
       ]);
     },
     onSuccess: () => {
-      console.log('[Chat Stream] Response received');
+      console.info('[Chat Stream] Response received');
       setThinkingStatus(undefined);
       // Refetch messages to get the updated list including assistant response
       refetchMessages();
@@ -129,7 +131,7 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
   });
 
   const handleNewChat = () => {
-    console.log('[Chat] Creating new thread...');
+    console.info('[Chat] Creating new thread...');
     createThreadMutation.mutate();
   };
 
@@ -144,13 +146,13 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
   };
 
   const handleSendMessage = (content: string) => {
-    console.log('[Chat] Sending message:', content.slice(0, 50));
+    console.info('[Chat] Sending message:', content.slice(0, 50));
     if (!currentThreadId) {
       // Create new thread first
-      console.log('[Chat] No thread, creating new one first...');
+      console.info('[Chat] No thread, creating new one first...');
       createThreadMutation.mutate(undefined, {
         onSuccess: (newThread) => {
-          console.log('[Chat] Thread created, now sending message to:', newThread._id);
+          console.info('[Chat] Thread created, now sending message to:', newThread._id);
           sendMessageMutation.mutate({
             threadId: newThread._id,
             content,
@@ -168,7 +170,7 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
   // Login required screen
   if (!isAuthenticated) {
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-[100dvh]">
         <Header 
           isAuthenticated={false}
           onSignIn={handleSignIn}
@@ -197,7 +199,7 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-[100dvh] overflow-hidden">
       <Sidebar
         threads={threads}
         currentThreadId={currentThreadId ?? undefined}
