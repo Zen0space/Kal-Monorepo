@@ -1,6 +1,7 @@
 "use client";
 
 import { LogIn, LogOut, Menu } from "react-feather";
+
 import { trpc } from "@/lib/trpc";
 
 interface HeaderProps {
@@ -24,7 +25,7 @@ export function Header({ user, isAuthenticated, onSignIn, onSignOut, onMenuToggl
   const displayInitial = (displayName[0] || "U").toUpperCase();
 
   return (
-    <header className="h-16 bg-dark-surface border-b border-dark-border flex items-center justify-between px-4 md:px-6">
+    <header className="bg-dark-surface border-b border-dark-border flex items-center justify-between px-4 md:px-6 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))]">
       <div className="flex items-center gap-2">
         {/* Mobile menu toggle */}
         {onMenuToggle && (
