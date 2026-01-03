@@ -37,6 +37,7 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
   const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [thinkingStatus, setThinkingStatus] = useState<string | undefined>(undefined);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Only fetch if authenticated
   const {
@@ -204,6 +205,8 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
         onNewChat={handleNewChat}
         onDeleteThread={handleDeleteThread}
         isLoading={threadsLoading}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <div className="flex-1 flex flex-col relative bg-dark">
@@ -212,6 +215,7 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
           isAuthenticated={true}
           onSignIn={handleSignIn}
           onSignOut={handleSignOut}
+          onMenuToggle={() => setSidebarOpen(true)}
         />
 
         <MessageList
