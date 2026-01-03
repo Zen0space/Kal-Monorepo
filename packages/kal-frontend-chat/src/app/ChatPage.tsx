@@ -88,8 +88,8 @@ export function ChatPage({ isAuthenticated, user }: ChatPageProps) {
   const sendMessageMutation = trpc.chat.sendMessage.useMutation({
     onMutate: async ({ content }) => {
       console.log('[Chat Stream] Sending message:', content.slice(0, 50));
-      // Show thinking indicator
-      setThinkingStatus('Checking Kalori API...');
+      // Show thinking indicator (status cycles automatically in TypingIndicator)
+      setThinkingStatus(undefined);
       // Optimistically add user message immediately
       const tempId = `temp-${Date.now()}`;
       setMessages((prev) => [
