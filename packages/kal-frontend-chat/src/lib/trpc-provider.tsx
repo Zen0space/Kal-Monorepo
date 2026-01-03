@@ -39,10 +39,15 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
         httpBatchLink({
           url: `${getBaseUrl()}/trpc`,
           fetch(url, options) {
+            // Create AbortController with 2 minute timeout for long AI requests
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 120000);
+
             return fetch(url, {
               ...options,
               credentials: "include",
-            });
+              signal: controller.signal,
+            }).finally(() => clearTimeout(timeoutId));
           },
           headers() {
             const { logtoId, email, name } = authRef.current;

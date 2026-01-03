@@ -17,6 +17,12 @@ const DEFAULT_TIMEOUT_MS = parseInt(
   10
 );
 
+// Extended timeout for AI/chat routes (2 minutes)
+const EXTENDED_TIMEOUT_MS = parseInt(
+  process.env.EXTENDED_TIMEOUT_MS || "120000",
+  10
+);
+
 /**
  * Lightweight timeout middleware using native request timeout.
  * Zero memory overhead - uses Node.js http module internals.
@@ -31,12 +37,17 @@ export function requestTimeout(timeoutMs: number = DEFAULT_TIMEOUT_MS) {
       return next();
     }
 
+    // Use extended timeout for AI/chat routes that may take longer
+    const extendedTimeoutPaths = ["/trpc/chat.sendMessage", "/trpc/chat"];
+    const isExtendedPath = extendedTimeoutPaths.some((path) => req.path.includes(path));
+    const effectiveTimeout = isExtendedPath ? EXTENDED_TIMEOUT_MS : timeoutMs;
+
     // Use native request timeout - no custom timers needed
-    req.setTimeout(timeoutMs, () => {
+    req.setTimeout(effectiveTimeout, () => {
       // Only send response if headers haven't been sent yet
       if (!res.headersSent) {
         console.warn(
-          `[TIMEOUT] Request timed out after ${timeoutMs}ms: ${req.method} ${req.path}`
+          `[TIMEOUT] Request timed out after ${effectiveTimeout}ms: ${req.method} ${req.path}`
         );
         res.status(408).json({
           success: false,
@@ -62,7 +73,7 @@ export function requestTimeout(timeoutMs: number = DEFAULT_TIMEOUT_MS) {
 export function configureServerTimeouts(
   server: Server,
   options: {
-    /** Socket timeout in ms (default: 30000) */
+    /** Socket timeout in ms (default: 120000 for AI routes) */
     timeout?: number;
     /** Keep-alive timeout for load balancers (default: 65000) */
     keepAliveTimeout?: number;
@@ -71,7 +82,8 @@ export function configureServerTimeouts(
   } = {}
 ) {
   const {
-    timeout = DEFAULT_TIMEOUT_MS,
+    // Use extended timeout as server default to support AI routes
+    timeout = EXTENDED_TIMEOUT_MS,
     keepAliveTimeout = 65000, // Slightly higher than typical load balancer (60s)
     headersTimeout = 60000,
   } = options;

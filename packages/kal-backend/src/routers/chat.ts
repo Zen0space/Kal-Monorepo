@@ -329,6 +329,13 @@ export const chatRouter = router({
 - Recipe suggestions with Malaysian/halal food focus
 - Healthy eating advice
 
+**IMPORTANT: Format all responses using proper Markdown:**
+- Use **bold** for section headers like **Ingredients:** and **Instructions:**
+- Use bullet points (- item) for lists with a blank line before the list
+- Use numbered lists (1. step) for instructions
+- Add blank lines between sections for readability
+- Use ### for recipe titles
+
 Always respond in English. Be friendly, concise, and accurate.
 ${recipeContext}`;
 
