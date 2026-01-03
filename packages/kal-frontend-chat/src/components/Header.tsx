@@ -1,6 +1,6 @@
 "use client";
 
-import { LogIn, LogOut } from "react-feather";
+import { LogIn, LogOut, Menu } from "react-feather";
 import { trpc } from "@/lib/trpc";
 
 interface HeaderProps {
@@ -11,9 +11,10 @@ interface HeaderProps {
   isAuthenticated: boolean;
   onSignIn: () => void;
   onSignOut: () => void;
+  onMenuToggle?: () => void;
 }
 
-export function Header({ user, isAuthenticated, onSignIn, onSignOut }: HeaderProps) {
+export function Header({ user, isAuthenticated, onSignIn, onSignOut, onMenuToggle }: HeaderProps) {
   const { data: userInfo, isLoading } = trpc.apiKeys.getMe.useQuery(undefined, {
     enabled: isAuthenticated,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
@@ -23,8 +24,17 @@ export function Header({ user, isAuthenticated, onSignIn, onSignOut }: HeaderPro
   const displayInitial = (displayName[0] || "U").toUpperCase();
 
   return (
-    <header className="h-16 bg-dark-surface border-b border-dark-border flex items-center justify-between px-6">
+    <header className="h-16 bg-dark-surface border-b border-dark-border flex items-center justify-between px-4 md:px-6">
       <div className="flex items-center gap-2">
+        {/* Mobile menu toggle */}
+        {onMenuToggle && (
+          <button
+            onClick={onMenuToggle}
+            className="md:hidden p-2 text-content-secondary hover:text-content-primary hover:bg-white/5 rounded-lg transition-colors mr-1"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
         <div className="w-3 h-3 rounded-full bg-accent" />
         <span className="text-xl font-bold text-content-primary">Kal AI</span>
       </div>
