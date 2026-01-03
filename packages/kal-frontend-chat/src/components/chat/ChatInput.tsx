@@ -41,7 +41,7 @@ export function ChatInput({
   };
 
   return (
-    <div className="absolute bottom-6 left-0 right-0 px-4 pointer-events-none">
+    <div className="absolute bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-0 right-0 px-4 pointer-events-none z-20">
       <form 
         onSubmit={handleSubmit} 
         className="max-w-3xl mx-auto pointer-events-auto"

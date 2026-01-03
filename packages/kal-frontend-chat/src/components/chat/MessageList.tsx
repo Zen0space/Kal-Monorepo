@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
 

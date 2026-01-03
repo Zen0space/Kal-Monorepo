@@ -64,7 +64,7 @@ export function Sidebar({
         } md:translate-x-0`}
       >
         {/* Header */}
-        <div className="h-16 flex items-center border-b border-dark-border px-4 flex-shrink-0 gap-2">
+        <div className="flex items-center border-b border-dark-border px-4 flex-shrink-0 gap-2 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))]">
           {/* Mobile close button */}
           <button
             onClick={onClose}
