@@ -11,6 +11,7 @@ import {
   Key, 
   LogOut, 
   Menu,
+  MessageSquare,
   Settings,
   X
 } from "react-feather";
@@ -123,6 +124,27 @@ export function Sidebar({ onSignOut }: SidebarProps) {
               })}
             </nav>
 
+            {/* Feedback */}
+            <div className="border-t border-dark-border py-4">
+              <Link
+                href="/dashboard/feedback"
+                onClick={() => setMobileOpen(false)}
+                className={`
+                  flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
+                  ${pathname === "/dashboard/feedback"
+                    ? "bg-accent/10 text-accent border border-accent/30" 
+                    : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
+                  }
+                `}
+              >
+                <MessageSquare size={20} />
+                <span className="font-medium">Feedback</span>
+                <span className="ml-auto px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 text-white shadow-sm">
+                  new
+                </span>
+              </Link>
+            </div>
+
             {/* Sign Out */}
             {onSignOut && (
               <div className="border-t border-dark-border py-4">
@@ -188,6 +210,31 @@ export function Sidebar({ onSignOut }: SidebarProps) {
             );
           })}
         </nav>
+
+        {/* Feedback */}
+        <div className="border-t border-dark-border py-4">
+          <Link
+            href="/dashboard/feedback"
+            className={`
+              flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
+              ${pathname === "/dashboard/feedback"
+                ? "bg-accent/10 text-accent border border-accent/30" 
+                : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
+              }
+            `}
+            title={collapsed ? "Feedback" : undefined}
+          >
+            <MessageSquare size={20} className="flex-shrink-0" />
+            {!collapsed && (
+              <>
+                <span className="font-medium whitespace-nowrap">Feedback</span>
+                <span className="ml-auto px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 text-white shadow-sm">
+                  new
+                </span>
+              </>
+            )}
+          </Link>
+        </div>
 
         {/* Bottom actions */}
         <div className="border-t border-dark-border py-4">
