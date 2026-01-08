@@ -2,6 +2,8 @@ import { CreateFoodEntrySchema, GetEntriesSchema, DeleteEntrySchema } from "kal-
 import { ObjectId } from "mongodb";
 import { z } from "zod";
 
+import { cache, invalidateCache } from "../lib/cache.js";
+import { CacheKeys, CacheTTL } from "../lib/cache-keys.js";
 import { buildSearchQuery } from "../lib/search.js";
 import { router, publicProcedure, protectedProcedure } from "../lib/trpc.js";
 
@@ -11,13 +13,34 @@ export const foodRouter = router({
   search: publicProcedure
     .input(z.object({ query: z.string().min(1) }))
     .query(async ({ input, ctx }) => {
-      const searchQuery = buildSearchQuery(input.query);
-      const foods = await ctx.db
-        .collection("foods")
-        .find(searchQuery)
-        .limit(20)
-        .toArray();
+      const cacheKey = CacheKeys.trpcFoodSearch(input.query);
 
+      return cache.wrap(cacheKey, CacheTTL.SEARCH_RESULTS, async () => {
+        const searchQuery = buildSearchQuery(input.query);
+        const foods = await ctx.db
+          .collection("foods")
+          .find(searchQuery)
+          .limit(20)
+          .toArray();
+
+        return foods.map((food) => ({
+          _id: food._id.toString(),
+          name: food.name,
+          calories: food.calories,
+          protein: food.protein,
+          carbs: food.carbs,
+          fat: food.fat,
+          serving: food.serving,
+        }));
+      });
+    }),
+
+  // Get all natural foods (public)
+  all: publicProcedure.query(async ({ ctx }) => {
+    const cacheKey = CacheKeys.trpcFoodAll();
+
+    return cache.wrap(cacheKey, CacheTTL.LIST_RESULTS, async () => {
+      const foods = await ctx.db.collection("foods").find({}).toArray();
       return foods.map((food) => ({
         _id: food._id.toString(),
         name: food.name,
@@ -26,22 +49,9 @@ export const foodRouter = router({
         carbs: food.carbs,
         fat: food.fat,
         serving: food.serving,
+        category: food.category,
       }));
-    }),
-
-  // Get all natural foods (public)
-  all: publicProcedure.query(async ({ ctx }) => {
-    const foods = await ctx.db.collection("foods").find({}).toArray();
-    return foods.map((food) => ({
-      _id: food._id.toString(),
-      name: food.name,
-      calories: food.calories,
-      protein: food.protein,
-      carbs: food.carbs,
-      fat: food.fat,
-      serving: food.serving,
-      category: food.category,
-    }));
+    });
   }),
 
   // Get all natural foods with pagination (public)
@@ -54,56 +64,72 @@ export const foodRouter = router({
       })
     )
     .query(async ({ input, ctx }) => {
-      const query = input.category ? { category: input.category } : {};
+      const cacheKey = CacheKeys.trpcFoodPaginated(
+        input.cursor,
+        input.limit,
+        input.category || null
+      );
 
-      const [foods, total] = await Promise.all([
-        ctx.db
-          .collection("foods")
-          .find(query)
-          .skip(input.cursor)
-          .limit(input.limit)
-          .toArray(),
-        ctx.db.collection("foods").countDocuments(query),
-      ]);
+      return cache.wrap(cacheKey, CacheTTL.LIST_RESULTS, async () => {
+        const query = input.category ? { category: input.category } : {};
 
-      return {
-        items: foods.map((food) => ({
-          _id: food._id.toString(),
-          name: food.name,
-          calories: food.calories,
-          protein: food.protein,
-          carbs: food.carbs,
-          fat: food.fat,
-          serving: food.serving,
-          category: food.category,
-        })),
-        nextCursor:
-          input.cursor + foods.length < total
-            ? input.cursor + input.limit
-            : null,
-        total,
-      };
+        const [foods, total] = await Promise.all([
+          ctx.db
+            .collection("foods")
+            .find(query)
+            .skip(input.cursor)
+            .limit(input.limit)
+            .toArray(),
+          ctx.db.collection("foods").countDocuments(query),
+        ]);
+
+        return {
+          items: foods.map((food) => ({
+            _id: food._id.toString(),
+            name: food.name,
+            calories: food.calories,
+            protein: food.protein,
+            carbs: food.carbs,
+            fat: food.fat,
+            serving: food.serving,
+            category: food.category,
+          })),
+          nextCursor:
+            input.cursor + foods.length < total
+              ? input.cursor + input.limit
+              : null,
+          total,
+        };
+      });
     }),
 
   // Get all categories for natural foods (public)
   categories: publicProcedure.query(async ({ ctx }) => {
-    const categories = await ctx.db
-      .collection("foods")
-      .distinct("category");
-    return categories.filter(Boolean).sort();
+    const cacheKey = CacheKeys.trpcFoodCategories();
+
+    return cache.wrap(cacheKey, CacheTTL.CATEGORIES, async () => {
+      const categories = await ctx.db
+        .collection("foods")
+        .distinct("category");
+      return categories.filter(Boolean).sort();
+    });
   }),
 
   // Get database statistics (public)
   stats: publicProcedure.query(async ({ ctx }) => {
-    const [foodsCount, halalCount] = await Promise.all([
-      ctx.db.collection("foods").countDocuments(),
-      ctx.db.collection("halal_foods").countDocuments(),
-    ]);
-    return {
-      foods: foodsCount,
-      halal: halalCount,
-      total: foodsCount + halalCount,
-    };
+    const cacheKey = CacheKeys.trpcFoodStats();
+
+    return cache.wrap(cacheKey, CacheTTL.STATS, async () => {
+      const [foodsCount, halalCount] = await Promise.all([
+        ctx.db.collection("foods").countDocuments(),
+        ctx.db.collection("halal_foods").countDocuments(),
+      ]);
+      return {
+        foods: foodsCount,
+        halal: halalCount,
+        total: foodsCount + halalCount,
+      };
+    });
   }),
 
   // Add a food entry
@@ -120,6 +146,10 @@ export const foodRouter = router({
         date: input.date ?? new Date(),
         createdAt: new Date(),
       });
+
+      // Invalidate user's food entry caches
+      await invalidateCache.userFoodEntries(ctx.userId);
+
       return { id: result.insertedId.toString() };
     }),
 
@@ -237,6 +267,12 @@ export const foodRouter = router({
         _id: new ObjectId(input.id),
         userId: new ObjectId(ctx.userId),
       });
+
+      // Invalidate user's food entry caches
+      if (result.deletedCount === 1) {
+        await invalidateCache.userFoodEntries(ctx.userId);
+      }
+
       return { success: result.deletedCount === 1 };
     }),
 });

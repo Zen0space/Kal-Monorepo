@@ -3,7 +3,7 @@
  * Works in both development and production
  */
 
-type LogLevel = "info" | "warn" | "error" | "success";
+type LogLevel = "info" | "warn" | "error" | "success" | "debug";
 
 interface LogData {
   endpoint?: string;
@@ -39,6 +39,7 @@ function formatLog(level: LogLevel, message: string, data?: LogData): string {
     warn: `${colors.yellow}[WARN]${colors.reset}`,
     error: `${colors.red}[ERROR]${colors.reset}`,
     success: `${colors.green}[SUCCESS]${colors.reset}`,
+    debug: `${colors.dim}[DEBUG]${colors.reset}`,
   }[level];
 
   let log = `${colors.dim}${timestamp}${colors.reset} ${prefix} ${message}`;
@@ -90,6 +91,12 @@ export const logger = {
 
   success: (message: string, data?: LogData) => {
     console.log(formatLog("success", message, data));
+  },
+
+  debug: (message: string, data?: LogData) => {
+    if (process.env.NODE_ENV !== "production") {
+      console.log(formatLog("debug", message, data));
+    }
   },
 
   // API-specific logging
