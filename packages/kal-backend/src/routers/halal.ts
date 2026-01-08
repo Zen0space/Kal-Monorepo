@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { CacheKeys, CacheTTL } from "../lib/cache-keys.js";
+import { cache } from "../lib/cache.js";
 import { router, publicProcedure } from "../lib/trpc.js";
 
 export const halalRouter = router({
@@ -7,12 +9,37 @@ export const halalRouter = router({
   search: publicProcedure
     .input(z.object({ query: z.string().min(1) }))
     .query(async ({ input, ctx }) => {
-      const foods = await ctx.db
-        .collection("halal_foods")
-        .find({ name: { $regex: input.query, $options: "i" } })
-        .limit(20)
-        .toArray();
+      const cacheKey = CacheKeys.trpcHalalSearch(input.query);
 
+      return cache.wrap(cacheKey, CacheTTL.SEARCH_RESULTS, async () => {
+        const foods = await ctx.db
+          .collection("halal_foods")
+          .find({ name: { $regex: input.query, $options: "i" } })
+          .limit(20)
+          .toArray();
+
+        return foods.map((food) => ({
+          _id: food._id.toString(),
+          name: food.name,
+          calories: food.calories,
+          protein: food.protein,
+          carbs: food.carbs,
+          fat: food.fat,
+          serving: food.serving,
+          category: food.category,
+          brand: food.brand,
+          halalCertifier: food.halalCertifier,
+          halalCertYear: food.halalCertYear,
+        }));
+      });
+    }),
+
+  // Get all halal foods (public)
+  all: publicProcedure.query(async ({ ctx }) => {
+    const cacheKey = CacheKeys.trpcHalalAll();
+
+    return cache.wrap(cacheKey, CacheTTL.LIST_RESULTS, async () => {
+      const foods = await ctx.db.collection("halal_foods").find({}).toArray();
       return foods.map((food) => ({
         _id: food._id.toString(),
         name: food.name,
@@ -26,24 +53,7 @@ export const halalRouter = router({
         halalCertifier: food.halalCertifier,
         halalCertYear: food.halalCertYear,
       }));
-    }),
-
-  // Get all halal foods (public)
-  all: publicProcedure.query(async ({ ctx }) => {
-    const foods = await ctx.db.collection("halal_foods").find({}).toArray();
-    return foods.map((food) => ({
-      _id: food._id.toString(),
-      name: food.name,
-      calories: food.calories,
-      protein: food.protein,
-      carbs: food.carbs,
-      fat: food.fat,
-      serving: food.serving,
-      category: food.category,
-      brand: food.brand,
-      halalCertifier: food.halalCertifier,
-      halalCertYear: food.halalCertYear,
-    }));
+    });
   }),
 
   // Get all halal foods with pagination (public)
@@ -57,22 +67,88 @@ export const halalRouter = router({
       })
     )
     .query(async ({ input, ctx }) => {
-      const query: Record<string, unknown> = {};
-      if (input.brand) query.brand = input.brand;
-      if (input.category) query.category = input.category;
+      const cacheKey = CacheKeys.trpcHalalPaginated(
+        input.cursor,
+        input.limit,
+        input.brand || null,
+        input.category || null
+      );
 
-      const [foods, total] = await Promise.all([
-        ctx.db
+      return cache.wrap(cacheKey, CacheTTL.LIST_RESULTS, async () => {
+        const query: Record<string, unknown> = {};
+        if (input.brand) query.brand = input.brand;
+        if (input.category) query.category = input.category;
+
+        const [foods, total] = await Promise.all([
+          ctx.db
+            .collection("halal_foods")
+            .find(query)
+            .skip(input.cursor)
+            .limit(input.limit)
+            .toArray(),
+          ctx.db.collection("halal_foods").countDocuments(query),
+        ]);
+
+        return {
+          items: foods.map((food) => ({
+            _id: food._id.toString(),
+            name: food.name,
+            calories: food.calories,
+            protein: food.protein,
+            carbs: food.carbs,
+            fat: food.fat,
+            serving: food.serving,
+            category: food.category,
+            brand: food.brand,
+            halalCertifier: food.halalCertifier,
+            halalCertYear: food.halalCertYear,
+          })),
+          nextCursor:
+            input.cursor + foods.length < total
+              ? input.cursor + input.limit
+              : null,
+          total,
+        };
+      });
+    }),
+
+  // Get all brands (public)
+  brands: publicProcedure.query(async ({ ctx }) => {
+    const cacheKey = CacheKeys.trpcHalalBrands();
+
+    return cache.wrap(cacheKey, CacheTTL.BRANDS, async () => {
+      const brands = await ctx.db
+        .collection("halal_foods")
+        .distinct("brand");
+      return brands.filter(Boolean).sort();
+    });
+  }),
+
+  // Get all categories for halal foods (public)
+  categories: publicProcedure.query(async ({ ctx }) => {
+    const cacheKey = CacheKeys.trpcHalalCategories();
+
+    return cache.wrap(cacheKey, CacheTTL.CATEGORIES, async () => {
+      const categories = await ctx.db
+        .collection("halal_foods")
+        .distinct("category");
+      return categories.filter(Boolean).sort();
+    });
+  }),
+
+  // Get foods by brand (public)
+  byBrand: publicProcedure
+    .input(z.object({ brand: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const cacheKey = CacheKeys.trpcHalalByBrand(input.brand);
+
+      return cache.wrap(cacheKey, CacheTTL.LIST_RESULTS, async () => {
+        const foods = await ctx.db
           .collection("halal_foods")
-          .find(query)
-          .skip(input.cursor)
-          .limit(input.limit)
-          .toArray(),
-        ctx.db.collection("halal_foods").countDocuments(query),
-      ]);
+          .find({ brand: input.brand })
+          .toArray();
 
-      return {
-        items: foods.map((food) => ({
+        return foods.map((food) => ({
           _id: food._id.toString(),
           name: food.name,
           calories: food.calories,
@@ -84,52 +160,7 @@ export const halalRouter = router({
           brand: food.brand,
           halalCertifier: food.halalCertifier,
           halalCertYear: food.halalCertYear,
-        })),
-        nextCursor:
-          input.cursor + foods.length < total
-            ? input.cursor + input.limit
-            : null,
-        total,
-      };
-    }),
-
-  // Get all brands (public)
-  brands: publicProcedure.query(async ({ ctx }) => {
-    const brands = await ctx.db
-      .collection("halal_foods")
-      .distinct("brand");
-    return brands.filter(Boolean).sort();
-  }),
-
-  // Get all categories for halal foods (public)
-  categories: publicProcedure.query(async ({ ctx }) => {
-    const categories = await ctx.db
-      .collection("halal_foods")
-      .distinct("category");
-    return categories.filter(Boolean).sort();
-  }),
-
-  // Get foods by brand (public)
-  byBrand: publicProcedure
-    .input(z.object({ brand: z.string() }))
-    .query(async ({ input, ctx }) => {
-      const foods = await ctx.db
-        .collection("halal_foods")
-        .find({ brand: input.brand })
-        .toArray();
-
-      return foods.map((food) => ({
-        _id: food._id.toString(),
-        name: food.name,
-        calories: food.calories,
-        protein: food.protein,
-        carbs: food.carbs,
-        fat: food.fat,
-        serving: food.serving,
-        category: food.category,
-        brand: food.brand,
-        halalCertifier: food.halalCertifier,
-        halalCertYear: food.halalCertYear,
-      }));
+        }));
+      });
     }),
 });

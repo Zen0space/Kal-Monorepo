@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { handleAuthRoutes } from "@logto/express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import { RedisStore } from "connect-redis";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
@@ -9,6 +10,7 @@ import session from "express-session";
 import { createContext } from "./lib/context.js";
 import { connectDB } from "./lib/db.js";
 import { logtoConfig, validateLogtoConfig } from "./lib/logto.js";
+import { connectRedis, closeRedis, getRedis, getRedisHealth } from "./lib/redis.js";
 import { requestTimeout, configureServerTimeouts } from "./middleware/timeout.js";
 import { apiRouter } from "./routers/api.js";
 import { appRouter } from "./routers/index.js";
@@ -91,6 +93,14 @@ async function main() {
   await connectDB();
   console.log("✅ Connected to MongoDB");
 
+  // Connect to Redis (optional - graceful degradation if unavailable)
+  const redis = await connectRedis();
+  if (redis) {
+    console.log("✅ Connected to Redis (caching enabled)");
+  } else {
+    console.log("⚠️  Redis not available (caching disabled)");
+  }
+
   const app = express();
 
   // Core middleware
@@ -113,14 +123,26 @@ async function main() {
   app.use(requestTimeout());
 
   // Session middleware (required for Logto)
-  app.use(
-    session({
-      secret: process.env.SESSION_SECRET || "dev-secret-change-in-production",
-      cookie: { maxAge: 14 * 24 * 60 * 60 * 1000 }, // 14 days
-      resave: false,
-      saveUninitialized: false,
-    })
-  );
+  // Use Redis store if available, otherwise fall back to memory store
+  const redisClient = getRedis();
+  const sessionConfig: session.SessionOptions = {
+    secret: process.env.SESSION_SECRET || "dev-secret-change-in-production",
+    cookie: { maxAge: 14 * 24 * 60 * 60 * 1000 }, // 14 days
+    resave: false,
+    saveUninitialized: false,
+  };
+
+  if (redisClient) {
+    sessionConfig.store = new RedisStore({
+      client: redisClient,
+      prefix: "kal:session:",
+    });
+    console.log("✅ Session storage: Redis");
+  } else {
+    console.log("⚠️  Session storage: Memory (not recommended for production)");
+  }
+
+  app.use(session(sessionConfig));
 
   // Logto auth routes (if configured)
   if (validateLogtoConfig()) {
@@ -129,8 +151,17 @@ async function main() {
   }
 
   // Health check
-  app.get("/health", (_, res) => {
-    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  app.get("/health", async (_, res) => {
+    const redisHealth = await getRedisHealth();
+    res.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      services: {
+        mongodb: "healthy",
+        redis: redisHealth.status,
+        ...(redisHealth.latency !== undefined && { redisLatencyMs: redisHealth.latency }),
+      },
+    });
   });
 
   // OpenAPI spec endpoint
@@ -299,6 +330,19 @@ async function main() {
 
   // Configure server-level timeouts for scalability
   configureServerTimeouts(server);
+
+  // Graceful shutdown
+  const shutdown = async (signal: string) => {
+    console.log(`\n${signal} received. Shutting down gracefully...`);
+    server.close(async () => {
+      await closeRedis();
+      console.log("Server closed.");
+      process.exit(0);
+    });
+  };
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 // Helper to get base URL for examples
