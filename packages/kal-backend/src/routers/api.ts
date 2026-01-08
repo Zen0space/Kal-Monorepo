@@ -5,6 +5,7 @@ import { getDB } from "../lib/db.js";
 import { logger } from "../lib/logger.js";
 import { buildSearchQuery } from "../lib/search.js";
 import { validateApiKeyMiddleware } from "../middleware/api-key-middleware.js";
+import { apiCacheMiddleware } from "../middleware/cache-middleware.js";
 
 const router: RouterType = Router();
 
@@ -39,6 +40,9 @@ function logError(req: AuthRequest, status: number, error: string) {
 
 // Apply API key validation to all routes
 router.use(validateApiKeyMiddleware);
+
+// Apply response caching for GET requests
+router.use(apiCacheMiddleware);
 
 // ============================================
 // Natural Foods - Public REST API (requires API key)
