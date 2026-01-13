@@ -45,13 +45,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy everything needed to run
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages/kal-admin/node_modules ./packages/kal-admin/node_modules
-COPY --from=builder /app/packages/kal-admin/.next ./packages/kal-admin/.next
+# Copy standalone build output
+COPY --from=builder /app/packages/kal-admin/.next/standalone ./
+COPY --from=builder /app/packages/kal-admin/.next/static ./packages/kal-admin/.next/static
 COPY --from=builder /app/packages/kal-admin/public ./packages/kal-admin/public
-COPY --from=builder /app/packages/kal-admin/package.json ./packages/kal-admin/
-COPY --from=builder /app/packages/kal-admin/next.config.ts ./packages/kal-admin/
 
 WORKDIR /app/packages/kal-admin
 
@@ -60,4 +57,4 @@ EXPOSE 3005
 ENV PORT=3005
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["pnpm", "start"]
+CMD ["node", "server.js"]
