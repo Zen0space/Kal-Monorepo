@@ -14,7 +14,11 @@ const navLinks = [
   { label: "API", href: "/api-docs" },
 ];
 
-export function Navbar() {
+interface NavbarProps {
+  onSignIn?: () => Promise<void>;
+}
+
+export function Navbar({ onSignIn }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -42,8 +46,12 @@ export function Navbar() {
 
           {/* CTA Button */}
           <div className="hidden md:block">
-            <Button href="/search" size="sm">
-              Start Free →
+            <Button
+              onClick={() => onSignIn?.()}
+              href={onSignIn ? undefined : "/search"}
+              size="sm"
+            >
+              Sign In
             </Button>
           </div>
 
@@ -70,8 +78,12 @@ export function Navbar() {
               </a>
             ))}
             <div className="mt-4">
-              <Button href="/search" className="w-full">
-                Start Free →
+              <Button
+                onClick={() => onSignIn?.()}
+                href={onSignIn ? undefined : "/search"}
+                className="w-full"
+              >
+                Sign In
               </Button>
             </div>
           </div>
