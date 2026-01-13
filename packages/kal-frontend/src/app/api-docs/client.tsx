@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, FileText, Heart, Lock, Menu, Star, X } from "react-feather";
 
 import { Button } from "@/components/ui/Button";
@@ -159,6 +159,14 @@ export default function APIDocsClient({ isAuthenticated, userName, onSignIn }: A
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [specUrl, setSpecUrl] = useState("/openapi.json");
+
+  useEffect(() => {
+    const apiUrl = getApiUrl();
+    if (apiUrl) {
+      setSpecUrl(`${apiUrl}/openapi.json`);
+    }
+  }, []);
 
   // Fetch user info from database (same as dashboard)
   const { data: userInfo } = trpc.apiKeys.getMe.useQuery(undefined, {
@@ -414,7 +422,7 @@ export default function APIDocsClient({ isAuthenticated, userName, onSignIn }: A
           
           <div className="flex gap-4 flex-wrap">
             <a 
-              href="/openapi.json" 
+              href={specUrl}
               target="_blank"
               className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-[#262626] rounded-lg hover:border-[#10b981] transition-colors"
             >
