@@ -6,87 +6,18 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import session from "express-session";
+import swaggerUi from "swagger-ui-express";
 
 import { createContext } from "./lib/context.js";
 import { connectDB } from "./lib/db.js";
 import { logtoConfig, validateLogtoConfig } from "./lib/logto.js";
+import { openApiSpec } from "./lib/openapi.js";
 import { connectRedis, closeRedis, getRedis, getRedisHealth } from "./lib/redis.js";
 import { requestTimeout, configureServerTimeouts } from "./middleware/timeout.js";
 import { apiRouter } from "./routers/api.js";
 import { appRouter } from "./routers/index.js";
 
 const PORT = process.env.BACKEND_PORT || 3000;
-
-// OpenAPI specification
-const openApiSpec = {
-  openapi: "3.0.3",
-  info: {
-    title: "Kal - Malaysian Food API",
-    description: "Public REST API for accessing Malaysian food nutritional data. Search our database of 100+ Malaysian foods with accurate calorie, protein, carb, and fat information.",
-    version: "1.0.0",
-    contact: {
-      name: "Kal API Support",
-      url: "https://github.com/Zen0space/Kal-Monorepo",
-    },
-  },
-  servers: [
-    { url: "/api", description: "API Base Path" },
-  ],
-  paths: {
-    "/foods/search": {
-      get: {
-        summary: "Search foods",
-        description: "Search Malaysian foods by name. Returns up to 20 results.",
-        parameters: [
-          { name: "q", in: "query", required: true, schema: { type: "string" }, description: "Search query" },
-        ],
-        responses: {
-          200: { description: "Successful response with matching foods" },
-          400: { description: "Missing or invalid query parameter" },
-        },
-      },
-    },
-    "/foods": {
-      get: {
-        summary: "List foods",
-        description: "Get all foods with optional category filter and pagination.",
-        parameters: [
-          { name: "category", in: "query", required: false, schema: { type: "string" }, description: "Filter by category" },
-          { name: "limit", in: "query", required: false, schema: { type: "integer", default: 50, maximum: 200 }, description: "Max results" },
-          { name: "offset", in: "query", required: false, schema: { type: "integer", default: 0 }, description: "Pagination offset" },
-        ],
-        responses: { 200: { description: "Paginated list of foods" } },
-      },
-    },
-    "/foods/{id}": {
-      get: {
-        summary: "Get food by ID",
-        description: "Get a single food item by its MongoDB ObjectId.",
-        parameters: [
-          { name: "id", in: "path", required: true, schema: { type: "string" }, description: "Food ID" },
-        ],
-        responses: {
-          200: { description: "Food details" },
-          404: { description: "Food not found" },
-        },
-      },
-    },
-    "/categories": {
-      get: {
-        summary: "List categories",
-        description: "Get all available food categories.",
-        responses: { 200: { description: "List of category names" } },
-      },
-    },
-    "/stats": {
-      get: {
-        summary: "Database statistics",
-        description: "Get total food count and category overview.",
-        responses: { 200: { description: "Database statistics" } },
-      },
-    },
-  },
-};
 
 async function main() {
   // Connect to MongoDB
@@ -168,6 +99,9 @@ async function main() {
   app.get("/openapi.json", (_, res) => {
     res.json(openApiSpec);
   });
+
+  // Swagger UI
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiSpec));
 
   // API documentation page
   app.get("/docs", (_, res) => {
@@ -326,6 +260,7 @@ async function main() {
     console.log(`📡 tRPC endpoint: http://localhost:${PORT}/trpc`);
     console.log(`🌐 REST API: http://localhost:${PORT}/api`);
     console.log(`📚 API Docs: http://localhost:${PORT}/docs`);
+    console.log(`📑 Swagger UI: http://localhost:${PORT}/api-docs`);
   });
 
   // Configure server-level timeouts for scalability
