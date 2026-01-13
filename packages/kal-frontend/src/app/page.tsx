@@ -1,3 +1,5 @@
+import { signIn } from "@logto/next/server-actions";
+
 import { FinalCTA } from "@/components/landing/CTA";
 import { FAQ } from "@/components/landing/FAQ";
 import { Features } from "@/components/landing/Features";
@@ -8,8 +10,15 @@ import { Navbar } from "@/components/landing/Navbar";
 import { ProblemSolution } from "@/components/landing/ProblemSolution";
 import { SampleFoods } from "@/components/landing/SampleFoods";
 import { Testimonials } from "@/components/landing/Testimonials";
+import { getLogtoConfig } from "@/lib/logto";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const onSignIn = async () => {
+    "use server";
+    const config = getLogtoConfig();
+    await signIn(config);
+  };
+
   return (
     <main className="min-h-screen bg-dark relative overflow-hidden">
       {/* Background Effects */}
@@ -18,7 +27,7 @@ export default function LandingPage() {
         <div className="absolute bottom-0 transform translate-x-1/2 right-1/2 w-[800px] h-[600px] bg-accent/5 blur-[120px] rounded-full" />
       </div>
 
-      <Navbar />
+      <Navbar onSignIn={onSignIn} />
       <Hero />
       <ProblemSolution />
       <HowItWorks />
