@@ -5,12 +5,7 @@ import { httpBatchLink } from "@trpc/client";
 import { useState } from "react";
 import { trpc } from "./trpc";
 
-function getBaseUrl() {
-  if (typeof window !== "undefined") {
-    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-  }
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-}
+
 
 export function TRPCProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() =>

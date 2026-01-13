@@ -78,7 +78,7 @@ const options = {
 
 export default function AnalyticsPage() {
   // Use real user growth data where possible
-  const { data: _userGrowth } = trpc.user.growth.useQuery();
+  trpc.user.growth.useQuery();
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
