@@ -140,6 +140,30 @@ services:
     networks:
       - kal-network
 
+  admin:
+    build:
+      context: ..
+      dockerfile: packages/kal-admin/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - ADMIN_SECRET=${ADMIN_SECRET}
+        - ADMIN_USERNAME=${ADMIN_USERNAME}
+        - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    container_name: kal-admin
+    ports:
+      - "${ADMIN_PORT:-3005}:3005"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - ADMIN_SECRET=${ADMIN_SECRET}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    depends_on:
+      - backend
+    networks:
+      - kal-network
+
+
 volumes:
   mongodb_data:
   postgres_data:

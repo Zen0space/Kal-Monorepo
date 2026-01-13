@@ -33,12 +33,30 @@ export interface RateLimitResult {
  * - Composite _id: `${userId}_${date}` for uniqueness
  * - Atomic findOneAndUpdate with $inc for race-condition safety
  */
+import { getEffectiveRateLimits } from "../lib/platform-settings.js";
+
+/**
+ * Check rate limits for a user based on their tier.
+ * 
+ * Rate limit hierarchy (checked in order):
+ * 1. VPS Safety Cap: 20 requests/second (global)
+ * 2. Minute limit: varies by tier (65/130/110 per minute)
+ * 3. Daily limit: varies by tier
+ * 4. Monthly limit: varies by tier
+ * 
+ * Uses industry-standard MongoDB pattern:
+ * - Composite _id: `${userId}_${date}` for uniqueness
+ * - Atomic findOneAndUpdate with $inc for race-condition safety
+ */
 export async function checkRateLimit(
   db: Db,
   userId: string,
   tier: UserTier = "free"
 ): Promise<RateLimitResult> {
-  const limits = RATE_LIMITS[tier];
+  // Fetch effective limits (Cached DB or Defaults)
+  const allLimits = await getEffectiveRateLimits(db);
+  const limits = allLimits[tier] || RATE_LIMITS[tier]; // Fallback just in case tier key missing
+
   const now = new Date();
   const today = now.toISOString().split("T")[0]; // YYYY-MM-DD
   
@@ -258,21 +276,30 @@ export function getRateLimitHeaders(
   result: RateLimitResult,
   tier: UserTier = "free"
 ): Record<string, string> {
-  const limits = RATE_LIMITS[tier];
+  // Use limits from result if available (which they should be now), else fallback to static constants
+  // This avoids async call here
+  const { minuteLimit, dailyLimit, monthlyLimit } = result;
+  // If result lacks limits (shouldn't happen with our update), use static defaults
+  const staticLimits = RATE_LIMITS[tier];
+
+  const effectiveMinuteLimit = minuteLimit ?? staticLimits.minuteLimit;
+  const effectiveDailyLimit = dailyLimit ?? staticLimits.dailyLimit;
+  const effectiveMonthlyLimit = monthlyLimit ?? staticLimits.monthlyLimit;
+
   const headers: Record<string, string> = {
-    "X-RateLimit-Limit-Minute": String(limits.minuteLimit),
-    "X-RateLimit-Limit-Daily": String(limits.dailyLimit),
-    "X-RateLimit-Limit-Monthly": String(limits.monthlyLimit),
+    "X-RateLimit-Limit-Minute": String(effectiveMinuteLimit),
+    "X-RateLimit-Limit-Daily": String(effectiveDailyLimit),
+    "X-RateLimit-Limit-Monthly": String(effectiveMonthlyLimit),
   };
 
   if (result.minuteCount !== undefined) {
     headers["X-RateLimit-Remaining-Minute"] = String(
-      Math.max(0, limits.minuteLimit - result.minuteCount)
+      Math.max(0, effectiveMinuteLimit - result.minuteCount)
     );
   }
   if (result.dailyCount !== undefined) {
     headers["X-RateLimit-Remaining-Daily"] = String(
-      Math.max(0, limits.dailyLimit - result.dailyCount)
+      Math.max(0, effectiveDailyLimit - result.dailyCount)
     );
   }
   if (result.retryAfter !== undefined) {

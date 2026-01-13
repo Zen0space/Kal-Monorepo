@@ -40,6 +40,7 @@ async function main() {
       origin: [
         "http://localhost:3000",
         "http://localhost:3003", // Chat frontend
+        "http://localhost:3005", // Admin frontend
         process.env.NEXT_PUBLIC_APP_URL,
         process.env.FRONTEND_URL,
         process.env.CHAT_FRONTEND_URL,
