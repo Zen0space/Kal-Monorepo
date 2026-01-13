@@ -2,7 +2,7 @@
 
 import { trpc } from "@/lib/trpc";
 import { Settings, Shield, Zap, RefreshCw } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,20 +28,13 @@ function RateLimitCard({
   tier: UserTier;
   title: string;
   description: string;
-  icon: any;
+  icon: React.ElementType;
   initialData: RateLimitForm;
   onSave: (tier: UserTier, data: RateLimitForm) => void;
   onReset: (tier: UserTier) => void;
 }) {
   const [formData, setFormData] = useState<RateLimitForm>(initialData);
   const [isChanged, setIsChanged] = useState(false);
-
-  // Sync with initialData when it loads
-  useEffect(() => {
-    // Only update if initialData actually changes meaningfully to avoid loops or stale overrides if local typing
-    setFormData(initialData);
-    setIsChanged(false);
-  }, [initialData]);
 
   const handleChange = (field: keyof RateLimitForm, value: string) => {
     const num = parseInt(value) || 0;
@@ -203,6 +196,7 @@ export default function PlatformSettingsPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <RateLimitCard 
+          key={`free-${JSON.stringify(limits.free)}`}
           tier="free"
           title="Free Plan"
           description="Default limits for free users"
@@ -213,6 +207,7 @@ export default function PlatformSettingsPage() {
         />
         
         <RateLimitCard 
+          key={`tier1-${JSON.stringify(limits.tier_1)}`}
           tier="tier_1"
           title="Basic Plan (Tier 1)"
           description="Limits for paying basic users"
@@ -223,6 +218,7 @@ export default function PlatformSettingsPage() {
         />
 
         <RateLimitCard 
+          key={`tier2-${JSON.stringify(limits.tier_2)}`}
           tier="tier_2"
           title="Pro Plan (Tier 2)"
           description="Limits for power users"

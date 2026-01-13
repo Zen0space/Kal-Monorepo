@@ -100,8 +100,10 @@ export function StatisticChart({ userGrowth = [] }: StatisticChartProps) {
         label: 'Users',
         data: dataPoints,
         borderColor: 'rgb(139, 92, 246)', // Vibrant Purple 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         backgroundColor: (context: any) => {
-          const ctx = context.chart.ctx;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const ctx = (context as any).chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 300);
           gradient.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
           gradient.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
@@ -114,8 +116,10 @@ export function StatisticChart({ userGrowth = [] }: StatisticChartProps) {
          label: 'Revenue',
          data: revenueData,
          borderColor: 'rgb(6, 182, 212)', // Cyan
+         // eslint-disable-next-line @typescript-eslint/no-explicit-any
          backgroundColor: (context: any) => {
-          const ctx = context.chart.ctx;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const ctx = (context as any).chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 300);
           gradient.addColorStop(0, 'rgba(6, 182, 212, 0.5)');
           gradient.addColorStop(1, 'rgba(6, 182, 212, 0.0)');

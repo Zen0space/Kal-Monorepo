@@ -36,8 +36,10 @@ const apiUsageData = {
       label: 'API Requests',
       data: [1200, 800, 2500, 5000, 4500, 3000, 2000],
       borderColor: 'rgb(139, 92, 246)', // Primary Violet
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       backgroundColor: (context: any) => {
-        const ctx = context.chart.ctx;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ctx = (context as any).chart.ctx;
         const gradient = ctx.createLinearGradient(0, 0, 0, 300);
         gradient.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
         gradient.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
@@ -76,7 +78,7 @@ const options = {
 
 export default function AnalyticsPage() {
   // Use real user growth data where possible
-  const { data: userGrowth } = trpc.user.growth.useQuery();
+  const { data: _userGrowth } = trpc.user.growth.useQuery();
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
