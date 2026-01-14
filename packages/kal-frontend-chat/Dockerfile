@@ -51,10 +51,13 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy standalone build output
-COPY --from=builder /app/packages/kal-frontend-chat/.next/standalone ./
-COPY --from=builder /app/packages/kal-frontend-chat/.next/static ./packages/kal-frontend-chat/.next/static
+# Copy everything needed to run
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/kal-frontend-chat/node_modules ./packages/kal-frontend-chat/node_modules
+COPY --from=builder /app/packages/kal-frontend-chat/.next ./packages/kal-frontend-chat/.next
 COPY --from=builder /app/packages/kal-frontend-chat/public ./packages/kal-frontend-chat/public
+COPY --from=builder /app/packages/kal-frontend-chat/package.json ./packages/kal-frontend-chat/
+COPY --from=builder /app/packages/kal-frontend-chat/next.config.mjs ./packages/kal-frontend-chat/
 
 WORKDIR /app/packages/kal-frontend-chat
 
@@ -63,4 +66,4 @@ EXPOSE 3003
 ENV PORT=3003
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["pnpm", "start"]

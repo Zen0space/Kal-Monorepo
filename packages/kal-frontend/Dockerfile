@@ -50,10 +50,13 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy standalone build output
-COPY --from=builder /app/packages/kal-frontend/.next/standalone ./
-COPY --from=builder /app/packages/kal-frontend/.next/static ./packages/kal-frontend/.next/static
+# Copy everything needed to run
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/kal-frontend/node_modules ./packages/kal-frontend/node_modules
+COPY --from=builder /app/packages/kal-frontend/.next ./packages/kal-frontend/.next
 COPY --from=builder /app/packages/kal-frontend/public ./packages/kal-frontend/public
+COPY --from=builder /app/packages/kal-frontend/package.json ./packages/kal-frontend/
+COPY --from=builder /app/packages/kal-frontend/next.config.mjs ./packages/kal-frontend/
 
 WORKDIR /app/packages/kal-frontend
 
@@ -62,4 +65,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["pnpm", "start"]
