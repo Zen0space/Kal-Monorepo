@@ -53,10 +53,18 @@ async function proxyRequest(req: NextRequest, path: string[]) {
     });
 
     // 5. Return Response
+    // We must strip 'content-encoding' and 'content-length' headers because:
+    // 1. node-fetch/next.js fetch decompresses the response body automatically.
+    // 2. We pass this decompressed body to NextResponse.
+    // 3. If we keep 'content-encoding: gzip', the browser tries to decompress plain text and fails.
+    const responseHeaders = new Headers(response.headers);
+    responseHeaders.delete("content-encoding");
+    responseHeaders.delete("content-length");
+
     return new NextResponse(response.body, {
       status: response.status,
       statusText: response.statusText,
-      headers: response.headers,
+      headers: responseHeaders,
     });
 
   } catch (error) {
