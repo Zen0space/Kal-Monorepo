@@ -46,24 +46,25 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm --filter kal-frontend-chat build
 
 FROM base AS runner
-WORKDIR /app
+WORKDIR /app/packages/kal-frontend-chat
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy root node_modules (where next is hoisted)
-COPY --from=deps /app/node_modules ./node_modules
-# Copy package files
-COPY --from=builder /app/packages/kal-frontend-chat/.next ./packages/kal-frontend-chat/.next
-COPY --from=builder /app/packages/kal-frontend-chat/public ./packages/kal-frontend-chat/public
-COPY --from=builder /app/packages/kal-frontend-chat/package.json ./packages/kal-frontend-chat/
-COPY --from=builder /app/packages/kal-frontend-chat/next.config.mjs ./packages/kal-frontend-chat/
+# Copy package files first
+COPY --from=builder /app/packages/kal-frontend-chat/package.json ./
+COPY --from=builder /app/packages/kal-frontend-chat/next.config.mjs ./
 
-WORKDIR /app/packages/kal-frontend-chat
+# Install production dependencies only
+RUN pnpm install --prod --ignore-scripts
+
+# Copy build output
+COPY --from=builder /app/packages/kal-frontend-chat/.next ./.next
+COPY --from=builder /app/packages/kal-frontend-chat/public ./public
 
 EXPOSE 3003
 
 ENV PORT=3003
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "../../node_modules/next/dist/bin/next", "start"]
+CMD ["pnpm", "start"]
