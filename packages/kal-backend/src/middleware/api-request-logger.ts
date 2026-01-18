@@ -111,7 +111,7 @@ export function createApiRequestLogger(options: LoggerOptions = {}) {
 
     // Override res.end to capture response
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    res.end = function(this: Response, ...args: any[]): Response {
+    res.end = function (this: Response, ...args: any[]): Response {
       // Calculate duration
       const duration = Date.now() - startTime;
 
@@ -162,9 +162,79 @@ export function createApiRequestLogger(options: LoggerOptions = {}) {
 }
 
 /**
+ * Admin tRPC procedures that should not be logged
+ * These are internal admin operations, not public API usage
+ */
+const ADMIN_TRPC_PREFIXES = [
+  "requestLogs.",    // Analytics queries
+  "apiKeys.",        // API key management
+  "user.",           // User management/stats
+  "platformSettings.", // Platform settings
+];
+
+/**
+ * Check if a tRPC path is an admin procedure
+ */
+function isAdminTrpcPath(path: string): boolean {
+  // Extract the procedure name from /trpc/procedure.name
+  const match = path.match(/^\/trpc\/([^?,]+)/);
+  if (!match) return false;
+
+  const procedureName = match[1];
+  return ADMIN_TRPC_PREFIXES.some(prefix => procedureName.startsWith(prefix));
+}
+
+/**
  * Default middleware instance with standard options
+ * 
+ * Excludes:
+ * - Health check endpoints
+ * - Static files
+ * - Admin tRPC procedures (handled separately via isAdminTrpcPath)
  */
 export const apiRequestLogger = createApiRequestLogger({
   samplingRate: parseFloat(process.env.LOG_SAMPLING_RATE || "1.0"),
-  excludePaths: ["/health", "/favicon.ico", "/openapi.json"],
+  excludePaths: [
+    "/health",
+    "/favicon.ico",
+    "/openapi.json",
+    "/docs",        // API documentation
+    "/api-docs",    // Swagger UI
+  ],
+});
+
+/**
+ * Enhanced API request logger that also excludes admin tRPC procedures
+ * Use this instead of the basic apiRequestLogger
+ */
+export function createEnhancedApiRequestLogger(options: LoggerOptions = {}) {
+  const baseLogger = createApiRequestLogger(options);
+
+  return function enhancedApiRequestLogger(req: AuthRequest, res: Response, next: NextFunction): void {
+    const path = req.originalUrl || req.url;
+
+    // Skip admin tRPC procedures
+    if (isAdminTrpcPath(path)) {
+      next();
+      return;
+    }
+
+    // Delegate to base logger
+    return baseLogger(req, res, next);
+  };
+}
+
+/**
+ * Default enhanced logger instance
+ * This is the recommended logger to use - excludes admin operations
+ */
+export const enhancedApiRequestLogger = createEnhancedApiRequestLogger({
+  samplingRate: parseFloat(process.env.LOG_SAMPLING_RATE || "1.0"),
+  excludePaths: [
+    "/health",
+    "/favicon.ico",
+    "/openapi.json",
+    "/docs",
+    "/api-docs",
+  ],
 });

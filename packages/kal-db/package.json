@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "dotenv": "^16.4.7",
+    "ioredis": "^5.4.1",
     "migrate-mongo": "^14.0.7",
     "mongodb": "^6.12.0"
   },

@@ -13,27 +13,27 @@ import type { Db, ObjectId } from "mongodb";
  */
 export interface ApiRequestLog {
   _id?: ObjectId;
-  
+
   // Request identification
   requestId: string;
   timestamp: Date;
-  
+
   // User/Auth info
   userId: string | null;
   apiKeyPrefix: string | null;
-  
+
   // Request details
   type: "rest" | "trpc";
   method: string;
   endpoint: string;
   query?: Record<string, unknown>;
-  
+
   // Response details
   statusCode: number;
   duration: number;
   success: boolean;
   error?: string;
-  
+
   // Metadata
   userAgent?: string;
   ip?: string;
@@ -71,7 +71,7 @@ export interface LogAnalytics {
  * Request Log Service
  */
 export class RequestLogService {
-  constructor(private db: Db) {}
+  constructor(private db: Db) { }
 
   /**
    * Generate a unique request ID
@@ -126,7 +126,7 @@ export class RequestLogService {
     if (type) filter.type = type;
     if (statusCode) filter.statusCode = statusCode;
     if (success !== undefined) filter.success = success;
-    
+
     if (startDate || endDate) {
       filter.timestamp = {};
       if (startDate) (filter.timestamp as Record<string, Date>).$gte = startDate;
@@ -155,7 +155,7 @@ export class RequestLogService {
     if (type) filter.type = type;
     if (statusCode) filter.statusCode = statusCode;
     if (success !== undefined) filter.success = success;
-    
+
     if (startDate || endDate) {
       filter.timestamp = {};
       if (startDate) (filter.timestamp as Record<string, Date>).$gte = startDate;
@@ -201,7 +201,7 @@ export class RequestLogService {
       { $match: filter },
       { $group: { _id: "$endpoint", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
-      { $limit: 10 },
+      { $limit: 20 },
       { $project: { endpoint: "$_id", count: 1, _id: 0 } },
     ]).toArray() as Array<{ endpoint: string; count: number }>;
 
@@ -222,8 +222,8 @@ export class RequestLogService {
       totalRequests: stats.totalRequests,
       successfulRequests: stats.successfulRequests,
       failedRequests: stats.failedRequests,
-      averageDuration: stats.totalRequests > 0 
-        ? Math.round(stats.totalDuration / stats.totalRequests) 
+      averageDuration: stats.totalRequests > 0
+        ? Math.round(stats.totalDuration / stats.totalRequests)
         : 0,
       topEndpoints,
       requestsByHour,

@@ -1,6 +1,63 @@
 import "dotenv/config";
 import { MongoClient } from "mongodb";
+import Redis from "ioredis";
 import { naturalFoods, halalFoods } from "./data";
+
+/**
+ * Invalidate all food-related caches in Redis after seeding
+ */
+async function invalidateFoodCache(): Promise<void> {
+  const redisUrl = process.env.REDIS_URL;
+
+  if (!redisUrl) {
+    console.log("⚠️  REDIS_URL not set - skipping cache invalidation");
+    return;
+  }
+
+  console.log("🔄 Invalidating Redis cache...");
+
+  const redis = new Redis(redisUrl, {
+    maxRetriesPerRequest: 3,
+    lazyConnect: true,
+  });
+
+  try {
+    await redis.connect();
+
+    // Patterns to invalidate (matching cache.ts patterns)
+    const patterns = [
+      "kal:api:foods:*",
+      "kal:api:halal:*",
+      "kal:api:stats",
+      "kal:api:categories",
+      "kal:trpc:food:*",
+      "kal:trpc:halal:*",
+      "trpc:user:stats",
+      "trpc:user:growth:*",
+    ];
+
+    let totalDeleted = 0;
+
+    for (const pattern of patterns) {
+      let cursor = "0";
+      do {
+        const [nextCursor, keys] = await redis.scan(cursor, "MATCH", pattern, "COUNT", 100);
+        cursor = nextCursor;
+        if (keys.length > 0) {
+          await redis.del(...keys);
+          totalDeleted += keys.length;
+        }
+      } while (cursor !== "0");
+    }
+
+    console.log(`✅ Invalidated ${totalDeleted} cache keys`);
+  } catch (error) {
+    console.error("⚠️  Redis cache invalidation failed:", (error as Error).message);
+    console.log("   (This is non-fatal - cache will expire naturally via TTL)");
+  } finally {
+    await redis.quit();
+  }
+}
 
 const {
   MONGODB_HOST = "localhost",
@@ -48,11 +105,11 @@ async function seed() {
     // ========================================
     const oldFoodsCollection = db.collection("foods");
     const oldCount = await oldFoodsCollection.countDocuments();
-    
+
     if (oldCount > 0) {
       console.log(`📦 Found ${oldCount} items in 'foods' collection - will be replaced`);
     }
-    
+
     // Clear old 'foods' collection (if exists)
     await oldFoodsCollection.deleteMany({});
     console.log("🗑️  Cleared 'foods' collection");
@@ -86,6 +143,9 @@ async function seed() {
 
     console.log("🎉 Seeding completed successfully!");
     console.log(`   📊 Total: ${naturalFoods.length} foods + ${halalFoods.length} halal certified foods`);
+
+    // Invalidate Redis cache after seeding
+    await invalidateFoodCache();
   } catch (error) {
     console.error("❌ Seeding failed:", error);
     process.exit(1);
