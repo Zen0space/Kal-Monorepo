@@ -44,7 +44,7 @@ services:
       - "3002:3002"
     environment:
       - TRUST_PROXY_HEADER=1
-      - DB_URL=postgres://${LOGTO_DB_USER}:${LOGTO_DB_PASSWORD}@postgres:5432/${LOGTO_DB_NAME}
+      - DB_URL=postgres://${LOGTO_DB_USER:-logto}:${LOGTO_DB_PASSWORD:-logtopassword}@postgres:5432/${LOGTO_DB_NAME:-logto}
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,6 +68,7 @@ services:
       retries: 5
 
   backend:
+    profiles: ["apps"]
     build:
       context: ..
       dockerfile: packages/kal-backend/Dockerfile
@@ -95,6 +96,7 @@ services:
       - kal-network
 
   frontend:
+    profiles: ["apps"]
     build:
       context: ..
       dockerfile: packages/kal-frontend/Dockerfile
@@ -118,6 +120,7 @@ services:
       - kal-network
 
   frontend-chat:
+    profiles: ["apps"]
     build:
       context: ..
       dockerfile: packages/kal-frontend-chat/Dockerfile
@@ -141,6 +144,7 @@ services:
       - kal-network
 
   admin:
+    profiles: ["apps"]
     build:
       context: ..
       dockerfile: packages/kal-admin/Dockerfile

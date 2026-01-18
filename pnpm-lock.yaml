@@ -239,6 +239,9 @@ importers:
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1
+      ioredis:
+        specifier: ^5.4.1
+        version: 5.9.0
       migrate-mongo:
         specifier: ^14.0.7
         version: 14.0.7(mongodb@6.21.0)

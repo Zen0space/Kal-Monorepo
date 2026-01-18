@@ -13,7 +13,7 @@ import { connectDB } from "./lib/db.js";
 import { logtoConfig, validateLogtoConfig } from "./lib/logto.js";
 import { openApiSpec } from "./lib/openapi.js";
 import { connectRedis, closeRedis, getRedis, getRedisHealth } from "./lib/redis.js";
-import { apiRequestLogger } from "./middleware/api-request-logger.js";
+import { enhancedApiRequestLogger } from "./middleware/api-request-logger.js";
 import { requestTimeout, configureServerTimeouts } from "./middleware/timeout.js";
 import { apiRouter } from "./routers/api.js";
 import { appRouter } from "./routers/index.js";
@@ -56,7 +56,7 @@ async function main() {
   app.use(requestTimeout());
 
   // API request logging middleware (logs all requests to MongoDB)
-  app.use(apiRequestLogger);
+  app.use(enhancedApiRequestLogger);
 
   // Session middleware (required for Logto)
   // Use Redis store if available, otherwise fall back to memory store
