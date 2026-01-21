@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Code, 
-  Home, 
-  Key, 
-  LogOut, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Code,
+  Home,
+  Key,
+  LogOut,
   Menu,
   MessageSquare,
   Settings,
@@ -69,7 +69,7 @@ export function Sidebar({ onSignOut }: SidebarProps) {
 
         {/* Mobile Overlay */}
         {mobileOpen && (
-          <div 
+          <div
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
             onClick={() => setMobileOpen(false)}
           />
@@ -103,7 +103,7 @@ export function Sidebar({ onSignOut }: SidebarProps) {
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 const Icon = item.icon;
-                
+
                 return (
                   <Link
                     key={item.href}
@@ -111,8 +111,8 @@ export function Sidebar({ onSignOut }: SidebarProps) {
                     onClick={() => setMobileOpen(false)}
                     className={`
                       flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-                      ${isActive 
-                        ? "bg-accent/10 text-accent border border-accent/30" 
+                      ${isActive
+                        ? "bg-accent/10 text-accent border border-accent/30"
                         : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
                       }
                     `}
@@ -132,13 +132,13 @@ export function Sidebar({ onSignOut }: SidebarProps) {
                 className={`
                   flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
                   ${pathname === "/dashboard/feedback"
-                    ? "bg-accent/10 text-accent border border-accent/30" 
+                    ? "bg-accent/10 text-accent border border-accent/30"
                     : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
                   }
                 `}
               >
                 <MessageSquare size={20} />
-                <span className="font-medium">Feedback</span>
+                <span className="font-medium">Review & Bug</span>
                 <span className="ml-auto px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 text-white shadow-sm">
                   new
                 </span>
@@ -190,15 +190,15 @@ export function Sidebar({ onSignOut }: SidebarProps) {
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
-            
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`
                   flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-                  ${isActive 
-                    ? "bg-accent/10 text-accent border border-accent/30" 
+                  ${isActive
+                    ? "bg-accent/10 text-accent border border-accent/30"
                     : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
                   }
                 `}
@@ -218,16 +218,16 @@ export function Sidebar({ onSignOut }: SidebarProps) {
             className={`
               flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
               ${pathname === "/dashboard/feedback"
-                ? "bg-accent/10 text-accent border border-accent/30" 
+                ? "bg-accent/10 text-accent border border-accent/30"
                 : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
               }
             `}
-            title={collapsed ? "Feedback" : undefined}
+            title={collapsed ? "Review & Bug" : undefined}
           >
             <MessageSquare size={20} className="flex-shrink-0" />
             {!collapsed && (
               <>
-                <span className="font-medium whitespace-nowrap">Feedback</span>
+                <span className="font-medium whitespace-nowrap">Review & Bug</span>
                 <span className="ml-auto px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 text-white shadow-sm">
                   new
                 </span>
@@ -274,10 +274,10 @@ export function Sidebar({ onSignOut }: SidebarProps) {
   );
 }
 
-export function DashboardLayout({ 
+export function DashboardLayout({
   children,
   onSignOut
-}: { 
+}: {
   children: React.ReactNode;
   onSignOut?: () => Promise<void>;
 }) {
@@ -294,10 +294,10 @@ export function DashboardLayout({
   }, [isMounted, shouldAutoCollapse]);
 
   // Determine margin - default to desktop (ml-64) for SSR
-  const mainMargin = isMounted && isMobile 
-    ? "ml-0 pt-16" 
-    : collapsed 
-      ? "ml-16" 
+  const mainMargin = isMounted && isMobile
+    ? "ml-0 pt-16"
+    : collapsed
+      ? "ml-16"
       : "ml-64";
 
   return (

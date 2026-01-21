@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { 
+import {
   AlertCircle,
   ArrowLeft,
   CheckCircle,
-  MessageSquare, 
+  MessageSquare,
   Send,
   Star,
   ThumbsUp
@@ -114,16 +114,17 @@ function FeedbackContent() {
           </div>
           <h2 className="text-2xl font-bold text-content-primary mb-2">Thank You!</h2>
           <p className="text-content-secondary mb-8 max-w-md">
-            {selectedType === "review" 
+            {selectedType === "review"
               ? "Your feedback has been submitted. We appreciate you taking the time to share your thoughts!"
               : "Your bug report has been submitted. Our team will investigate and get back to you if needed."
             }
           </p>
           <button
             onClick={handleBack}
-            className="px-6 py-3 bg-accent hover:bg-accent/80 text-white rounded-lg font-medium transition-colors"
+            className="flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent/80 text-white rounded-lg font-medium transition-colors"
           >
-            Submit Another
+            <ArrowLeft size={18} />
+            Back
           </button>
         </div>
       </div>
@@ -143,10 +144,10 @@ function FeedbackContent() {
           </button>
         )}
         <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2">
-          {selectedType === "review" 
-            ? "Share Your Feedback" 
-            : selectedType === "report" 
-              ? "Report a Bug" 
+          {selectedType === "review"
+            ? "Share Your Feedback"
+            : selectedType === "report"
+              ? "Report a Bug"
               : "Feedback"}
         </h1>
         <p className="text-content-secondary text-sm md:text-base">
@@ -221,11 +222,10 @@ function FeedbackContent() {
                 >
                   <Star
                     size={isMobile ? 28 : 32}
-                    className={`transition-colors ${
-                      star <= (hoveredRating || rating)
+                    className={`transition-colors ${star <= (hoveredRating || rating)
                         ? "text-amber-400 fill-amber-400"
                         : "text-dark-border"
-                    }`}
+                      }`}
                   />
                 </button>
               ))}
@@ -364,7 +364,7 @@ function FeedbackContent() {
             <h3 className="text-base font-semibold text-content-primary mb-4">
               My Submitted Bugs
             </h3>
-            
+
             {bugsLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
@@ -379,19 +379,18 @@ function FeedbackContent() {
                 {myBugs.map((bug) => {
                   const isOpen = bug.status === "open" || bug.status === "in_progress";
                   return (
-                    <div 
-                      key={bug._id} 
+                    <div
+                      key={bug._id}
                       className="p-3 bg-dark-elevated rounded-lg border border-dark-border"
                     >
                       <p className="text-sm text-content-primary font-medium truncate mb-2">
                         {bug.title}
                       </p>
-                      <span 
-                        className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${
-                          isOpen 
-                            ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" 
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${isOpen
+                            ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                             : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                        }`}
+                          }`}
                       >
                         {isOpen ? "Open" : "Closed"}
                       </span>

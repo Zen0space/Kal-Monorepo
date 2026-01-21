@@ -152,7 +152,7 @@ export const feedbackRouter = router({
    */
   getMyReviews: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.userId || ctx.user?._id?.toString() || "";
-    
+
     const reviews = await ctx.db
       .collection<FeedbackReview>("feedback_reviews")
       .find({ userId })
@@ -168,7 +168,7 @@ export const feedbackRouter = router({
    */
   getMyBugs: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.userId || ctx.user?._id?.toString() || "";
-    
+
     const bugs = await ctx.db
       .collection<FeedbackBug>("feedback_bugs")
       .find({ userId })
@@ -184,7 +184,7 @@ export const feedbackRouter = router({
    */
   getMyStats: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.userId || ctx.user?._id?.toString() || "";
-    
+
     const [reviewCount, bugCount] = await Promise.all([
       ctx.db
         .collection("feedback_reviews")
@@ -197,6 +197,162 @@ export const feedbackRouter = router({
     return {
       reviewsSubmitted: reviewCount,
       bugsReported: bugCount,
+    };
+  }),
+
+  // ==================== Admin Procedures ====================
+
+  /**
+   * Get all reviews - for admin panel
+   */
+  getAllReviews: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(50),
+        offset: z.number().min(0).default(0),
+      }).optional()
+    )
+    .query(async ({ ctx, input }) => {
+      const limit = input?.limit ?? 50;
+      const offset = input?.offset ?? 0;
+
+      const [reviews, total] = await Promise.all([
+        ctx.db
+          .collection<FeedbackReview>("feedback_reviews")
+          .find({})
+          .sort({ createdAt: -1 })
+          .skip(offset)
+          .limit(limit)
+          .toArray(),
+        ctx.db.collection("feedback_reviews").countDocuments({}),
+      ]);
+
+      return {
+        reviews: reviews.map((doc) => ({
+          _id: doc._id.toString(),
+          userId: doc.userId,
+          userEmail: doc.userEmail,
+          userName: doc.userName,
+          rating: doc.rating,
+          feedback: doc.feedback,
+          createdAt: doc.createdAt,
+        })),
+        total,
+        limit,
+        offset,
+      };
+    }),
+
+  /**
+   * Get all bug reports - for admin panel
+   */
+  getAllBugs: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(50),
+        offset: z.number().min(0).default(0),
+        status: z.enum(["all", "open", "in_progress", "resolved", "closed", "wont_fix"]).default("all"),
+      }).optional()
+    )
+    .query(async ({ ctx, input }) => {
+      const limit = input?.limit ?? 50;
+      const offset = input?.offset ?? 0;
+      const status = input?.status ?? "all";
+
+      const filter = status === "all" ? {} : { status };
+
+      const [bugs, total] = await Promise.all([
+        ctx.db
+          .collection<FeedbackBug>("feedback_bugs")
+          .find(filter)
+          .sort({ createdAt: -1 })
+          .skip(offset)
+          .limit(limit)
+          .toArray(),
+        ctx.db.collection("feedback_bugs").countDocuments(filter),
+      ]);
+
+      return {
+        bugs: bugs.map((doc) => ({
+          _id: doc._id.toString(),
+          userId: doc.userId,
+          userEmail: doc.userEmail,
+          userName: doc.userName,
+          title: doc.title,
+          description: doc.description,
+          stepsToReproduce: doc.stepsToReproduce,
+          status: doc.status,
+          createdAt: doc.createdAt,
+          updatedAt: doc.updatedAt,
+          resolvedAt: doc.resolvedAt,
+        })),
+        total,
+        limit,
+        offset,
+      };
+    }),
+
+  /**
+   * Update bug status - for admin panel
+   */
+  updateBugStatus: protectedProcedure
+    .input(
+      z.object({
+        bugId: z.string(),
+        status: z.enum(["open", "in_progress", "resolved", "closed", "wont_fix"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { ObjectId } = await import("mongodb");
+      const now = new Date();
+
+      const updateData: { status: string; updatedAt: Date; resolvedAt?: Date | null } = {
+        status: input.status,
+        updatedAt: now,
+      };
+
+      // Set resolvedAt if status is resolved or closed
+      if (input.status === "resolved" || input.status === "closed") {
+        updateData.resolvedAt = now;
+      } else {
+        updateData.resolvedAt = null;
+      }
+
+      const result = await ctx.db.collection("feedback_bugs").updateOne(
+        { _id: new ObjectId(input.bugId) },
+        { $set: updateData }
+      );
+
+      if (result.matchedCount === 0) {
+        throw new Error("Bug report not found");
+      }
+
+      return {
+        success: true,
+        message: `Bug status updated to ${input.status}`,
+      };
+    }),
+
+  /**
+   * Get feedback stats - for admin dashboard
+   */
+  getStats: protectedProcedure.query(async ({ ctx }) => {
+    const [totalReviews, totalBugs, openBugs, avgRating] = await Promise.all([
+      ctx.db.collection("feedback_reviews").countDocuments({}),
+      ctx.db.collection("feedback_bugs").countDocuments({}),
+      ctx.db.collection("feedback_bugs").countDocuments({
+        status: { $in: ["open", "in_progress"] }
+      }),
+      ctx.db.collection<FeedbackReview>("feedback_reviews").aggregate([
+        { $group: { _id: null, avgRating: { $avg: "$rating" } } }
+      ]).toArray(),
+    ]);
+
+    return {
+      totalReviews,
+      totalBugs,
+      openBugs,
+      avgRating: avgRating[0]?.avgRating ?? 0,
     };
   }),
 });
