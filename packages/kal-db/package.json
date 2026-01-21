@@ -8,8 +8,8 @@
     "migrate:up": "migrate-mongo up",
     "migrate:down": "migrate-mongo down",
     "migrate:status": "migrate-mongo status",
-    "seed": "tsx scripts/seed.ts",
-    "seed:safe": "tsx scripts/seed-safe.ts",
+    "seed": "tsx scripts/seed-safe.ts",
+    "seed:force": "FORCE_SEED=true tsx scripts/seed-safe.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit"
