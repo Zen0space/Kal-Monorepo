@@ -51,19 +51,19 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy everything needed to run
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages/kal-frontend-chat/node_modules ./packages/kal-frontend-chat/node_modules
-COPY --from=builder /app/packages/kal-frontend-chat/.next ./packages/kal-frontend-chat/.next
-COPY --from=builder /app/packages/kal-frontend-chat/public ./packages/kal-frontend-chat/public
-COPY --from=builder /app/packages/kal-frontend-chat/package.json ./packages/kal-frontend-chat/
-COPY --from=builder /app/packages/kal-frontend-chat/next.config.mjs ./packages/kal-frontend-chat/
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-WORKDIR /app/packages/kal-frontend-chat
+# Copy standalone build
+COPY --from=builder --chown=nextjs:nodejs /app/packages/kal-frontend-chat/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/packages/kal-frontend-chat/.next/static ./packages/kal-frontend-chat/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/packages/kal-frontend-chat/public ./packages/kal-frontend-chat/public
+
+USER nextjs
 
 EXPOSE 3003
 
 ENV PORT=3003
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["pnpm", "start"]
+CMD ["node", "packages/kal-frontend-chat/server.js"]

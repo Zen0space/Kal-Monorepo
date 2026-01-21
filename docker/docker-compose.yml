@@ -1,5 +1,8 @@
 name: kal-monorepo
 
+# Load environment variables from root .env file
+# This allows running: docker compose -f docker/docker-compose.yml up -d from monorepo root
+
 services:
   mongodb:
     image: mongo:7
@@ -41,14 +44,31 @@ services:
       - "3002:3002"
     environment:
       - TRUST_PROXY_HEADER=1
-      - DB_URL=postgres://${LOGTO_DB_USER}:${LOGTO_DB_PASSWORD}@postgres:5432/${LOGTO_DB_NAME}
+      - DB_URL=postgres://${LOGTO_DB_USER:-logto}:${LOGTO_DB_PASSWORD:-logtopassword}@postgres:5432/${LOGTO_DB_NAME:-logto}
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - kal-network
 
+  redis:
+    image: redis:7-alpine
+    container_name: kal-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - kal-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   backend:
+    profiles: ["apps"]
     build:
       context: ..
       dockerfile: packages/kal-backend/Dockerfile
@@ -58,6 +78,7 @@ services:
     environment:
       - NODE_ENV=production
       - MONGODB_URI=mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@mongodb:27017/${MONGODB_DATABASE}?authSource=admin
+      - REDIS_URL=redis://redis:6379
       - LOGTO_ENDPOINT=${LOGTO_ENDPOINT}
       - LOGTO_APP_ID=${LOGTO_APP_ID}
       - LOGTO_APP_SECRET=${LOGTO_APP_SECRET}
@@ -70,10 +91,12 @@ services:
     depends_on:
       - mongodb
       - logto
+      - redis
     networks:
       - kal-network
 
   frontend:
+    profiles: ["apps"]
     build:
       context: ..
       dockerfile: packages/kal-frontend/Dockerfile
@@ -97,6 +120,7 @@ services:
       - kal-network
 
   frontend-chat:
+    profiles: ["apps"]
     build:
       context: ..
       dockerfile: packages/kal-frontend-chat/Dockerfile
@@ -119,9 +143,35 @@ services:
     networks:
       - kal-network
 
+  admin:
+    profiles: ["apps"]
+    build:
+      context: ..
+      dockerfile: packages/kal-admin/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - ADMIN_SECRET=${ADMIN_SECRET}
+        - ADMIN_USERNAME=${ADMIN_USERNAME}
+        - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    container_name: kal-admin
+    ports:
+      - "${ADMIN_PORT:-3005}:3005"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - ADMIN_SECRET=${ADMIN_SECRET}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    depends_on:
+      - backend
+    networks:
+      - kal-network
+
+
 volumes:
   mongodb_data:
   postgres_data:
+  redis_data:
 
 networks:
   kal-network:

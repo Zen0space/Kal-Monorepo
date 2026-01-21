@@ -73,51 +73,72 @@ export async function createContext({
   try {
     const db = getDB();
     let user: User | null = null;
+    // ------------------------------------------------------------------------
+    // VIRTUAL ADMIN AUTH (Env-Based for Open Source/Bootstrap)
+    // ------------------------------------------------------------------------
+    const adminSecretHeader = req.headers["x-admin-secret"] as string | undefined;
+    const envAdminSecret = process.env.ADMIN_SECRET;
 
-    // Try Logto session first (user is added by @logto/express middleware)
-    const logtoUser = (req as Request & { user?: LogtoRequestUser }).user;
-    if (logtoUser?.claims?.sub) {
-      user = await syncUserFromLogto(db, {
-        ...logtoUser.claims,
-        username: logtoUser.claims.username || undefined,
-      });
+    if (adminSecretHeader && envAdminSecret && adminSecretHeader === envAdminSecret) {
+      // Create a virtual super admin in memory (no DB access needed)
+      // We use a predefined ID and full permissions
+      const { ObjectId } = await import("mongodb");
+      user = {
+        _id: new ObjectId("000000000000000000000000") as any, // Fixed Virtual ID
+        logtoId: "admin-virtual-account",
+        email: "admin@system.local",
+        name: "System Administrator",
+        tier: "pro", // Max tier
+      } as unknown as User;
     }
 
-    // Fallback to header-based auth (for API keys or development)
+    // Typical User Auth Flow
     if (!user) {
-      // Try Logto ID from frontend header (when using Next.js proxy/tRPC)
-      const headerLogtoId = req.headers["x-logto-id"] as string | undefined;
-      if (headerLogtoId) {
-        user = await db.collection<User>("users").findOne({ logtoId: headerLogtoId });
-        
-        const headerEmail = req.headers["x-logto-email"] as string | undefined;
-        const headerName = req.headers["x-logto-name"] as string | undefined;
-
-        // If user not found but we have claims in headers (trusted from frontend), create/sync them
-        if (!user) {
-          // Proceed if we at least have an email or if the ID is sufficient for a basic record
-          if (headerLogtoId) {
-            user = await syncUserFromLogto(db, {
-              sub: headerLogtoId,
-              email: headerEmail,
-              name: headerName,
-            });
-          }
-        } else if (headerName && !user.name) {
-           // Update if local name is missing but header has one
-           await db.collection<User>("users").updateOne(
-             { _id: user._id }, 
-             { $set: { name: headerName, email: headerEmail || user.email } } 
-           );
-           user.name = headerName;
-           if (headerEmail) user.email = headerEmail;
-        }
+      // Try Logto session first (user is added by @logto/express middleware)
+      const logtoUser = (req as Request & { user?: LogtoRequestUser }).user;
+      if (logtoUser?.claims?.sub) {
+        user = await syncUserFromLogto(db, {
+          ...logtoUser.claims,
+          username: logtoUser.claims.username || undefined,
+        });
       }
 
-      // Try explicit user ID (development)
-      const headerUserId = req.headers["x-user-id"] as string | undefined;
-      if (!user && headerUserId) {
-        user = await getUserById(db, headerUserId);
+      // Fallback to header-based auth (for API keys or development)
+      if (!user) {
+        // Try Logto ID from frontend header (when using Next.js proxy/tRPC)
+        const headerLogtoId = req.headers["x-logto-id"] as string | undefined;
+        if (headerLogtoId) {
+          user = await db.collection<User>("users").findOne({ logtoId: headerLogtoId });
+          
+          const headerEmail = req.headers["x-logto-email"] as string | undefined;
+          const headerName = req.headers["x-logto-name"] as string | undefined;
+
+          // If user not found but we have claims in headers (trusted from frontend), create/sync them
+          if (!user) {
+            // Proceed if we at least have an email or if the ID is sufficient for a basic record
+            if (headerLogtoId) {
+              user = await syncUserFromLogto(db, {
+                sub: headerLogtoId,
+                email: headerEmail,
+                name: headerName,
+              });
+            }
+          } else if (headerName && !user.name) {
+             // Update if local name is missing but header has one
+             await db.collection<User>("users").updateOne(
+               { _id: user._id }, 
+               { $set: { name: headerName, email: headerEmail || user.email } } 
+             );
+             user.name = headerName;
+             if (headerEmail) user.email = headerEmail;
+          }
+        }
+
+        // Try explicit user ID (development)
+        const headerUserId = req.headers["x-user-id"] as string | undefined;
+        if (!user && headerUserId) {
+          user = await getUserById(db, headerUserId);
+        }
       }
     }
 
