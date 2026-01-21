@@ -3,12 +3,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Users,
+  Settings,
   BarChart3,
-  LogOut
+  LogOut,
+  MessageSquare,
+  Bug
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
@@ -17,6 +19,8 @@ const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'App Users', href: '/users', icon: Users },
+  { name: 'Feedback', href: '/feedback', icon: MessageSquare },
+  { name: 'Bug Reports', href: '/bugs', icon: Bug },
   { name: 'Platform Settings', href: '/settings', icon: Settings },
 ];
 
@@ -29,20 +33,20 @@ export function Sidebar() {
         <div className="w-8 h-8 bg-foreground rounded-lg"></div>
         <span className="text-xl font-bold tracking-tight text-foreground">Kal Admin</span>
       </div>
-      
+
       <nav className="flex-1 p-4 flex flex-col gap-2 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
-          
+
           return (
-            <Link 
-              key={item.href} 
+            <Link
+              key={item.href}
               href={item.href}
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                isActive 
-                  ? "bg-gradient-to-r from-primary to-primary/80 text-white shadow-md shadow-primary/25" 
+                isActive
+                  ? "bg-gradient-to-r from-primary to-primary/80 text-white shadow-md shadow-primary/25"
                   : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
               )}
             >

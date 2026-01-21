@@ -12,7 +12,8 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
-    "cleanup-db": "tsx scripts/cleanup-db.ts"
+    "cleanup-db": "tsx scripts/cleanup-db.ts",
+    "migrate-feedback": "tsx scripts/migrate-feedback.ts"
   },
   "dependencies": {
     "@logto/express": "^3.0.12",
