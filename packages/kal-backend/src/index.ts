@@ -8,6 +8,8 @@ import express from "express";
 import session from "express-session";
 import swaggerUi from "swagger-ui-express";
 
+import helmet from "helmet";
+
 import { createContext } from "./lib/context.js";
 import { connectDB } from "./lib/db.js";
 import { logtoConfig, validateLogtoConfig } from "./lib/logto.js";
@@ -34,6 +36,19 @@ async function main() {
   }
 
   const app = express();
+
+  // Security headers (Helmet)
+  // CSP is disabled to verify compatibility with Swagger UI and inline docs first
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true,
+      },
+    })
+  );
 
   // Core middleware
   app.use(
