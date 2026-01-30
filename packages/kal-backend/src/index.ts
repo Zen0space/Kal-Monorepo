@@ -50,22 +50,44 @@ async function main() {
     })
   );
 
+  // ============================================
+  // CORS Configuration (Dual Strategy)
+  // ============================================
+
+  // Private CORS: Strict whitelist for your own apps (tRPC, auth, sessions)
+  const privateCorsOptions = {
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3003", // Chat frontend
+      "http://localhost:3005", // Admin frontend
+      process.env.NEXT_PUBLIC_APP_URL,
+      process.env.FRONTEND_URL,
+      process.env.CHAT_FRONTEND_URL,
+    ].filter((url): url is string => !!url),
+    credentials: true,
+  };
+
+  // Public CORS: Allow any origin for public API (authentication via API key, not cookies)
+  const publicCorsOptions = {
+    origin: "*",
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "X-API-Key"],
+    credentials: false, // No cookies for public API
+  };
+
   // Core middleware
-  app.use(
-    cors({
-      origin: [
-        "http://localhost:3000",
-        "http://localhost:3003", // Chat frontend
-        "http://localhost:3005", // Admin frontend
-        process.env.NEXT_PUBLIC_APP_URL,
-        process.env.FRONTEND_URL,
-        process.env.CHAT_FRONTEND_URL,
-      ].filter((url): url is string => !!url),
-      credentials: true,
-    })
-  );
   app.use(express.json());
   app.use(cookieParser());
+
+  // Apply PUBLIC CORS to API documentation and REST API routes
+  app.use("/api", cors(publicCorsOptions));
+  app.use("/openapi.json", cors(publicCorsOptions));
+  app.use("/api-docs", cors(publicCorsOptions));
+  app.use("/docs", cors(publicCorsOptions));
+
+  // Apply PRIVATE CORS to everything else (tRPC, health, auth routes)
+  app.use("/trpc", cors(privateCorsOptions));
+  app.use("/health", cors(privateCorsOptions));
 
   // Request timeout middleware (scalable - uses native req.setTimeout)
   app.use(requestTimeout());
