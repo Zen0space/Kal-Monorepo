@@ -1,5 +1,5 @@
-# Admin CI — Lint & Build
-# Triggers on changes to kal-admin, kal-shared, or kal-baml
+# Admin CI — Lint, Type Check & Build
+# Triggers on changes to kal-admin, kal-shared, kal-baml, or kal-backend
 
 name: Admin
 
@@ -30,8 +30,8 @@ env:
   PNPM_VERSION: "9"
 
 jobs:
-  lint:
-    name: Lint
+  lint-and-typecheck:
+    name: Lint & Type Check
     runs-on: ubuntu-latest
 
     steps:
@@ -60,10 +60,13 @@ jobs:
       - name: Lint
         run: pnpm --filter kal-admin lint
 
+      - name: Type check
+        run: pnpm --filter kal-admin typecheck
+
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: lint
+    needs: lint-and-typecheck
 
     steps:
       - name: Checkout repository
