@@ -98,12 +98,7 @@ export default [
 
   // React/Next.js TypeScript files (frontend)
   {
-    files: [
-      "packages/kal-frontend/**/*.ts",
-      "packages/kal-frontend/**/*.tsx",
-      "packages/kal-frontend-chat/**/*.ts",
-      "packages/kal-frontend-chat/**/*.tsx",
-    ],
+    files: ["packages/kal-frontend/**/*.ts", "packages/kal-frontend/**/*.tsx"],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
