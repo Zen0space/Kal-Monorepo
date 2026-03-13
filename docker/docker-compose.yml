@@ -30,7 +30,11 @@ services:
     networks:
       - kal-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${LOGTO_DB_USER:-logto} -d ${LOGTO_DB_NAME:-logto}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${LOGTO_DB_USER:-logto} -d ${LOGTO_DB_NAME:-logto}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -68,10 +72,9 @@ services:
       retries: 5
 
   backend:
-    profiles: ["apps"]
-    build:
-      context: ..
-      dockerfile: packages/kal-backend/Dockerfile
+    # Image built in GitHub Actions and pushed to GHCR on every merge to main.
+    # To update on VPS: docker compose pull backend && docker compose up -d backend
+    image: ghcr.io/zen0space/kal-monorepo/kal-backend:latest
     container_name: kal-backend
     ports:
       - "${BACKEND_PORT:-4000}:3000"
@@ -87,86 +90,12 @@ services:
       - GLM_API_KEY=${GLM_API_KEY}
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}
       - FRONTEND_URL=${FRONTEND_URL}
-      - CHAT_FRONTEND_URL=${CHAT_FRONTEND_URL}
     depends_on:
       - mongodb
       - logto
       - redis
     networks:
       - kal-network
-
-  frontend:
-    profiles: ["apps"]
-    build:
-      context: ..
-      dockerfile: packages/kal-frontend/Dockerfile
-      args:
-        - NEXT_PUBLIC_LOGTO_ENDPOINT=${NEXT_PUBLIC_LOGTO_ENDPOINT}
-        - NEXT_PUBLIC_LOGTO_APP_ID=${NEXT_PUBLIC_LOGTO_APP_ID}
-        - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-        - LOGTO_APP_SECRET=${LOGTO_APP_SECRET}
-        - SESSION_SECRET=${SESSION_SECRET}
-    container_name: kal-frontend
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"
-    environment:
-      - NODE_ENV=production
-      - LOGTO_APP_SECRET=${LOGTO_APP_SECRET}
-      - SESSION_SECRET=${SESSION_SECRET}
-    depends_on:
-      - backend
-    networks:
-      - kal-network
-
-  frontend-chat:
-    profiles: ["apps"]
-    build:
-      context: ..
-      dockerfile: packages/kal-frontend-chat/Dockerfile
-      args:
-        - NEXT_PUBLIC_LOGTO_ENDPOINT=${NEXT_PUBLIC_LOGTO_ENDPOINT}
-        - NEXT_PUBLIC_LOGTO_APP_ID=${NEXT_PUBLIC_LOGTO_APP_ID}
-        - NEXT_PUBLIC_APP_URL=${CHAT_FRONTEND_URL}
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-        - LOGTO_APP_SECRET=${LOGTO_APP_SECRET}
-        - SESSION_SECRET=${SESSION_SECRET}
-    container_name: kal-frontend-chat
-    ports:
-      - "${CHAT_FRONTEND_PORT:-3003}:3003"
-    environment:
-      - NODE_ENV=production
-      - LOGTO_APP_SECRET=${LOGTO_APP_SECRET}
-      - SESSION_SECRET=${SESSION_SECRET}
-    depends_on:
-      - backend
-    networks:
-      - kal-network
-
-  admin:
-    profiles: ["apps"]
-    build:
-      context: ..
-      dockerfile: packages/kal-admin/Dockerfile
-      args:
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-        - ADMIN_SECRET=${ADMIN_SECRET}
-        - ADMIN_USERNAME=${ADMIN_USERNAME}
-        - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-    container_name: kal-admin
-    ports:
-      - "${ADMIN_PORT:-3005}:3005"
-    environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-      - ADMIN_SECRET=${ADMIN_SECRET}
-      - ADMIN_USERNAME=${ADMIN_USERNAME}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-    depends_on:
-      - backend
-    networks:
-      - kal-network
-
 
 volumes:
   mongodb_data:
