@@ -1,16 +1,28 @@
-# Continuous Integration workflow for Kal Monorepo
-# Runs on all pull requests to dev and main branches
+# Backend CI — Lint, Type Check, Build & Docker Publish
+# Triggers on changes to kal-backend, kal-shared, or kal-baml
 
-name: CI
+name: Backend
 
 on:
   push:
     branches: [main, dev]
+    paths:
+      - "packages/kal-backend/**"
+      - "packages/kal-shared/**"
+      - "packages/kal-baml/**"
+      - "packages/kal-db/**"
+      - ".github/workflows/backend.yml"
   pull_request:
     branches: [main, dev]
+    paths:
+      - "packages/kal-backend/**"
+      - "packages/kal-shared/**"
+      - "packages/kal-baml/**"
+      - "packages/kal-db/**"
+      - ".github/workflows/backend.yml"
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: backend-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -40,14 +52,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build shared packages first
-        run: pnpm --filter kal-shared build
+      - name: Build shared dependencies
+        run: |
+          pnpm --filter kal-shared build
+          pnpm --filter kal-baml build
 
-      - name: Run ESLint
-        run: pnpm lint
+      - name: Lint
+        run: pnpm --filter kal-backend lint
 
-      - name: Run TypeScript type check
-        run: pnpm typecheck
+      - name: Type check
+        run: pnpm --filter kal-backend typecheck
 
   build:
     name: Build
@@ -72,18 +86,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build all packages
-        run: pnpm build
-        env:
-          # Build-time environment variables (public values only)
-          # Production URLs are used here for build validation
-          NEXT_PUBLIC_BACKEND_URL: https://kalori-api.my
-          NEXT_PUBLIC_APP_URL: https://kalori-api.my
-          NEXT_PUBLIC_API_URL: https://kalori-api.my/api
+      - name: Build shared dependencies
+        run: |
+          pnpm --filter kal-shared build
+          pnpm --filter kal-baml build
 
-  # Build and push backend image to GitHub Container Registry (runs only on main pushes)
+      - name: Build backend
+        run: pnpm --filter kal-backend build
+
   docker-publish:
-    name: Build & Push Backend Image
+    name: Build & Push Docker Image
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build

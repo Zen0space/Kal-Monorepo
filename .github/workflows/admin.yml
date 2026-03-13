@@ -1,0 +1,97 @@
+# Admin CI — Lint & Build
+# Triggers on changes to kal-admin, kal-shared, or kal-baml
+
+name: Admin
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - "packages/kal-admin/**"
+      - "packages/kal-shared/**"
+      - "packages/kal-baml/**"
+      - "packages/kal-backend/**"
+      - ".github/workflows/admin.yml"
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - "packages/kal-admin/**"
+      - "packages/kal-shared/**"
+      - "packages/kal-baml/**"
+      - "packages/kal-backend/**"
+      - ".github/workflows/admin.yml"
+
+concurrency:
+  group: admin-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9"
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared dependencies
+        run: |
+          pnpm --filter kal-shared build
+          pnpm --filter kal-baml build
+
+      - name: Lint
+        run: pnpm --filter kal-admin lint
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared dependencies
+        run: |
+          pnpm --filter kal-shared build
+          pnpm --filter kal-baml build
+
+      - name: Build admin
+        run: pnpm --filter kal-admin build
+        env:
+          NEXT_PUBLIC_API_URL: https://kalori-api.my/api
+          ADMIN_SECRET: placeholder
+          ADMIN_USERNAME: placeholder
+          ADMIN_PASSWORD: placeholder
