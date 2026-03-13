@@ -117,6 +117,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Lowercase repository name
+        run: echo "REPO_LOWER=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
@@ -124,7 +127,7 @@ jobs:
           file: ./packages/kal-backend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/kal-backend:latest
-            ghcr.io/${{ github.repository }}/kal-backend:${{ github.sha }}
+            ghcr.io/${{ env.REPO_LOWER }}/kal-backend:latest
+            ghcr.io/${{ env.REPO_LOWER }}/kal-backend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
