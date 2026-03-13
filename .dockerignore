@@ -1,0 +1,11 @@
+.git
+.github
+**/.env*
+!**/.env.example
+**/node_modules
+**/.next
+**/dist
+**/baml_client
+**/*.log
+**/.DS_Store
+packages/kal-frontend-chat

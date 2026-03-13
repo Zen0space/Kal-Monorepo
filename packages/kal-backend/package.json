@@ -12,7 +12,8 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
-    "cleanup-db": "tsx scripts/cleanup-db.ts"
+    "cleanup-db": "tsx scripts/cleanup-db.ts",
+    "migrate-feedback": "tsx scripts/migrate-feedback.ts"
   },
   "dependencies": {
     "@logto/express": "^3.0.12",
@@ -23,6 +24,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-session": "^1.18.2",
+    "helmet": "^8.1.0",
     "ioredis": "^5.4.1",
     "kal-baml": "workspace:*",
     "kal-shared": "workspace:*",

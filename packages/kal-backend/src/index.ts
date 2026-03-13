@@ -8,11 +8,14 @@ import express from "express";
 import session from "express-session";
 import swaggerUi from "swagger-ui-express";
 
+import helmet from "helmet";
+
 import { createContext } from "./lib/context.js";
 import { connectDB } from "./lib/db.js";
 import { logtoConfig, validateLogtoConfig } from "./lib/logto.js";
 import { openApiSpec } from "./lib/openapi.js";
 import { connectRedis, closeRedis, getRedis, getRedisHealth } from "./lib/redis.js";
+import { enhancedApiRequestLogger } from "./middleware/api-request-logger.js";
 import { requestTimeout, configureServerTimeouts } from "./middleware/timeout.js";
 import { apiRouter } from "./routers/api.js";
 import { appRouter } from "./routers/index.js";
@@ -34,25 +37,63 @@ async function main() {
 
   const app = express();
 
-  // Core middleware
+  // Security headers (Helmet)
+  // CSP is disabled to verify compatibility with Swagger UI and inline docs first
   app.use(
-    cors({
-      origin: [
-        "http://localhost:3000",
-        "http://localhost:3003", // Chat frontend
-        "http://localhost:3005", // Admin frontend
-        process.env.NEXT_PUBLIC_APP_URL,
-        process.env.FRONTEND_URL,
-        process.env.CHAT_FRONTEND_URL,
-      ].filter((url): url is string => !!url),
-      credentials: true,
+    helmet({
+      contentSecurityPolicy: false,
+      hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true,
+      },
     })
   );
+
+  // ============================================
+  // CORS Configuration (Dual Strategy)
+  // ============================================
+
+  // Private CORS: Strict whitelist for your own apps (tRPC, auth, sessions)
+  const privateCorsOptions = {
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3003", // Chat frontend
+      "http://localhost:3005", // Admin frontend
+      process.env.NEXT_PUBLIC_APP_URL,
+      process.env.FRONTEND_URL,
+      process.env.CHAT_FRONTEND_URL,
+    ].filter((url): url is string => !!url),
+    credentials: true,
+  };
+
+  // Public CORS: Allow any origin for public API (authentication via API key, not cookies)
+  const publicCorsOptions = {
+    origin: "*",
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "X-API-Key"],
+    credentials: false, // No cookies for public API
+  };
+
+  // Core middleware
   app.use(express.json());
   app.use(cookieParser());
 
+  // Apply PUBLIC CORS to API documentation and REST API routes
+  app.use("/api", cors(publicCorsOptions));
+  app.use("/openapi.json", cors(publicCorsOptions));
+  app.use("/api-docs", cors(publicCorsOptions));
+  app.use("/docs", cors(publicCorsOptions));
+
+  // Apply PRIVATE CORS to everything else (tRPC, health, auth routes)
+  app.use("/trpc", cors(privateCorsOptions));
+  app.use("/health", cors(privateCorsOptions));
+
   // Request timeout middleware (scalable - uses native req.setTimeout)
   app.use(requestTimeout());
+
+  // API request logging middleware (logs all requests to MongoDB)
+  app.use(enhancedApiRequestLogger);
 
   // Session middleware (required for Logto)
   // Use Redis store if available, otherwise fall back to memory store
