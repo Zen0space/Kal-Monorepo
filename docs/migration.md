@@ -360,6 +360,96 @@ No GitHub secrets needed. No additional CI configuration needed.
 
 ---
 
+## Phase 9 — VPS: Coolify + GHCR (Manual — VPS Dashboard)
+
+This replaces the old Coolify Git-based backend (which built the image on the VPS) with a new
+Docker image resource that pulls directly from GHCR.
+
+> **Do this after merging to `main`** so the image already exists in GHCR before Coolify tries to pull it.
+
+### 9.1 Merge to Main (Trigger First Image Push)
+
+1. Merge `chore/deployment-migration` PR → `dev`
+2. Merge `dev` → `main`
+3. Wait for `Backend / Build & Push Docker Image` GitHub Actions job to succeed
+4. Verify the image exists at:
+   `https://github.com/Zen0space/Kal-Monorepo/pkgs/container/kal-monorepo%2Fkal-backend`
+
+### 9.2 Create New Coolify Resource (Docker Image)
+
+In Coolify dashboard → your Project → **Add New Resource**:
+
+1. Select **Docker Image** (not Git Repository)
+2. Image: `ghcr.io/zen0space/kal-monorepo/kal-backend:latest`
+3. Name: `kal-backend`
+4. No registry credentials needed — image is public
+
+### 9.3 Configure Environment Variables
+
+In the new resource settings, add all environment variables:
+
+| Variable           | Value                                                                    |
+| ------------------ | ------------------------------------------------------------------------ |
+| `NODE_ENV`         | `production`                                                             |
+| `MONGODB_URI`      | `mongodb://<user>:<password>@<mongodb-host>:27017/<db>?authSource=admin` |
+| `REDIS_URL`        | `redis://<redis-host>:6379`                                              |
+| `LOGTO_ENDPOINT`   | Your Logto URL                                                           |
+| `LOGTO_APP_ID`     | Your Logto app ID                                                        |
+| `LOGTO_APP_SECRET` | Your Logto app secret                                                    |
+| `SESSION_SECRET`   | Your session secret                                                      |
+| `GLM_API_BASE_URL` | `https://api.z.ai/api/paas/v4`                                           |
+| `GLM_API_KEY`      | Your GLM API key                                                         |
+| `INTERNAL_API_KEY` | Your internal API key                                                    |
+| `FRONTEND_URL`     | Your Vercel frontend URL                                                 |
+
+> **Note:** Use the Coolify container hostnames (not `localhost`) for `MONGODB_URI` and `REDIS_URL`
+> since all services run on the same Docker network in Coolify.
+
+### 9.4 Configure Port
+
+- Container port: `3000`
+- Exposed port: `4000` (or whatever your current backend port is)
+
+### 9.5 Deploy
+
+Click **Deploy** — Coolify will pull `ghcr.io/zen0space/kal-monorepo/kal-backend:latest` and start the container.
+
+### 9.6 Verify
+
+```bash
+# SSH into VPS and check the container is running
+docker ps | grep kal-backend
+
+# Check logs for startup errors
+docker logs <container_id> --tail 50
+
+# Quick API health check
+curl http://localhost:4000
+```
+
+### 9.7 Remove Old Resources
+
+Once the new backend is confirmed working:
+
+1. In Coolify → delete the old Git-based `kal-backend` resource
+2. Delete old `kal-frontend`, `kal-frontend-chat`, `kal-admin` resources (moving to Vercel)
+3. Clean up dangling images on VPS:
+
+```bash
+docker image prune -f
+```
+
+### 9.8 Redeployment Workflow (Going Forward)
+
+When you want to deploy a new backend version:
+
+1. Merge to `main`
+2. Wait for `Backend / Build & Push Docker Image` to succeed in GitHub Actions
+3. Go to Coolify dashboard → `kal-backend` resource → click **Redeploy**
+4. Coolify pulls the new `:latest` image and restarts the container
+
+---
+
 ## Final Architecture
 
 ```
@@ -396,14 +486,15 @@ No GitHub secrets needed. No additional CI configuration needed.
 
 If anything goes wrong:
 
-| Phase | Rollback                                                      |
-| ----- | ------------------------------------------------------------- |
-| 1     | Delete `.dockerignore`                                        |
-| 2     | Revert CI workflow, restore `docker-build` job                |
-| 3     | Revert `docker-compose.yml`, restore `build:` blocks          |
-| 4     | Cannot rollback (files deleted) — restore from git            |
-| 5-6   | Delete `vercel.json` files, revert `kal-admin/next.config.ts` |
-| 7-8   | Delete Vercel projects                                        |
+| Phase | Rollback                                                                  |
+| ----- | ------------------------------------------------------------------------- |
+| 1     | Delete `.dockerignore`                                                    |
+| 2     | Revert CI workflow, restore `docker-build` job                            |
+| 3     | Revert `docker-compose.yml`, restore `build:` blocks                      |
+| 4     | Cannot rollback (files deleted) — restore from git                        |
+| 5-6   | Delete `vercel.json` files, revert `kal-admin/next.config.ts`             |
+| 7-8   | Delete Vercel projects                                                    |
+| 9     | In Coolify, delete new Docker Image resource, keep old Git-based resource |
 
 ---
 
@@ -417,6 +508,8 @@ If anything goes wrong:
 - [x] Phase 6: Update `kal-admin/next.config.ts`, create `kal-admin/vercel.json`
 - [x] Phase 7: Vercel auto-deploy (no CI jobs needed)
 - [ ] Phase 8: Create Vercel projects and add env vars in dashboard
-- [ ] Verify: Push to main, check CI jobs pass and backend image published to GHCR
-- [ ] Verify: Backend pulls and runs on VPS
+- [ ] Phase 9: Create new Coolify Docker Image resource pointing to GHCR
+- [ ] Verify: Merge to main, check `Backend / Build & Push Docker Image` passes
+- [ ] Verify: New backend container running on VPS via Coolify
+- [ ] Verify: Old Coolify Git-based resources removed (backend, frontend-chat, frontend, admin)
 - [ ] Verify: Frontend and admin deploy to Vercel
