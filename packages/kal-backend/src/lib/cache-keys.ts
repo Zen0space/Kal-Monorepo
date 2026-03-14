@@ -26,11 +26,9 @@ export const CacheKeys = {
   foodList: (category: string | null, limit: number, offset: number): string =>
     `${PREFIX}:api:foods:list:${category || "all"}:${limit}:${offset}`,
 
-  foodById: (id: string): string =>
-    `${PREFIX}:api:foods:id:${id}`,
+  foodById: (id: string): string => `${PREFIX}:api:foods:id:${id}`,
 
-  categories: (): string =>
-    `${PREFIX}:api:categories`,
+  categories: (): string => `${PREFIX}:api:categories`,
 
   // ============================================
   // REST API - Halal Foods
@@ -38,11 +36,15 @@ export const CacheKeys = {
   halalSearch: (query: string): string =>
     `${PREFIX}:api:halal:search:${hashKey(query.toLowerCase().trim())}`,
 
-  halalList: (brand: string | null, category: string | null, limit: number, offset: number): string =>
+  halalList: (
+    brand: string | null,
+    category: string | null,
+    limit: number,
+    offset: number
+  ): string =>
     `${PREFIX}:api:halal:list:${brand || "all"}:${category || "all"}:${limit}:${offset}`,
 
-  halalById: (id: string): string =>
-    `${PREFIX}:api:halal:id:${id}`,
+  halalById: (id: string): string => `${PREFIX}:api:halal:id:${id}`,
 
   halalBrands: (query: string | null, withCount: boolean): string =>
     `${PREFIX}:api:halal:brands:${query ? hashKey(query.toLowerCase()) : "all"}:${withCount}`,
@@ -50,8 +52,7 @@ export const CacheKeys = {
   // ============================================
   // REST API - Stats
   // ============================================
-  stats: (): string =>
-    `${PREFIX}:api:stats`,
+  stats: (): string => `${PREFIX}:api:stats`,
 
   // ============================================
   // tRPC - Food procedures
@@ -59,17 +60,26 @@ export const CacheKeys = {
   trpcFoodSearch: (query: string): string =>
     `${PREFIX}:trpc:food:search:${hashKey(query.toLowerCase().trim())}`,
 
-  trpcFoodAll: (): string =>
-    `${PREFIX}:trpc:food:all`,
+  trpcFoodAll: (): string => `${PREFIX}:trpc:food:all`,
 
-  trpcFoodPaginated: (cursor: number, limit: number, category: string | null): string =>
+  trpcFoodPaginated: (
+    cursor: number,
+    limit: number,
+    category: string | null
+  ): string =>
     `${PREFIX}:trpc:food:paginated:${cursor}:${limit}:${category || "all"}`,
 
-  trpcFoodCategories: (): string =>
-    `${PREFIX}:trpc:food:categories`,
+  trpcFoodCategories: (): string => `${PREFIX}:trpc:food:categories`,
 
-  trpcFoodStats: (): string =>
-    `${PREFIX}:trpc:food:stats`,
+  trpcFoodStats: (): string => `${PREFIX}:trpc:food:stats`,
+
+  trpcFoodAllPaginated: (
+    cursor: number,
+    limit: number,
+    category: string | null,
+    search: string | null
+  ): string =>
+    `${PREFIX}:trpc:food:all-paginated:${cursor}:${limit}:${category || "all"}:${search ? hashKey(search.toLowerCase().trim()) : "none"}`,
 
   // ============================================
   // tRPC - Halal procedures
@@ -77,17 +87,19 @@ export const CacheKeys = {
   trpcHalalSearch: (query: string): string =>
     `${PREFIX}:trpc:halal:search:${hashKey(query.toLowerCase().trim())}`,
 
-  trpcHalalAll: (): string =>
-    `${PREFIX}:trpc:halal:all`,
+  trpcHalalAll: (): string => `${PREFIX}:trpc:halal:all`,
 
-  trpcHalalPaginated: (cursor: number, limit: number, brand: string | null, category: string | null): string =>
+  trpcHalalPaginated: (
+    cursor: number,
+    limit: number,
+    brand: string | null,
+    category: string | null
+  ): string =>
     `${PREFIX}:trpc:halal:paginated:${cursor}:${limit}:${brand || "all"}:${category || "all"}`,
 
-  trpcHalalBrands: (): string =>
-    `${PREFIX}:trpc:halal:brands`,
+  trpcHalalBrands: (): string => `${PREFIX}:trpc:halal:brands`,
 
-  trpcHalalCategories: (): string =>
-    `${PREFIX}:trpc:halal:categories`,
+  trpcHalalCategories: (): string => `${PREFIX}:trpc:halal:categories`,
 
   trpcHalalByBrand: (brand: string): string =>
     `${PREFIX}:trpc:halal:brand:${hashKey(brand.toLowerCase())}`,
@@ -118,15 +130,15 @@ export const CacheKeys = {
  */
 export const CacheTTL = {
   // Short-lived (frequently changing)
-  USER_DATA: 120,           // 2 minutes
-  SEARCH_RESULTS: 300,      // 5 minutes
+  USER_DATA: 120, // 2 minutes
+  SEARCH_RESULTS: 300, // 5 minutes
 
   // Medium-lived
-  LIST_RESULTS: 600,        // 10 minutes
-  STATS: 900,               // 15 minutes
+  LIST_RESULTS: 600, // 10 minutes
+  STATS: 900, // 15 minutes
 
   // Long-lived (rarely changing)
-  CATEGORIES: 3600,         // 1 hour
-  BRANDS: 3600,             // 1 hour
-  SINGLE_ITEM: 1800,        // 30 minutes
+  CATEGORIES: 3600, // 1 hour
+  BRANDS: 3600, // 1 hour
+  SINGLE_ITEM: 1800, // 30 minutes
 };

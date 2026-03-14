@@ -1,6 +1,6 @@
 /**
  * API Request Log Service
- * 
+ *
  * Handles storing and querying API request logs in MongoDB.
  */
 
@@ -68,10 +68,17 @@ export interface LogAnalytics {
 }
 
 /**
+ * Options for analytics queries
+ */
+export interface AnalyticsOptions {
+  userId?: string;
+}
+
+/**
  * Request Log Service
  */
 export class RequestLogService {
-  constructor(private db: Db) { }
+  constructor(private db: Db) {}
 
   /**
    * Generate a unique request ID
@@ -85,7 +92,9 @@ export class RequestLogService {
    */
   async insert(log: Omit<ApiRequestLog, "_id">): Promise<void> {
     try {
-      await this.db.collection<ApiRequestLog>("api_request_logs").insertOne(log as ApiRequestLog);
+      await this.db
+        .collection<ApiRequestLog>("api_request_logs")
+        .insertOne(log as ApiRequestLog);
     } catch (error) {
       // Log insertion should never block the request
       console.error("[RequestLogService] Failed to insert log:", error);
@@ -129,7 +138,8 @@ export class RequestLogService {
 
     if (startDate || endDate) {
       filter.timestamp = {};
-      if (startDate) (filter.timestamp as Record<string, Date>).$gte = startDate;
+      if (startDate)
+        (filter.timestamp as Record<string, Date>).$gte = startDate;
       if (endDate) (filter.timestamp as Record<string, Date>).$lte = endDate;
     }
 
@@ -146,7 +156,8 @@ export class RequestLogService {
    * Get total count for pagination
    */
   async count(options: LogQueryOptions = {}): Promise<number> {
-    const { userId, endpoint, type, statusCode, success, startDate, endDate } = options;
+    const { userId, endpoint, type, statusCode, success, startDate, endDate } =
+      options;
 
     const filter: Record<string, unknown> = {};
 
@@ -158,36 +169,49 @@ export class RequestLogService {
 
     if (startDate || endDate) {
       filter.timestamp = {};
-      if (startDate) (filter.timestamp as Record<string, Date>).$gte = startDate;
+      if (startDate)
+        (filter.timestamp as Record<string, Date>).$gte = startDate;
       if (endDate) (filter.timestamp as Record<string, Date>).$lte = endDate;
     }
 
-    return this.db.collection<ApiRequestLog>("api_request_logs").countDocuments(filter);
+    return this.db
+      .collection<ApiRequestLog>("api_request_logs")
+      .countDocuments(filter);
   }
 
   /**
-   * Get analytics for a time period
+   * Get analytics for a time period, optionally scoped to a user
    */
-  async getAnalytics(startDate: Date, endDate: Date): Promise<LogAnalytics> {
+  async getAnalytics(
+    startDate: Date,
+    endDate: Date,
+    options: AnalyticsOptions = {}
+  ): Promise<LogAnalytics> {
     const collection = this.db.collection<ApiRequestLog>("api_request_logs");
 
-    const filter = {
+    const filter: Record<string, unknown> = {
       timestamp: { $gte: startDate, $lte: endDate },
     };
 
+    if (options.userId) {
+      filter.userId = options.userId;
+    }
+
     // Basic stats
-    const [statsResult] = await collection.aggregate([
-      { $match: filter },
-      {
-        $group: {
-          _id: null,
-          totalRequests: { $sum: 1 },
-          successfulRequests: { $sum: { $cond: ["$success", 1, 0] } },
-          failedRequests: { $sum: { $cond: ["$success", 0, 1] } },
-          totalDuration: { $sum: "$duration" },
+    const [statsResult] = await collection
+      .aggregate([
+        { $match: filter },
+        {
+          $group: {
+            _id: null,
+            totalRequests: { $sum: 1 },
+            successfulRequests: { $sum: { $cond: ["$success", 1, 0] } },
+            failedRequests: { $sum: { $cond: ["$success", 0, 1] } },
+            totalDuration: { $sum: "$duration" },
+          },
         },
-      },
-    ]).toArray();
+      ])
+      .toArray();
 
     const stats = statsResult || {
       totalRequests: 0,
@@ -197,62 +221,82 @@ export class RequestLogService {
     };
 
     // Top endpoints
-    const topEndpoints = await collection.aggregate([
-      { $match: filter },
-      { $group: { _id: "$endpoint", count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: 20 },
-      { $project: { endpoint: "$_id", count: 1, _id: 0 } },
-    ]).toArray() as Array<{ endpoint: string; count: number }>;
+    const topEndpoints = (await collection
+      .aggregate([
+        { $match: filter },
+        { $group: { _id: "$endpoint", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 },
+        { $project: { endpoint: "$_id", count: 1, _id: 0 } },
+      ])
+      .toArray()) as Array<{ endpoint: string; count: number }>;
 
     // Requests by hour
-    const requestsByHour = await collection.aggregate([
-      { $match: filter },
-      {
-        $group: {
-          _id: { $hour: "$timestamp" },
-          count: { $sum: 1 },
+    const requestsByHour = (await collection
+      .aggregate([
+        { $match: filter },
+        {
+          $group: {
+            _id: { $hour: "$timestamp" },
+            count: { $sum: 1 },
+          },
         },
-      },
-      { $sort: { _id: 1 } },
-      { $project: { hour: "$_id", count: 1, _id: 0 } },
-    ]).toArray() as Array<{ hour: number; count: number }>;
+        { $sort: { _id: 1 } },
+        { $project: { hour: "$_id", count: 1, _id: 0 } },
+      ])
+      .toArray()) as Array<{ hour: number; count: number }>;
 
     return {
       totalRequests: stats.totalRequests,
       successfulRequests: stats.successfulRequests,
       failedRequests: stats.failedRequests,
-      averageDuration: stats.totalRequests > 0
-        ? Math.round(stats.totalDuration / stats.totalRequests)
-        : 0,
+      averageDuration:
+        stats.totalRequests > 0
+          ? Math.round(stats.totalDuration / stats.totalRequests)
+          : 0,
       topEndpoints,
       requestsByHour,
-      errorRate: stats.totalRequests > 0
-        ? Math.round((stats.failedRequests / stats.totalRequests) * 10000) / 100
-        : 0,
+      errorRate:
+        stats.totalRequests > 0
+          ? Math.round((stats.failedRequests / stats.totalRequests) * 10000) /
+            100
+          : 0,
     };
   }
 
   /**
-   * Get request counts grouped by day
+   * Get request counts grouped by day, optionally scoped to a user
    */
-  async getRequestsByDay(days: number = 30): Promise<Array<{ date: string; count: number; errors: number }>> {
+  async getRequestsByDay(
+    days: number = 30,
+    options: AnalyticsOptions = {}
+  ): Promise<Array<{ date: string; count: number; errors: number }>> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     startDate.setHours(0, 0, 0, 0);
 
-    const result = await this.db.collection<ApiRequestLog>("api_request_logs").aggregate([
-      { $match: { timestamp: { $gte: startDate } } },
-      {
-        $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
-          count: { $sum: 1 },
-          errors: { $sum: { $cond: ["$success", 0, 1] } },
+    const matchFilter: Record<string, unknown> = {
+      timestamp: { $gte: startDate },
+    };
+    if (options.userId) {
+      matchFilter.userId = options.userId;
+    }
+
+    const result = await this.db
+      .collection<ApiRequestLog>("api_request_logs")
+      .aggregate([
+        { $match: matchFilter },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
+            count: { $sum: 1 },
+            errors: { $sum: { $cond: ["$success", 0, 1] } },
+          },
         },
-      },
-      { $sort: { _id: 1 } },
-      { $project: { date: "$_id", count: 1, errors: 1, _id: 0 } },
-    ]).toArray();
+        { $sort: { _id: 1 } },
+        { $project: { date: "$_id", count: 1, errors: 1, _id: 0 } },
+      ])
+      .toArray();
 
     return result as Array<{ date: string; count: number; errors: number }>;
   }

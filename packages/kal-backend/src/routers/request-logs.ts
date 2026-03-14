@@ -1,8 +1,9 @@
 /**
  * Request Logs Router
- * 
+ *
  * tRPC procedures for querying and analyzing API request logs.
- * Intended for admin dashboard use.
+ * All queries are automatically scoped to the authenticated user —
+ * users can only see their own logs.
  */
 
 import { z } from "zod";
@@ -12,27 +13,30 @@ import { protectedProcedure, router } from "../lib/trpc.js";
 
 export const requestLogsRouter = router({
   /**
-   * Get recent logs with filtering and pagination
+   * Get recent logs for the current user with filtering and pagination
    */
   list: protectedProcedure
     .input(
-      z.object({
-        userId: z.string().optional(),
-        endpoint: z.string().optional(),
-        type: z.enum(["rest", "trpc"]).optional(),
-        statusCode: z.number().optional(),
-        success: z.boolean().optional(),
-        startDate: z.string().datetime().optional(),
-        endDate: z.string().datetime().optional(),
-        limit: z.number().min(1).max(200).default(50),
-        offset: z.number().min(0).default(0),
-      }).optional()
+      z
+        .object({
+          endpoint: z.string().optional(),
+          type: z.enum(["rest", "trpc"]).optional(),
+          statusCode: z.number().optional(),
+          success: z.boolean().optional(),
+          startDate: z.string().datetime().optional(),
+          endDate: z.string().datetime().optional(),
+          limit: z.number().min(1).max(200).default(50),
+          offset: z.number().min(0).default(0),
+        })
+        .optional()
     )
     .query(async ({ ctx, input = {} }) => {
       const logService = new RequestLogService(ctx.db);
 
       const options = {
         ...input,
+        // Always scope to the authenticated user
+        userId: ctx.userId,
         startDate: input.startDate ? new Date(input.startDate) : undefined,
         endDate: input.endDate ? new Date(input.endDate) : undefined,
       };
@@ -48,14 +52,14 @@ export const requestLogsRouter = router({
           _id: log._id?.toString(),
         })),
         total,
-        limit: options.limit || 50,
-        offset: options.offset || 0,
-        hasMore: (options.offset || 0) + logs.length < total,
+        limit: options.limit ?? 50,
+        offset: options.offset ?? 0,
+        hasMore: (options.offset ?? 0) + logs.length < total,
       };
     }),
 
   /**
-   * Get analytics for a time period
+   * Get analytics for the current user for a time period
    */
   analytics: protectedProcedure
     .input(
@@ -68,29 +72,35 @@ export const requestLogsRouter = router({
       const logService = new RequestLogService(ctx.db);
       return logService.getAnalytics(
         new Date(input.startDate),
-        new Date(input.endDate)
+        new Date(input.endDate),
+        { userId: ctx.userId }
       );
     }),
 
   /**
-   * Get requests by day for charting
+   * Get requests by day for the current user (for charting)
    */
   requestsByDay: protectedProcedure
     .input(
-      z.object({
-        days: z.number().min(1).max(90).default(30),
-      }).optional()
+      z
+        .object({
+          days: z.number().min(1).max(90).default(30),
+        })
+        .optional()
     )
     .query(async ({ ctx, input }) => {
       const logService = new RequestLogService(ctx.db);
-      return logService.getRequestsByDay(input?.days || 30);
+      return logService.getRequestsByDay(input?.days ?? 30, {
+        userId: ctx.userId,
+      });
     }),
 
   /**
-   * Get quick stats for dashboard overview
+   * Get quick stats for the current user for dashboard overview
    */
   quickStats: protectedProcedure.query(async ({ ctx }) => {
     const logService = new RequestLogService(ctx.db);
+    const userOpts = { userId: ctx.userId };
 
     // Get stats for today
     const today = new Date();
@@ -103,8 +113,8 @@ export const requestLogsRouter = router({
     weekStart.setDate(weekStart.getDate() - 7);
 
     const [todayStats, weekStats] = await Promise.all([
-      logService.getAnalytics(today, tomorrow),
-      logService.getAnalytics(weekStart, tomorrow),
+      logService.getAnalytics(today, tomorrow, userOpts),
+      logService.getAnalytics(weekStart, tomorrow, userOpts),
     ]);
 
     return {
