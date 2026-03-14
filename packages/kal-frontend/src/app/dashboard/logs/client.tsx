@@ -58,7 +58,7 @@ interface Filters {
 const DEFAULT_FILTERS: Filters = {
   endpoint: "",
   success: undefined,
-  type: undefined,
+  type: "rest",
 };
 
 const PAGE_SIZE = 50;
@@ -200,7 +200,7 @@ function LogsContent() {
   const hasActiveFilters =
     filters.endpoint !== "" ||
     filters.success !== undefined ||
-    filters.type !== undefined;
+    filters.type !== "rest";
 
   return (
     <div className="p-4 md:p-6 lg:p-8 w-full">
@@ -341,7 +341,7 @@ function LogsContent() {
           <div className="px-5 py-12 text-center text-content-muted text-sm">
             {hasActiveFilters
               ? "No logs match your filters."
-              : "No API calls recorded yet."}
+              : "No API calls recorded yet. Make your first request using your API key."}
           </div>
         ) : (
           logs.map((log) => {
