@@ -29,7 +29,7 @@ curl -H "x-api-key: YOUR_API_KEY" https://api.kalori-api.my/api/v1/foods
 Search natural foods by name.
 
 ```
-GET /api/foods/search
+GET /api/v1/foods/search
 ```
 
 **Query Parameters:**
@@ -73,7 +73,7 @@ curl -H "x-api-key: YOUR_API_KEY" \
 Get all natural foods with optional filtering and pagination.
 
 ```
-GET /api/foods
+GET /api/v1/foods
 ```
 
 **Query Parameters:**
@@ -113,7 +113,7 @@ curl -H "x-api-key: YOUR_API_KEY" \
 Get a single natural food item by its ID.
 
 ```
-GET /api/foods/:id
+GET /api/v1/foods/:id
 ```
 
 **Path Parameters:**
@@ -136,7 +136,7 @@ curl -H "x-api-key: YOUR_API_KEY" \
 Get all available food categories.
 
 ```
-GET /api/categories
+GET /api/v1/categories
 ```
 
 **Example Request:**
@@ -175,7 +175,7 @@ curl -H "x-api-key: YOUR_API_KEY" \
 Search halal-certified foods by name.
 
 ```
-GET /api/halal/search
+GET /api/v1/halal/search
 ```
 
 **Query Parameters:**
@@ -198,7 +198,7 @@ curl -H "x-api-key: YOUR_API_KEY" \
 Get all halal foods with optional filtering and pagination.
 
 ```
-GET /api/halal
+GET /api/v1/halal
 ```
 
 **Query Parameters:**
@@ -215,7 +215,7 @@ GET /api/halal
 ### Get Halal Food by ID
 
 ```
-GET /api/halal/:id
+GET /api/v1/halal/:id
 ```
 
 ---
@@ -225,7 +225,7 @@ GET /api/halal/:id
 Get all halal food brands.
 
 ```
-GET /api/halal/brands
+GET /api/v1/halal/brands
 ```
 
 **Example Response:**
@@ -246,7 +246,7 @@ GET /api/halal/brands
 Get overall database statistics including food counts and categories.
 
 ```
-GET /api/stats
+GET /api/v1/stats
 ```
 
 **Example Request:**
