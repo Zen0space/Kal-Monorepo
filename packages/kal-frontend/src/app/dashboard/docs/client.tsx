@@ -98,7 +98,7 @@ const ERROR_CODES = [
       "Respect the Retry-After header (seconds to wait before retrying).",
       "Implement exponential backoff in your client.",
       "Cache responses to reduce redundant calls.",
-      "Use the /api/stats endpoint to check current limits.",
+      "Use the /api/v1/stats endpoint to check current limits.",
     ],
     example: '{"success":false,"error":"Rate limit exceeded","retryAfter":42}',
     hasRetryAfter: true,
@@ -551,7 +551,7 @@ async function getFoodCached(query) {
   const hit = cache.get(key);
   if (hit && Date.now() - hit.ts < 5 * 60 * 1000) return hit.data;
 
-  const res = await fetch(\`https://kalori-api.my/api/foods/search?q=\${encodeURIComponent(query)}\`,
+  const res = await fetch(\`https://kalori-api.my/api/v1/foods/search?q=\${encodeURIComponent(query)}\`,
     { headers: { 'X-API-Key': process.env.KAL_API_KEY } });
   const data = await res.json();
   cache.set(key, { data, ts: Date.now() });
@@ -595,14 +595,14 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const q = searchParams.get('q') ?? '';
   const res = await fetch(
-    \`https://kalori-api.my/api/foods/search?q=\${encodeURIComponent(q)}\`,
+    \`https://kalori-api.my/api/v1/foods/search?q=\${encodeURIComponent(q)}\`,
     { headers: { 'X-API-Key': process.env.KAL_API_KEY! } }
   );
   return Response.json(await res.json());
 }
 
 // ❌ Wrong — key is visible in the browser bundle
-const res = await fetch('/api/foods/search?q=nasi', {
+const res = await fetch('/api/v1/foods/search?q=nasi', {
   headers: { 'X-API-Key': 'kal_your_real_key' }, // exposed!
 });`,
       lang: "typescript",
@@ -628,7 +628,7 @@ data.data.forEach(food => console.log(food.name));`,
       icon: BookOpen,
       title: "Use pagination for large datasets",
       color: "text-blue-400",
-      body: "The /api/foods and /api/halal endpoints return up to 200 items per page. Use limit and offset to paginate instead of fetching everything at once.",
+      body: "The /api/v1/foods and /api/v1/halal endpoints return up to 200 items per page. Use limit and offset to paginate instead of fetching everything at once.",
       code: `async function* paginate(baseUrl, apiKey, pageSize = 50) {
   let offset = 0;
   while (true) {
@@ -642,7 +642,7 @@ data.data.forEach(food => console.log(food.name));`,
 }
 
 // Usage
-for await (const page of paginate('https://kalori-api.my/api/foods', key)) {
+for await (const page of paginate('https://kalori-api.my/api/v1/foods', key)) {
   console.log(\`Got \${page.length} foods\`);
 }`,
       lang: "javascript",
@@ -706,7 +706,7 @@ function ApiKeysTab({
           header. Query-string based auth is not supported.
         </p>
         <CodeBlock
-          code={`GET https://kalori-api.my/api/foods/search?q=nasi+lemak
+          code={`GET https://kalori-api.my/api/v1/foods/search?q=nasi+lemak
 X-API-Key: kal_your_key_here`}
           language="http"
           copyKey="auth-header"
@@ -873,41 +873,45 @@ function QuickReferenceTab({
   const endpoints = [
     {
       method: "GET",
-      path: "/api/foods/search?q=",
+      path: "/api/v1/foods/search?q=",
       desc: "Search natural foods by name",
     },
     {
       method: "GET",
-      path: "/api/foods",
+      path: "/api/v1/foods",
       desc: "List natural foods (pagination + category filter)",
     },
     {
       method: "GET",
-      path: "/api/foods/:id",
+      path: "/api/v1/foods/:id",
       desc: "Get single natural food by ID",
     },
     {
       method: "GET",
-      path: "/api/categories",
+      path: "/api/v1/categories",
       desc: "All natural food categories",
     },
     {
       method: "GET",
-      path: "/api/halal/search?q=",
+      path: "/api/v1/halal/search?q=",
       desc: "Search JAKIM certified halal foods",
     },
     {
       method: "GET",
-      path: "/api/halal",
+      path: "/api/v1/halal",
       desc: "List halal foods (brand + category filter)",
     },
     {
       method: "GET",
-      path: "/api/halal/:id",
+      path: "/api/v1/halal/:id",
       desc: "Get single halal food by ID",
     },
-    { method: "GET", path: "/api/halal/brands", desc: "All halal brand names" },
-    { method: "GET", path: "/api/stats", desc: "Database statistics" },
+    {
+      method: "GET",
+      path: "/api/v1/halal/brands",
+      desc: "All halal brand names",
+    },
+    { method: "GET", path: "/api/v1/stats", desc: "Database statistics" },
   ];
 
   return (

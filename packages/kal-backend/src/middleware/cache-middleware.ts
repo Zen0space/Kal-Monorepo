@@ -25,55 +25,58 @@ interface CacheConfig {
  */
 const routeCacheConfigs: Record<string, CacheConfig> = {
   // Food routes
-  "GET:/api/foods/search": {
-    keyGenerator: (req) => CacheKeys.foodSearch(req.query.q as string || ""),
+  "GET:/api/v1/foods/search": {
+    keyGenerator: (req) => CacheKeys.foodSearch((req.query.q as string) || ""),
     ttl: CacheTTL.SEARCH_RESULTS,
   },
-  "GET:/api/foods": {
-    keyGenerator: (req) => CacheKeys.foodList(
-      req.query.category as string || null,
-      parseInt(req.query.limit as string) || 50,
-      parseInt(req.query.offset as string) || 0
-    ),
+  "GET:/api/v1/foods": {
+    keyGenerator: (req) =>
+      CacheKeys.foodList(
+        (req.query.category as string) || null,
+        parseInt(req.query.limit as string) || 50,
+        parseInt(req.query.offset as string) || 0
+      ),
     ttl: CacheTTL.LIST_RESULTS,
   },
-  "GET:/api/foods/:id": {
+  "GET:/api/v1/foods/:id": {
     keyGenerator: (req) => CacheKeys.foodById(req.params.id),
     ttl: CacheTTL.SINGLE_ITEM,
   },
-  "GET:/api/categories": {
+  "GET:/api/v1/categories": {
     keyGenerator: () => CacheKeys.categories(),
     ttl: CacheTTL.CATEGORIES,
   },
 
   // Halal routes
-  "GET:/api/halal/search": {
-    keyGenerator: (req) => CacheKeys.halalSearch(req.query.q as string || ""),
+  "GET:/api/v1/halal/search": {
+    keyGenerator: (req) => CacheKeys.halalSearch((req.query.q as string) || ""),
     ttl: CacheTTL.SEARCH_RESULTS,
   },
-  "GET:/api/halal": {
-    keyGenerator: (req) => CacheKeys.halalList(
-      req.query.brand as string || null,
-      req.query.category as string || null,
-      parseInt(req.query.limit as string) || 50,
-      parseInt(req.query.offset as string) || 0
-    ),
+  "GET:/api/v1/halal": {
+    keyGenerator: (req) =>
+      CacheKeys.halalList(
+        (req.query.brand as string) || null,
+        (req.query.category as string) || null,
+        parseInt(req.query.limit as string) || 50,
+        parseInt(req.query.offset as string) || 0
+      ),
     ttl: CacheTTL.LIST_RESULTS,
   },
-  "GET:/api/halal/brands": {
-    keyGenerator: (req) => CacheKeys.halalBrands(
-      req.query.q as string || null,
-      req.query.withCount === "true"
-    ),
+  "GET:/api/v1/halal/brands": {
+    keyGenerator: (req) =>
+      CacheKeys.halalBrands(
+        (req.query.q as string) || null,
+        req.query.withCount === "true"
+      ),
     ttl: CacheTTL.BRANDS,
   },
-  "GET:/api/halal/:id": {
+  "GET:/api/v1/halal/:id": {
     keyGenerator: (req) => CacheKeys.halalById(req.params.id),
     ttl: CacheTTL.SINGLE_ITEM,
   },
 
   // Stats
-  "GET:/api/stats": {
+  "GET:/api/v1/stats": {
     keyGenerator: () => CacheKeys.stats(),
     ttl: CacheTTL.STATS,
   },
@@ -81,7 +84,7 @@ const routeCacheConfigs: Record<string, CacheConfig> = {
 
 /**
  * Get route pattern from request path
- * Handles parameterized routes like /api/foods/:id
+ * Handles parameterized routes like /api/v1/foods/:id
  */
 function getRoutePattern(method: string, path: string): string {
   // Remove query string
@@ -94,16 +97,16 @@ function getRoutePattern(method: string, path: string): string {
   }
 
   // Check for parameterized routes
-  // /api/foods/123 -> /api/foods/:id
-  // /api/halal/456 -> /api/halal/:id
-  const foodIdMatch = cleanPath.match(/^\/api\/foods\/([a-f0-9]{24})$/i);
+  // /api/v1/foods/123 -> /api/v1/foods/:id
+  // /api/v1/halal/456 -> /api/v1/halal/:id
+  const foodIdMatch = cleanPath.match(/^\/api\/v1\/foods\/([a-f0-9]{24})$/i);
   if (foodIdMatch) {
-    return `${method}:/api/foods/:id`;
+    return `${method}:/api/v1/foods/:id`;
   }
 
-  const halalIdMatch = cleanPath.match(/^\/api\/halal\/([a-f0-9]{24})$/i);
+  const halalIdMatch = cleanPath.match(/^\/api\/v1\/halal\/([a-f0-9]{24})$/i);
   if (halalIdMatch) {
-    return `${method}:/api/halal/:id`;
+    return `${method}:/api/v1/halal/:id`;
   }
 
   return exactKey;
@@ -113,7 +116,11 @@ function getRoutePattern(method: string, path: string): string {
  * API response caching middleware
  * Automatically caches GET responses based on route configuration
  */
-export function apiCacheMiddleware(req: Request, res: CacheableResponse, next: NextFunction): void {
+export function apiCacheMiddleware(
+  req: Request,
+  res: CacheableResponse,
+  next: NextFunction
+): void {
   // Only cache GET requests
   if (req.method !== "GET") {
     next();
@@ -138,7 +145,8 @@ export function apiCacheMiddleware(req: Request, res: CacheableResponse, next: N
   const cacheKey = config.keyGenerator(req);
 
   // Try to get from cache
-  cache.get<{ body: string; contentType: string }>(cacheKey)
+  cache
+    .get<{ body: string; contentType: string }>(cacheKey)
     .then((cached) => {
       if (cached) {
         // Cache hit
@@ -163,12 +171,18 @@ export function apiCacheMiddleware(req: Request, res: CacheableResponse, next: N
         // Only cache successful responses
         if (res.statusCode >= 200 && res.statusCode < 300) {
           const bodyString = JSON.stringify(body);
-          cache.set(cacheKey, {
-            body: bodyString,
-            contentType: "application/json",
-          }, config.ttl).catch(() => {
-            // Ignore cache errors
-          });
+          cache
+            .set(
+              cacheKey,
+              {
+                body: bodyString,
+                contentType: "application/json",
+              },
+              config.ttl
+            )
+            .catch(() => {
+              // Ignore cache errors
+            });
           logger.debug(`Cache SET: ${cacheKey} (TTL: ${config.ttl}s)`);
         }
         return originalJson(body);
@@ -176,13 +190,23 @@ export function apiCacheMiddleware(req: Request, res: CacheableResponse, next: N
 
       // Override send method for non-JSON responses
       res.send = function (body: unknown): Response {
-        if (res.statusCode >= 200 && res.statusCode < 300 && typeof body === "string") {
-          cache.set(cacheKey, {
-            body,
-            contentType: res.get("Content-Type") || "text/plain",
-          }, config.ttl).catch(() => {
-            // Ignore cache errors
-          });
+        if (
+          res.statusCode >= 200 &&
+          res.statusCode < 300 &&
+          typeof body === "string"
+        ) {
+          cache
+            .set(
+              cacheKey,
+              {
+                body,
+                contentType: res.get("Content-Type") || "text/plain",
+              },
+              config.ttl
+            )
+            .catch(() => {
+              // Ignore cache errors
+            });
         }
         return originalSend(body);
       };
@@ -199,8 +223,15 @@ export function apiCacheMiddleware(req: Request, res: CacheableResponse, next: N
  * Selective cache middleware factory
  * Use when you want explicit control over which routes are cached
  */
-export function withCache(options: { ttl: number; keyGenerator?: (req: Request) => string }) {
-  return async function cacheMiddleware(req: Request, res: CacheableResponse, next: NextFunction): Promise<void> {
+export function withCache(options: {
+  ttl: number;
+  keyGenerator?: (req: Request) => string;
+}) {
+  return async function cacheMiddleware(
+    req: Request,
+    res: CacheableResponse,
+    next: NextFunction
+  ): Promise<void> {
     if (!isRedisAvailable()) {
       next();
       return;
@@ -211,7 +242,9 @@ export function withCache(options: { ttl: number; keyGenerator?: (req: Request) 
       : `kal:api:${req.method}:${req.originalUrl}`;
 
     try {
-      const cached = await cache.get<{ body: string; contentType: string }>(cacheKey);
+      const cached = await cache.get<{ body: string; contentType: string }>(
+        cacheKey
+      );
 
       if (cached) {
         res.setHeader("X-Cache", "HIT");
@@ -225,10 +258,16 @@ export function withCache(options: { ttl: number; keyGenerator?: (req: Request) 
       const originalJson = res.json.bind(res);
       res.json = function (body: unknown): Response {
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          cache.set(cacheKey, {
-            body: JSON.stringify(body),
-            contentType: "application/json",
-          }, options.ttl).catch(() => {});
+          cache
+            .set(
+              cacheKey,
+              {
+                body: JSON.stringify(body),
+                contentType: "application/json",
+              },
+              options.ttl
+            )
+            .catch(() => {});
         }
         return originalJson(body);
       };

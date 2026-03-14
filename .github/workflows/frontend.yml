@@ -96,6 +96,6 @@ jobs:
         env:
           NEXT_PUBLIC_BACKEND_URL: https://kalori-api.my
           NEXT_PUBLIC_APP_URL: https://kalori-api.my
-          NEXT_PUBLIC_API_URL: https://kalori-api.my/api
+          NEXT_PUBLIC_API_URL: https://kalori-api.my/api/v1/v1
           NEXT_PUBLIC_LOGTO_ENDPOINT: https://auth.kalori-api.my
           NEXT_PUBLIC_LOGTO_APP_ID: placeholder

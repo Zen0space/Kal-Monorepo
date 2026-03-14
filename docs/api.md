@@ -2,7 +2,7 @@
 
 The Kal API provides access to Malaysian food nutritional data. All API endpoints require authentication via API key.
 
-**🌐 Production API Base URL:** `https://kalori-api.my/api`
+**🌐 Production API Base URL:** `https://kalori-api.my/api/v1/v1`
 
 ---
 
@@ -11,7 +11,7 @@ The Kal API provides access to Malaysian food nutritional data. All API endpoint
 All API requests require an API key to be passed in the `x-api-key` header.
 
 ```bash
-curl -H "x-api-key: YOUR_API_KEY" https://kalori-api.my/api/foods
+curl -H "x-api-key: YOUR_API_KEY" https://kalori-api.my/api/v1/foods
 ```
 
 ### Getting an API Key
@@ -42,7 +42,7 @@ GET /api/foods/search
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/foods/search?q=nasi"
+  "https://kalori-api.my/api/v1/foods/search?q=nasi"
 ```
 
 **Example Response:**
@@ -88,7 +88,7 @@ GET /api/foods
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/foods?category=Rice&limit=10"
+  "https://kalori-api.my/api/v1/foods?category=Rice&limit=10"
 ```
 
 **Example Response:**
@@ -126,7 +126,7 @@ GET /api/foods/:id
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/foods/6789abc123def456"
+  "https://kalori-api.my/api/v1/foods/6789abc123def456"
 ```
 
 ---
@@ -143,7 +143,7 @@ GET /api/categories
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/categories"
+  "https://kalori-api.my/api/v1/categories"
 ```
 
 **Example Response:**
@@ -188,7 +188,7 @@ GET /api/halal/search
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/halal/search?q=chicken"
+  "https://kalori-api.my/api/v1/halal/search?q=chicken"
 ```
 
 ---
@@ -253,7 +253,7 @@ GET /api/stats
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/stats"
+  "https://kalori-api.my/api/v1/stats"
 ```
 
 **Example Response:**

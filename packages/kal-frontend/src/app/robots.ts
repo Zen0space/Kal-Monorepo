@@ -15,7 +15,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: ["/", "/search", "/api-docs"],
         disallow: [
-          "/api/", // Prevent crawling API endpoints
+          "/api/v1/", // Prevent crawling API endpoints
           "/callback", // Auth callback routes
           "/login-success", // Login flow pages
           "/_next/", // Next.js internal files

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import {
+  AlertCircle,
   BookOpen,
   ChevronLeft,
   ChevronRight,
@@ -34,6 +35,47 @@ const navItems = [
   { href: "/dashboard/foods", label: "Food List", icon: Database },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
+
+function ApiVersionBanner() {
+  const [dismissed, setDismissed] = useState(false);
+
+  if (dismissed) return null;
+
+  return (
+    <div className="bg-gradient-to-r from-accent/10 to-emerald-500/10 border-b border-accent/20">
+      <div className="px-4 py-3 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <AlertCircle size={18} className="text-accent flex-shrink-0" />
+          <p className="text-sm text-content-primary">
+            <span className="font-semibold">API v1 Migration:</span>{" "}
+            <span className="text-content-secondary">
+              API endpoints have moved to{" "}
+              <code className="px-1.5 py-0.5 rounded bg-dark-elevated text-accent text-xs font-mono">
+                /api/v1/*
+              </code>
+              . Update your base URL to continue using the API.
+            </span>
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Link
+            href="/dashboard/setup"
+            className="text-xs font-medium text-accent hover:text-accent/80 transition-colors"
+          >
+            View Guide
+          </Link>
+          <button
+            onClick={() => setDismissed(true)}
+            className="p-1 text-content-muted hover:text-content-primary transition-colors"
+            aria-label="Dismiss"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function Sidebar({ onSignOut }: SidebarProps) {
   const { isMobile, shouldAutoCollapse, isMounted } = useSidebarLayout();
@@ -325,6 +367,7 @@ export function DashboardLayout({
       <main
         className={`transition-[margin] duration-300 ease-in-out ${mainMargin}`}
       >
+        <ApiVersionBanner />
         {children}
       </main>
     </div>
