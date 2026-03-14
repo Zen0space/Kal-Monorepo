@@ -563,7 +563,7 @@ export default function APIDocsClient({
         <section className="mb-12">
           <h3 className="text-xl font-semibold mb-3">Base URL</h3>
           <code className="block bg-[#1a1a1a] border border-[#262626] rounded-lg px-4 py-3 text-[#10b981] font-mono">
-            https://kalori-api.my
+            https://api.kalori-api.my
           </code>
         </section>
 

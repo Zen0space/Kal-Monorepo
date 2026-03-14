@@ -2,7 +2,7 @@
 
 The Kal API provides access to Malaysian food nutritional data. All API endpoints require authentication via API key.
 
-**🌐 Production API Base URL:** `https://kalori-api.my/api/v1/v1`
+**🌐 Production API Base URL:** `https://api.kalori-api.my/api/v1/v1`
 
 ---
 
@@ -11,12 +11,12 @@ The Kal API provides access to Malaysian food nutritional data. All API endpoint
 All API requests require an API key to be passed in the `x-api-key` header.
 
 ```bash
-curl -H "x-api-key: YOUR_API_KEY" https://kalori-api.my/api/v1/foods
+curl -H "x-api-key: YOUR_API_KEY" https://api.kalori-api.my/api/v1/foods
 ```
 
 ### Getting an API Key
 
-1. Sign in at [https://kalori-api.my](https://kalori-api.my)
+1. Sign in at [https://api.kalori-api.my](https://api.kalori-api.my)
 2. Navigate to the Dashboard
 3. Generate a new API key
 
@@ -42,7 +42,7 @@ GET /api/foods/search
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/v1/foods/search?q=nasi"
+  "https://api.kalori-api.my/api/v1/foods/search?q=nasi"
 ```
 
 **Example Response:**
@@ -88,7 +88,7 @@ GET /api/foods
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/v1/foods?category=Rice&limit=10"
+  "https://api.kalori-api.my/api/v1/foods?category=Rice&limit=10"
 ```
 
 **Example Response:**
@@ -126,7 +126,7 @@ GET /api/foods/:id
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/v1/foods/6789abc123def456"
+  "https://api.kalori-api.my/api/v1/foods/6789abc123def456"
 ```
 
 ---
@@ -143,7 +143,7 @@ GET /api/categories
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/v1/categories"
+  "https://api.kalori-api.my/api/v1/categories"
 ```
 
 **Example Response:**
@@ -188,7 +188,7 @@ GET /api/halal/search
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/v1/halal/search?q=chicken"
+  "https://api.kalori-api.my/api/v1/halal/search?q=chicken"
 ```
 
 ---
@@ -253,7 +253,7 @@ GET /api/stats
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/v1/stats"
+  "https://api.kalori-api.my/api/v1/stats"
 ```
 
 **Example Response:**
@@ -373,7 +373,7 @@ interface HalalFood extends Food {
 The full OpenAPI 3.0 specification is available at:
 
 ```
-https://kalori-api.my/openapi.json
+https://api.kalori-api.my/openapi.json
 ```
 
 ---

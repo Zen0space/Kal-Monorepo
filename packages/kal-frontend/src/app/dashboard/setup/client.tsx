@@ -99,7 +99,7 @@ function ApiPlayground({
     setResponseTime(null);
 
     const startTime = performance.now();
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://kalori-api.my";
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.kalori-api.my";
     const url =
       endpoint === "halal"
         ? `${baseUrl}/api/v1/halal/search?q=${encodeURIComponent(query)}`
@@ -496,7 +496,7 @@ function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
 
     setLoadingEndpoint(endpoint.id);
     const startTime = performance.now();
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://kalori-api.my";
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.kalori-api.my";
     const path = getTryUrl(endpoint.id, endpoint.defaultExample);
 
     try {
@@ -692,7 +692,7 @@ function SetupContent() {
         "Add your API key to environment variables for secure storage",
       code: `# .env or .env.local
 KAL_API_KEY=your_api_key_here
-KAL_API_URL=https://kalori-api.my`,
+KAL_API_URL=https://api.kalori-api.my`,
       language: "bash",
     },
     {
@@ -723,42 +723,42 @@ declare namespace NodeJS {
     {
       title: "1. Basic search request",
       description: "Search for Malaysian foods using curl",
-      code: `curl -X GET "https://kalori-api.my/api/v1/foods/search?q=nasi+lemak" \\
+      code: `curl -X GET "https://api.kalori-api.my/api/v1/foods/search?q=nasi+lemak" \\
   -H "X-API-Key: YOUR_API_KEY"`,
       language: "bash",
     },
     {
       title: "2. Search halal certified foods",
       description: "Find JAKIM certified halal products",
-      code: `curl -X GET "https://kalori-api.my/api/v1/halal/search?q=ramly" \\
+      code: `curl -X GET "https://api.kalori-api.my/api/v1/halal/search?q=ramly" \\
   -H "X-API-Key: YOUR_API_KEY"`,
       language: "bash",
     },
     {
       title: "3. List foods with pagination",
       description: "Get paginated list with optional category filter",
-      code: `curl -X GET "https://kalori-api.my/api/v1/foods?category=Rice&limit=10&offset=0" \\
+      code: `curl -X GET "https://api.kalori-api.my/api/v1/foods?category=Rice&limit=10&offset=0" \\
   -H "X-API-Key: YOUR_API_KEY"`,
       language: "bash",
     },
     {
       title: "4. Get single food by ID",
       description: "Retrieve a specific food item",
-      code: `curl -X GET "https://kalori-api.my/api/v1/foods/FOOD_ID" \\
+      code: `curl -X GET "https://api.kalori-api.my/api/v1/foods/FOOD_ID" \\
   -H "X-API-Key: YOUR_API_KEY"`,
       language: "bash",
     },
     {
       title: "5. Get all categories",
       description: "List all available food categories",
-      code: `curl -X GET "https://kalori-api.my/api/v1/categories" \\
+      code: `curl -X GET "https://api.kalori-api.my/api/v1/categories" \\
   -H "X-API-Key: YOUR_API_KEY"`,
       language: "bash",
     },
     {
       title: "6. Get halal brands",
       description: "List all halal certified brands",
-      code: `curl -X GET "https://kalori-api.my/api/v1/halal/brands" \\
+      code: `curl -X GET "https://api.kalori-api.my/api/v1/halal/brands" \\
   -H "X-API-Key: YOUR_API_KEY"`,
       language: "bash",
     },
@@ -766,7 +766,7 @@ declare namespace NodeJS {
       title: "7. Pretty print JSON output",
       description:
         "Pipe through jq for formatted output (install: brew install jq)",
-      code: `curl -s "https://kalori-api.my/api/v1/foods/search?q=roti" \\
+      code: `curl -s "https://api.kalori-api.my/api/v1/foods/search?q=roti" \\
   -H "X-API-Key: YOUR_API_KEY" | jq '.'`,
       language: "bash",
     },
@@ -791,7 +791,7 @@ npm install node-fetch dotenv`,
 import 'dotenv/config';
 
 const API_KEY = process.env.KAL_API_KEY;
-const BASE_URL = process.env.KAL_API_URL || 'https://kalori-api.my';
+const BASE_URL = process.env.KAL_API_URL || 'https://api.kalori-api.my';
 
 async function searchFoods(query) {
   const url = \`\${BASE_URL}/api/v1/foods/search?q=\${encodeURIComponent(query)}\`;
@@ -875,7 +875,7 @@ const data = await fetchWithRetry(
 import 'dotenv/config';
 
 const API_KEY = process.env.KAL_API_KEY;
-const BASE_URL = 'https://kalori-api.my';
+const BASE_URL = 'https://api.kalori-api.my';
 
 const query = process.argv[2] || 'nasi lemak';
 
@@ -919,7 +919,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 API_KEY = os.getenv("KAL_API_KEY")
-BASE_URL = os.getenv("KAL_API_URL", "https://kalori-api.my")`,
+BASE_URL = os.getenv("KAL_API_URL", "https://api.kalori-api.my")`,
       language: "python",
     },
     {
@@ -977,7 +977,7 @@ pnpm add axios`,
 import axios from 'axios';
 
 const kalApi = axios.create({
-  baseURL: process.env.REACT_APP_KAL_API_URL || 'https://kalori-api.my',
+  baseURL: process.env.REACT_APP_KAL_API_URL || 'https://api.kalori-api.my',
   headers: {
     'X-API-Key': process.env.REACT_APP_KAL_API_KEY,
     'Content-Type': 'application/json',
@@ -1098,17 +1098,17 @@ export function FoodSearch() {
       description: "Add to .env.local (client-side needs NEXT_PUBLIC_ prefix)",
       code: `# .env.local
 KAL_API_KEY=your_api_key_here
-KAL_API_URL=https://kalori-api.my
+KAL_API_URL=https://api.kalori-api.my
 
 # For client-side usage (if needed)
-NEXT_PUBLIC_KAL_API_URL=https://kalori-api.my`,
+NEXT_PUBLIC_KAL_API_URL=https://api.kalori-api.my`,
       language: "bash",
     },
     {
       title: "2. Create server-side API client",
       code: `// lib/kal-api.ts
 const API_KEY = process.env.KAL_API_KEY;
-const BASE_URL = process.env.KAL_API_URL || 'https://kalori-api.my';
+const BASE_URL = process.env.KAL_API_URL || 'https://api.kalori-api.my';
 
 export interface Food {
   id: string;
@@ -1195,7 +1195,7 @@ export default async function FoodsPage({ searchParams }: PageProps) {
 import { NextRequest, NextResponse } from 'next/server';
 
 const API_KEY = process.env.KAL_API_KEY;
-const BASE_URL = process.env.KAL_API_URL || 'https://kalori-api.my';
+const BASE_URL = process.env.KAL_API_URL || 'https://api.kalori-api.my';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
