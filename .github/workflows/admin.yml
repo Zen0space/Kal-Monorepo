@@ -94,7 +94,7 @@ jobs:
       - name: Build admin
         run: pnpm --filter kal-admin build
         env:
-          NEXT_PUBLIC_API_URL: https://kalori-api.my/api
+          NEXT_PUBLIC_API_URL: https://kalori-api.my/api/v1
           ADMIN_SECRET: placeholder
           ADMIN_USERNAME: placeholder
           ADMIN_PASSWORD: placeholder

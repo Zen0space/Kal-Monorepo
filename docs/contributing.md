@@ -46,9 +46,32 @@ Please be respectful and constructive in all interactions. We welcome contributo
    ```
 
 5. **Set up environment:**
+
    ```bash
    cp .env.example .env
    ```
+
+   Edit `.env` with your local values (MongoDB, Logto, Redis credentials).
+
+6. **Start local services (MongoDB, Logto, Redis) via Docker:**
+
+   ```bash
+   docker compose -f docker/docker-compose.yml up -d mongodb postgres logto redis
+   ```
+
+   Wait a few seconds for Logto to finish seeding, then verify services are running:
+
+   ```bash
+   docker compose -f docker/docker-compose.yml ps
+   ```
+
+7. **Start the development servers:**
+
+   ```bash
+   pnpm dev
+   ```
+
+   This starts both the backend (port `4000`) and frontend (port `3000`) concurrently.
 
 ---
 

@@ -1,17 +1,18 @@
+import { API_BASE_PATH } from "kal-shared";
+
 export const openApiSpec = {
   openapi: "3.0.3",
   info: {
     title: "Kal - Malaysian Food API",
-    description: "Public REST API for accessing Malaysian food nutritional data. Search our database of 100+ Malaysian foods with accurate calorie, protein, carb, and fat information.",
+    description:
+      "Public REST API for accessing Malaysian food nutritional data. Search our database of 100+ Malaysian foods with accurate calorie, protein, carb, and fat information.",
     version: "1.0.0",
     contact: {
       name: "Kal API Support",
       url: "https://github.com/Zen0space/Kal-Monorepo",
     },
   },
-  servers: [
-    { url: "/api", description: "API Base Path" },
-  ],
+  servers: [{ url: API_BASE_PATH, description: "API Base Path" }],
   components: {
     securitySchemes: {
       ApiKeyAuth: {
@@ -66,16 +67,20 @@ export const openApiSpec = {
       },
     },
   },
-  security: [
-    { ApiKeyAuth: [] },
-  ],
+  security: [{ ApiKeyAuth: [] }],
   paths: {
     "/foods/search": {
       get: {
         summary: "Search natural foods",
         description: "Search natural foods by name. Returns up to 20 results.",
         parameters: [
-          { name: "q", in: "query", required: true, schema: { type: "string" }, description: "Search query" },
+          {
+            name: "q",
+            in: "query",
+            required: true,
+            schema: { type: "string" },
+            description: "Search query",
+          },
         ],
         responses: {
           200: {
@@ -86,25 +91,54 @@ export const openApiSpec = {
                   type: "object",
                   properties: {
                     success: { type: "boolean", example: true },
-                    data: { type: "array", items: { $ref: "#/components/schemas/Food" } },
+                    data: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/Food" },
+                    },
                     count: { type: "integer" },
                   },
                 },
               },
             },
           },
-          400: { description: "Missing query parameter", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+          400: {
+            description: "Missing query parameter",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
     },
     "/foods": {
       get: {
         summary: "List natural foods",
-        description: "Get all natural foods with optional filtering and pagination.",
+        description:
+          "Get all natural foods with optional filtering and pagination.",
         parameters: [
-          { name: "category", in: "query", required: false, schema: { type: "string" }, description: "Filter by category" },
-          { name: "limit", in: "query", required: false, schema: { type: "integer", default: 50, maximum: 200 }, description: "Max results" },
-          { name: "offset", in: "query", required: false, schema: { type: "integer", default: 0 }, description: "Pagination offset" },
+          {
+            name: "category",
+            in: "query",
+            required: false,
+            schema: { type: "string" },
+            description: "Filter by category",
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 50, maximum: 200 },
+            description: "Max results",
+          },
+          {
+            name: "offset",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 0 },
+            description: "Pagination offset",
+          },
         ],
         responses: {
           200: {
@@ -115,7 +149,10 @@ export const openApiSpec = {
                   type: "object",
                   properties: {
                     success: { type: "boolean", example: true },
-                    data: { type: "array", items: { $ref: "#/components/schemas/Food" } },
+                    data: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/Food" },
+                    },
                     pagination: { $ref: "#/components/schemas/Pagination" },
                   },
                 },
@@ -130,7 +167,13 @@ export const openApiSpec = {
         summary: "Get natural food by ID",
         description: "Get a single natural food item by its MongoDB ObjectId.",
         parameters: [
-          { name: "id", in: "path", required: true, schema: { type: "string" }, description: "Food ID" },
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+            description: "Food ID",
+          },
         ],
         responses: {
           200: {
@@ -147,7 +190,14 @@ export const openApiSpec = {
               },
             },
           },
-          404: { description: "Food not found", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+          404: {
+            description: "Food not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
     },
@@ -177,7 +227,13 @@ export const openApiSpec = {
         summary: "Search halal foods",
         description: "Search halal foods by name. Returns up to 20 results.",
         parameters: [
-          { name: "q", in: "query", required: true, schema: { type: "string" }, description: "Search query" },
+          {
+            name: "q",
+            in: "query",
+            required: true,
+            schema: { type: "string" },
+            description: "Search query",
+          },
         ],
         responses: {
           200: {
@@ -188,26 +244,61 @@ export const openApiSpec = {
                   type: "object",
                   properties: {
                     success: { type: "boolean", example: true },
-                    data: { type: "array", items: { $ref: "#/components/schemas/HalalFood" } },
+                    data: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/HalalFood" },
+                    },
                     count: { type: "integer" },
                   },
                 },
               },
             },
           },
-          400: { description: "Missing query parameter", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+          400: {
+            description: "Missing query parameter",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
     },
     "/halal": {
       get: {
         summary: "List halal foods",
-        description: "Get all halal foods with optional filtering and pagination.",
+        description:
+          "Get all halal foods with optional filtering and pagination.",
         parameters: [
-          { name: "brand", in: "query", required: false, schema: { type: "string" }, description: "Filter by brand" },
-          { name: "category", in: "query", required: false, schema: { type: "string" }, description: "Filter by category" },
-          { name: "limit", in: "query", required: false, schema: { type: "integer", default: 50, maximum: 200 }, description: "Max results" },
-          { name: "offset", in: "query", required: false, schema: { type: "integer", default: 0 }, description: "Pagination offset" },
+          {
+            name: "brand",
+            in: "query",
+            required: false,
+            schema: { type: "string" },
+            description: "Filter by brand",
+          },
+          {
+            name: "category",
+            in: "query",
+            required: false,
+            schema: { type: "string" },
+            description: "Filter by category",
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 50, maximum: 200 },
+            description: "Max results",
+          },
+          {
+            name: "offset",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 0 },
+            description: "Pagination offset",
+          },
         ],
         responses: {
           200: {
@@ -218,7 +309,10 @@ export const openApiSpec = {
                   type: "object",
                   properties: {
                     success: { type: "boolean", example: true },
-                    data: { type: "array", items: { $ref: "#/components/schemas/HalalFood" } },
+                    data: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/HalalFood" },
+                    },
                     pagination: { $ref: "#/components/schemas/Pagination" },
                   },
                 },
@@ -233,8 +327,20 @@ export const openApiSpec = {
         summary: "List halal brands",
         description: "Get all halal food brands.",
         parameters: [
-          { name: "q", in: "query", required: false, schema: { type: "string" }, description: "Search/Filter brands" },
-          { name: "withCount", in: "query", required: false, schema: { type: "string", enum: ["true", "false"] }, description: "Include product count per brand" },
+          {
+            name: "q",
+            in: "query",
+            required: false,
+            schema: { type: "string" },
+            description: "Search/Filter brands",
+          },
+          {
+            name: "withCount",
+            in: "query",
+            required: false,
+            schema: { type: "string", enum: ["true", "false"] },
+            description: "Include product count per brand",
+          },
         ],
         responses: {
           200: {
@@ -274,7 +380,13 @@ export const openApiSpec = {
         summary: "Get halal food by ID",
         description: "Get a single halal food item by its MongoDB ObjectId.",
         parameters: [
-          { name: "id", in: "path", required: true, schema: { type: "string" }, description: "Food ID" },
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+            description: "Food ID",
+          },
         ],
         responses: {
           200: {
@@ -291,7 +403,14 @@ export const openApiSpec = {
               },
             },
           },
-          404: { description: "Food not found", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+          404: {
+            description: "Food not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
     },
@@ -315,14 +434,20 @@ export const openApiSpec = {
                           type: "object",
                           properties: {
                             total: { type: "integer" },
-                            categories: { type: "array", items: { type: "string" } },
+                            categories: {
+                              type: "array",
+                              items: { type: "string" },
+                            },
                           },
                         },
                         halalFoods: {
                           type: "object",
                           properties: {
                             total: { type: "integer" },
-                            brands: { type: "array", items: { type: "string" } },
+                            brands: {
+                              type: "array",
+                              items: { type: "string" },
+                            },
                           },
                         },
                       },

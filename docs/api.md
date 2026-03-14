@@ -2,7 +2,7 @@
 
 The Kal API provides access to Malaysian food nutritional data. All API endpoints require authentication via API key.
 
-**🌐 Production API Base URL:** `https://kalori-api.my/api`
+**🌐 Production API Base URL:** `https://api.kalori-api.my/api/v1`
 
 ---
 
@@ -11,7 +11,7 @@ The Kal API provides access to Malaysian food nutritional data. All API endpoint
 All API requests require an API key to be passed in the `x-api-key` header.
 
 ```bash
-curl -H "x-api-key: YOUR_API_KEY" https://kalori-api.my/api/foods
+curl -H "x-api-key: YOUR_API_KEY" https://api.kalori-api.my/api/v1/foods
 ```
 
 ### Getting an API Key
@@ -29,7 +29,7 @@ curl -H "x-api-key: YOUR_API_KEY" https://kalori-api.my/api/foods
 Search natural foods by name.
 
 ```
-GET /api/foods/search
+GET /api/v1/foods/search
 ```
 
 **Query Parameters:**
@@ -42,7 +42,7 @@ GET /api/foods/search
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/foods/search?q=nasi"
+  "https://api.kalori-api.my/api/v1/foods/search?q=nasi"
 ```
 
 **Example Response:**
@@ -73,7 +73,7 @@ curl -H "x-api-key: YOUR_API_KEY" \
 Get all natural foods with optional filtering and pagination.
 
 ```
-GET /api/foods
+GET /api/v1/foods
 ```
 
 **Query Parameters:**
@@ -88,7 +88,7 @@ GET /api/foods
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/foods?category=Rice&limit=10"
+  "https://api.kalori-api.my/api/v1/foods?category=Rice&limit=10"
 ```
 
 **Example Response:**
@@ -113,7 +113,7 @@ curl -H "x-api-key: YOUR_API_KEY" \
 Get a single natural food item by its ID.
 
 ```
-GET /api/foods/:id
+GET /api/v1/foods/:id
 ```
 
 **Path Parameters:**
@@ -126,7 +126,7 @@ GET /api/foods/:id
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/foods/6789abc123def456"
+  "https://api.kalori-api.my/api/v1/foods/6789abc123def456"
 ```
 
 ---
@@ -136,14 +136,14 @@ curl -H "x-api-key: YOUR_API_KEY" \
 Get all available food categories.
 
 ```
-GET /api/categories
+GET /api/v1/categories
 ```
 
 **Example Request:**
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/categories"
+  "https://api.kalori-api.my/api/v1/categories"
 ```
 
 **Example Response:**
@@ -175,7 +175,7 @@ curl -H "x-api-key: YOUR_API_KEY" \
 Search halal-certified foods by name.
 
 ```
-GET /api/halal/search
+GET /api/v1/halal/search
 ```
 
 **Query Parameters:**
@@ -188,7 +188,7 @@ GET /api/halal/search
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/halal/search?q=chicken"
+  "https://api.kalori-api.my/api/v1/halal/search?q=chicken"
 ```
 
 ---
@@ -198,7 +198,7 @@ curl -H "x-api-key: YOUR_API_KEY" \
 Get all halal foods with optional filtering and pagination.
 
 ```
-GET /api/halal
+GET /api/v1/halal
 ```
 
 **Query Parameters:**
@@ -215,7 +215,7 @@ GET /api/halal
 ### Get Halal Food by ID
 
 ```
-GET /api/halal/:id
+GET /api/v1/halal/:id
 ```
 
 ---
@@ -225,7 +225,7 @@ GET /api/halal/:id
 Get all halal food brands.
 
 ```
-GET /api/halal/brands
+GET /api/v1/halal/brands
 ```
 
 **Example Response:**
@@ -246,14 +246,14 @@ GET /api/halal/brands
 Get overall database statistics including food counts and categories.
 
 ```
-GET /api/stats
+GET /api/v1/stats
 ```
 
 **Example Request:**
 
 ```bash
 curl -H "x-api-key: YOUR_API_KEY" \
-  "https://kalori-api.my/api/stats"
+  "https://api.kalori-api.my/api/v1/stats"
 ```
 
 **Example Response:**
@@ -373,7 +373,7 @@ interface HalalFood extends Food {
 The full OpenAPI 3.0 specification is available at:
 
 ```
-https://kalori-api.my/openapi.json
+https://api.kalori-api.my/openapi.json
 ```
 
 ---

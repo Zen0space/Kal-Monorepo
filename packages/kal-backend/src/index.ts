@@ -10,13 +10,23 @@ import swaggerUi from "swagger-ui-express";
 
 import helmet from "helmet";
 
+import { API_BASE_PATH } from "kal-shared";
+
 import { createContext } from "./lib/context.js";
 import { connectDB } from "./lib/db.js";
 import { logtoConfig, validateLogtoConfig } from "./lib/logto.js";
 import { openApiSpec } from "./lib/openapi.js";
-import { connectRedis, closeRedis, getRedis, getRedisHealth } from "./lib/redis.js";
+import {
+  connectRedis,
+  closeRedis,
+  getRedis,
+  getRedisHealth,
+} from "./lib/redis.js";
 import { enhancedApiRequestLogger } from "./middleware/api-request-logger.js";
-import { requestTimeout, configureServerTimeouts } from "./middleware/timeout.js";
+import {
+  requestTimeout,
+  configureServerTimeouts,
+} from "./middleware/timeout.js";
 import { apiRouter } from "./routers/api.js";
 import { appRouter } from "./routers/index.js";
 
@@ -80,7 +90,7 @@ async function main() {
   app.use(cookieParser());
 
   // Apply PUBLIC CORS to API documentation and REST API routes
-  app.use("/api", cors(publicCorsOptions));
+  app.use(API_BASE_PATH, cors(publicCorsOptions));
   app.use("/openapi.json", cors(publicCorsOptions));
   app.use("/api-docs", cors(publicCorsOptions));
   app.use("/docs", cors(publicCorsOptions));
@@ -132,7 +142,9 @@ async function main() {
       services: {
         mongodb: "healthy",
         redis: redisHealth.status,
-        ...(redisHealth.latency !== undefined && { redisLatencyMs: redisHealth.latency }),
+        ...(redisHealth.latency !== undefined && {
+          redisLatencyMs: redisHealth.latency,
+        }),
       },
     });
   });
@@ -195,7 +207,7 @@ async function main() {
       
       <div class="endpoint">
         <span class="method">GET</span>
-        <span class="path">/api/foods/search</span>
+        <span class="path">/api/v1/foods/search</span>
         <p class="desc">Search foods by name. Returns up to 20 matching results.</p>
         <div class="params">
           <div class="param">
@@ -205,12 +217,12 @@ async function main() {
           </div>
         </div>
         <div class="example-label">Example:</div>
-        <div class="example">curl "${getBaseUrl()}/api/foods/search?q=nasi"</div>
+        <div class="example">curl "${getBaseUrl()}/api/v1/foods/search?q=nasi"</div>
       </div>
 
       <div class="endpoint">
         <span class="method">GET</span>
-        <span class="path">/api/foods</span>
+        <span class="path">/api/v1/foods</span>
         <p class="desc">List all foods with optional filtering and pagination.</p>
         <div class="params">
           <div class="param">
@@ -230,31 +242,31 @@ async function main() {
           </div>
         </div>
         <div class="example-label">Example:</div>
-        <div class="example">curl "${getBaseUrl()}/api/foods?category=Rice&limit=10"</div>
+        <div class="example">curl "${getBaseUrl()}/api/v1/foods?category=Rice&limit=10"</div>
       </div>
 
       <div class="endpoint">
         <span class="method">GET</span>
-        <span class="path">/api/foods/:id</span>
+        <span class="path">/api/v1/foods/:id</span>
         <p class="desc">Get a single food item by ID.</p>
         <div class="example-label">Example:</div>
-        <div class="example">curl "${getBaseUrl()}/api/foods/6789abc123def456..."</div>
+        <div class="example">curl "${getBaseUrl()}/api/v1/foods/6789abc123def456..."</div>
       </div>
 
       <div class="endpoint">
         <span class="method">GET</span>
-        <span class="path">/api/categories</span>
+        <span class="path">/api/v1/categories</span>
         <p class="desc">Get all available food categories.</p>
         <div class="example-label">Example:</div>
-        <div class="example">curl "${getBaseUrl()}/api/categories"</div>
+        <div class="example">curl "${getBaseUrl()}/api/v1/categories"</div>
       </div>
 
       <div class="endpoint">
         <span class="method">GET</span>
-        <span class="path">/api/stats</span>
+        <span class="path">/api/v1/stats</span>
         <p class="desc">Get database statistics.</p>
         <div class="example-label">Example:</div>
-        <div class="example">curl "${getBaseUrl()}/api/stats"</div>
+        <div class="example">curl "${getBaseUrl()}/api/v1/stats"</div>
       </div>
     </div>
 
@@ -276,7 +288,7 @@ async function main() {
   });
 
   // REST API routes
-  app.use("/api", apiRouter);
+  app.use(API_BASE_PATH, apiRouter);
 
   // tRPC
   app.use(
@@ -290,7 +302,7 @@ async function main() {
           console.error(error.stack);
         }
         // Log additional tRPC error details if available
-        if ('code' in error) {
+        if ("code" in error) {
           console.error(`[tRPC ERROR] Code: ${error.code}`);
         }
       },
@@ -328,4 +340,3 @@ function getBaseUrl() {
 }
 
 main().catch(console.error);
-
