@@ -4,16 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import {
+  BookOpen,
   ChevronLeft,
   ChevronRight,
   Code,
+  Database,
   Home,
   Key,
+  List,
   LogOut,
   Menu,
   MessageSquare,
   Settings,
-  X
+  X,
 } from "react-feather";
 
 import { useSidebarLayout } from "@/hooks/useBreakpoint";
@@ -25,7 +28,10 @@ interface SidebarProps {
 const navItems = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/dashboard/api-keys", label: "API Keys", icon: Key },
+  { href: "/dashboard/logs", label: "Request Logs", icon: List },
+  { href: "/dashboard/docs", label: "API Reference", icon: BookOpen },
   { href: "/dashboard/setup", label: "Setup", icon: Code },
+  { href: "/dashboard/foods", label: "Food List", icon: Database },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
@@ -88,7 +94,9 @@ export function Sidebar({ onSignOut }: SidebarProps) {
             <div className="h-16 flex items-center justify-between px-4 border-b border-dark-border">
               <Link href="/dashboard" className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-accent" />
-                <span className="text-xl font-bold text-content-primary">Kal</span>
+                <span className="text-xl font-bold text-content-primary">
+                  Kal
+                </span>
               </Link>
               <button
                 onClick={() => setMobileOpen(false)}
@@ -111,9 +119,10 @@ export function Sidebar({ onSignOut }: SidebarProps) {
                     onClick={() => setMobileOpen(false)}
                     className={`
                       flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-                      ${isActive
-                        ? "bg-accent/10 text-accent border border-accent/30"
-                        : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
+                      ${
+                        isActive
+                          ? "bg-accent/10 text-accent border border-accent/30"
+                          : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
                       }
                     `}
                   >
@@ -131,9 +140,10 @@ export function Sidebar({ onSignOut }: SidebarProps) {
                 onClick={() => setMobileOpen(false)}
                 className={`
                   flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-                  ${pathname === "/dashboard/feedback"
-                    ? "bg-accent/10 text-accent border border-accent/30"
-                    : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
+                  ${
+                    pathname === "/dashboard/feedback"
+                      ? "bg-accent/10 text-accent border border-accent/30"
+                      : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
                   }
                 `}
               >
@@ -180,7 +190,9 @@ export function Sidebar({ onSignOut }: SidebarProps) {
           <Link href="/dashboard" className="flex items-center gap-2 group">
             <div className="w-3 h-3 rounded-full bg-accent group-hover:scale-110 transition-transform flex-shrink-0" />
             {!collapsed && (
-              <span className="text-xl font-bold text-content-primary whitespace-nowrap">Kal</span>
+              <span className="text-xl font-bold text-content-primary whitespace-nowrap">
+                Kal
+              </span>
             )}
           </Link>
         </div>
@@ -197,15 +209,20 @@ export function Sidebar({ onSignOut }: SidebarProps) {
                 href={item.href}
                 className={`
                   flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-                  ${isActive
-                    ? "bg-accent/10 text-accent border border-accent/30"
-                    : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
+                  ${
+                    isActive
+                      ? "bg-accent/10 text-accent border border-accent/30"
+                      : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
                   }
                 `}
                 title={collapsed ? item.label : undefined}
               >
                 <Icon size={20} className="flex-shrink-0" />
-                {!collapsed && <span className="font-medium whitespace-nowrap">{item.label}</span>}
+                {!collapsed && (
+                  <span className="font-medium whitespace-nowrap">
+                    {item.label}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -217,9 +234,10 @@ export function Sidebar({ onSignOut }: SidebarProps) {
             href="/dashboard/feedback"
             className={`
               flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-              ${pathname === "/dashboard/feedback"
-                ? "bg-accent/10 text-accent border border-accent/30"
-                : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
+              ${
+                pathname === "/dashboard/feedback"
+                  ? "bg-accent/10 text-accent border border-accent/30"
+                  : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
               }
             `}
             title={collapsed ? "Review & Bug" : undefined}
@@ -227,7 +245,9 @@ export function Sidebar({ onSignOut }: SidebarProps) {
             <MessageSquare size={20} className="flex-shrink-0" />
             {!collapsed && (
               <>
-                <span className="font-medium whitespace-nowrap">Review & Bug</span>
+                <span className="font-medium whitespace-nowrap">
+                  Review & Bug
+                </span>
                 <span className="ml-auto px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 text-white shadow-sm">
                   new
                 </span>
@@ -247,7 +267,9 @@ export function Sidebar({ onSignOut }: SidebarProps) {
               title={collapsed ? "Sign Out" : undefined}
             >
               <LogOut size={20} className="flex-shrink-0" />
-              {!collapsed && <span className="font-medium whitespace-nowrap">Sign Out</span>}
+              {!collapsed && (
+                <span className="font-medium whitespace-nowrap">Sign Out</span>
+              )}
             </button>
           )}
 
@@ -276,7 +298,7 @@ export function Sidebar({ onSignOut }: SidebarProps) {
 
 export function DashboardLayout({
   children,
-  onSignOut
+  onSignOut,
 }: {
   children: React.ReactNode;
   onSignOut?: () => Promise<void>;
@@ -294,16 +316,15 @@ export function DashboardLayout({
   }, [isMounted, shouldAutoCollapse]);
 
   // Determine margin - default to desktop (ml-64) for SSR
-  const mainMargin = isMounted && isMobile
-    ? "ml-0 pt-16"
-    : collapsed
-      ? "ml-16"
-      : "ml-64";
+  const mainMargin =
+    isMounted && isMobile ? "ml-0 pt-16" : collapsed ? "ml-16" : "ml-64";
 
   return (
     <div className="min-h-screen bg-dark">
       <Sidebar onSignOut={onSignOut} />
-      <main className={`transition-[margin] duration-300 ease-in-out ${mainMargin}`}>
+      <main
+        className={`transition-[margin] duration-300 ease-in-out ${mainMargin}`}
+      >
         {children}
       </main>
     </div>
