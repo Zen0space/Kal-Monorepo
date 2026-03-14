@@ -2,7 +2,7 @@
 
 The Kal API provides access to Malaysian food nutritional data. All API endpoints require authentication via API key.
 
-**🌐 Production API Base URL:** `https://api.kalori-api.my/api/v1/v1`
+**🌐 Production API Base URL:** `https://api.kalori-api.my/api/v1`
 
 ---
 
@@ -16,7 +16,7 @@ curl -H "x-api-key: YOUR_API_KEY" https://api.kalori-api.my/api/v1/foods
 
 ### Getting an API Key
 
-1. Sign in at [https://api.kalori-api.my](https://api.kalori-api.my)
+1. Sign in at [https://kalori-api.my](https://kalori-api.my)
 2. Navigate to the Dashboard
 3. Generate a new API key
 
