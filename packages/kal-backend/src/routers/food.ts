@@ -1,4 +1,8 @@
-import { CreateFoodEntrySchema, GetEntriesSchema, DeleteEntrySchema } from "kal-shared";
+import {
+  CreateFoodEntrySchema,
+  GetEntriesSchema,
+  DeleteEntrySchema,
+} from "kal-shared";
 import { ObjectId } from "mongodb";
 import { z } from "zod";
 
@@ -6,7 +10,6 @@ import { cache, invalidateCache } from "../lib/cache.js";
 import { CacheKeys, CacheTTL } from "../lib/cache-keys.js";
 import { buildSearchQuery } from "../lib/search.js";
 import { router, publicProcedure, protectedProcedure } from "../lib/trpc.js";
-
 
 export const foodRouter = router({
   // Search natural foods database (public)
@@ -103,15 +106,110 @@ export const foodRouter = router({
       });
     }),
 
+  // Get all foods (natural + halal) combined with pagination and search (public)
+  allCombined: publicProcedure
+    .input(
+      z.object({
+        cursor: z.number().default(0),
+        limit: z.number().default(20),
+        categories: z.array(z.string()).optional(),
+        search: z.string().optional(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const cacheKey = CacheKeys.trpcFoodAllPaginated(
+        input.cursor,
+        input.limit,
+        input.categories?.join(",") || null,
+        input.search || null
+      );
+
+      return cache.wrap(cacheKey, CacheTTL.LIST_RESULTS, async () => {
+        const matchStage: Record<string, unknown> = {};
+        if (input.categories && input.categories.length > 0) {
+          matchStage.category = { $in: input.categories };
+        }
+        if (input.search) {
+          matchStage.name = { $regex: input.search, $options: "i" };
+        }
+
+        const pipeline = [
+          // Tag documents from the 'foods' collection before union
+          { $addFields: { _source: "foods" } },
+          // Union with halal_foods, tagging those too
+          {
+            $unionWith: {
+              coll: "halal_foods",
+              pipeline: [{ $addFields: { _source: "halal_foods" } }],
+            },
+          },
+          // Apply filters
+          ...(Object.keys(matchStage).length > 0
+            ? [{ $match: matchStage }]
+            : []),
+          // Stable sort by name then _id
+          { $sort: { name: 1, _id: 1 } },
+        ];
+
+        const [items, countResult] = await Promise.all([
+          ctx.db
+            .collection("foods")
+            .aggregate([
+              ...pipeline,
+              { $skip: input.cursor },
+              { $limit: input.limit },
+            ])
+            .toArray(),
+          ctx.db
+            .collection("foods")
+            .aggregate([...pipeline, { $count: "total" }])
+            .toArray(),
+        ]);
+
+        const total = countResult[0]?.total ?? 0;
+
+        return {
+          items: items.map((food) => ({
+            _id: food._id.toString(),
+            name: food.name as string,
+            calories: food.calories as number,
+            protein: food.protein as number | null,
+            carbs: food.carbs as number | null,
+            fat: food.fat as number | null,
+            serving: food.serving as string | null,
+            category: food.category as string | null,
+            isHalal: food._source === "halal_foods",
+          })),
+          nextCursor:
+            input.cursor + items.length < total
+              ? input.cursor + input.limit
+              : null,
+          total,
+        };
+      });
+    }),
+
   // Get all categories for natural foods (public)
   categories: publicProcedure.query(async ({ ctx }) => {
     const cacheKey = CacheKeys.trpcFoodCategories();
 
     return cache.wrap(cacheKey, CacheTTL.CATEGORIES, async () => {
-      const categories = await ctx.db
-        .collection("foods")
-        .distinct("category");
+      const categories = await ctx.db.collection("foods").distinct("category");
       return categories.filter(Boolean).sort();
+    });
+  }),
+
+  // Get combined categories from both foods + halal_foods (public)
+  allCategories: publicProcedure.query(async ({ ctx }) => {
+    const cacheKey = `${CacheKeys.trpcFoodCategories()}:combined`;
+
+    return cache.wrap(cacheKey, CacheTTL.CATEGORIES, async () => {
+      const [foodCategories, halalCategories] = await Promise.all([
+        ctx.db.collection("foods").distinct("category"),
+        ctx.db.collection("halal_foods").distinct("category"),
+      ]);
+      const combined = new Set([...foodCategories, ...halalCategories]);
+      return [...combined].filter(Boolean).sort() as string[];
     });
   }),
 
@@ -250,13 +348,15 @@ export const foodRouter = router({
         ])
         .toArray();
 
-      return result[0] ?? {
-        totalCalories: 0,
-        totalProtein: 0,
-        totalCarbs: 0,
-        totalFat: 0,
-        count: 0,
-      };
+      return (
+        result[0] ?? {
+          totalCalories: 0,
+          totalProtein: 0,
+          totalCarbs: 0,
+          totalFat: 0,
+          count: 0,
+        }
+      );
     }),
 
   // Delete entry

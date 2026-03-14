@@ -20,9 +20,13 @@ export default function SetupClient({ logtoId }: SetupClientProps) {
   );
 }
 
-function SetupContentWrapper({ expectedLogtoId }: { expectedLogtoId?: string }) {
+function SetupContentWrapper({
+  expectedLogtoId,
+}: {
+  expectedLogtoId?: string;
+}) {
   const { logtoId } = useAuth();
-  
+
   if (expectedLogtoId && logtoId !== expectedLogtoId) {
     return (
       <div className="p-4 md:p-8">
@@ -37,11 +41,20 @@ function SetupContentWrapper({ expectedLogtoId }: { expectedLogtoId?: string }) 
   return <SetupContent />;
 }
 
-type TabType = "playground" | "env" | "python" | "react" | "nextjs";
+type TabType =
+  | "playground"
+  | "env"
+  | "curl"
+  | "nodejs"
+  | "python"
+  | "react"
+  | "nextjs";
 
 const tabs: { id: TabType; label: string }[] = [
   { id: "playground", label: "🧪 Test API" },
   { id: "env", label: "Environment" },
+  { id: "curl", label: "curl" },
+  { id: "nodejs", label: "Node.js" },
   { id: "python", label: "Python" },
   { id: "react", label: "React" },
   { id: "nextjs", label: "Next.js" },
@@ -55,7 +68,13 @@ interface Snippet {
 }
 
 // API Playground Component - uses shared API key from parent
-function ApiPlayground({ apiKey, onApiKeyChange }: { apiKey: string; onApiKeyChange: (key: string) => void }) {
+function ApiPlayground({
+  apiKey,
+  onApiKeyChange,
+}: {
+  apiKey: string;
+  onApiKeyChange: (key: string) => void;
+}) {
   const { isMobile } = useBreakpoint();
   const [query, setQuery] = useState("nasi lemak");
   const [endpoint, setEndpoint] = useState<"foods" | "halal">("foods");
@@ -81,9 +100,10 @@ function ApiPlayground({ apiKey, onApiKeyChange }: { apiKey: string; onApiKeyCha
 
     const startTime = performance.now();
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://kalori-api.my";
-    const url = endpoint === "halal" 
-      ? `${baseUrl}/api/halal/search?q=${encodeURIComponent(query)}`
-      : `${baseUrl}/api/foods/search?q=${encodeURIComponent(query)}`;
+    const url =
+      endpoint === "halal"
+        ? `${baseUrl}/api/halal/search?q=${encodeURIComponent(query)}`
+        : `${baseUrl}/api/foods/search?q=${encodeURIComponent(query)}`;
 
     try {
       const res = await fetch(url, {
@@ -91,12 +111,12 @@ function ApiPlayground({ apiKey, onApiKeyChange }: { apiKey: string; onApiKeyCha
           "X-API-Key": apiKey,
         },
       });
-      
+
       const endTime = performance.now();
       setResponseTime(Math.round(endTime - startTime));
 
       const data = await res.json();
-      
+
       if (!res.ok) {
         setError(`Error ${res.status}: ${data.error || res.statusText}`);
         setResponse(JSON.stringify(data, null, 2));
@@ -104,7 +124,9 @@ function ApiPlayground({ apiKey, onApiKeyChange }: { apiKey: string; onApiKeyCha
         setResponse(JSON.stringify(data, null, 2));
       }
     } catch (err) {
-      setError(`Network error: ${err instanceof Error ? err.message : "Unknown error"}`);
+      setError(
+        `Network error: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
     } finally {
       setLoading(false);
     }
@@ -114,8 +136,10 @@ function ApiPlayground({ apiKey, onApiKeyChange }: { apiKey: string; onApiKeyCha
     <div className="space-y-4 md:space-y-6">
       {/* API Key Input */}
       <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-        <h3 className="font-medium text-content-primary mb-4 text-sm md:text-base">Test Your API Key</h3>
-        
+        <h3 className="font-medium text-content-primary mb-4 text-sm md:text-base">
+          Test Your API Key
+        </h3>
+
         <div className="space-y-4">
           <div>
             <label className="block text-xs md:text-sm font-medium text-content-secondary mb-2">
@@ -196,7 +220,9 @@ function ApiPlayground({ apiKey, onApiKeyChange }: { apiKey: string; onApiKeyCha
         <div className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden">
           <div className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 bg-dark-elevated border-b border-dark-border">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-content-primary text-sm md:text-base">Response</span>
+              <span className="font-medium text-content-primary text-sm md:text-base">
+                Response
+              </span>
               {responseTime && (
                 <span className="text-xs text-content-muted bg-dark px-2 py-0.5 rounded">
                   {responseTime}ms
@@ -213,13 +239,13 @@ function ApiPlayground({ apiKey, onApiKeyChange }: { apiKey: string; onApiKeyCha
               </span>
             )}
           </div>
-          
+
           {error && (
             <div className="px-3 md:px-4 py-2 bg-red-500/10 border-b border-red-500/30">
               <p className="text-red-400 text-xs md:text-sm">{error}</p>
             </div>
           )}
-          
+
           <pre className="p-3 md:p-4 overflow-x-auto text-xs md:text-sm max-h-96 overflow-y-auto">
             <code className="text-content-secondary">{response}</code>
           </pre>
@@ -228,12 +254,25 @@ function ApiPlayground({ apiKey, onApiKeyChange }: { apiKey: string; onApiKeyCha
 
       {/* Tips */}
       <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-        <h4 className="font-medium text-content-primary mb-2 text-sm">💡 Tips</h4>
+        <h4 className="font-medium text-content-primary mb-2 text-sm">
+          💡 Tips
+        </h4>
         <ul className="text-content-muted text-xs md:text-sm space-y-1">
-          <li>• Your API key starts with <code className="bg-dark-elevated px-1 rounded">kal_</code></li>
-          <li>• Try searching for: nasi lemak, roti canai, teh tarik, mee goreng</li>
+          <li>
+            • Your API key starts with{" "}
+            <code className="bg-dark-elevated px-1 rounded">kal_</code>
+          </li>
+          <li>
+            • Try searching for: nasi lemak, roti canai, teh tarik, mee goreng
+          </li>
           <li>• The halal endpoint returns JAKIM certified products only</li>
-          <li>• Check the <a href="/api-docs" className="text-accent hover:underline">API docs</a> for all available endpoints</li>
+          <li>
+            • Check the{" "}
+            <a href="/api-docs" className="text-accent hover:underline">
+              API docs
+            </a>{" "}
+            for all available endpoints
+          </li>
         </ul>
       </div>
     </div>
@@ -246,7 +285,12 @@ interface EndpointData {
   method: string;
   path: string;
   description: string;
-  params?: { name: string; type: string; required: boolean; description: string }[];
+  params?: {
+    name: string;
+    type: string;
+    required: boolean;
+    description: string;
+  }[];
   defaultExample: string;
   section: "natural" | "halal" | "general";
 }
@@ -258,7 +302,14 @@ const endpointsData: EndpointData[] = [
     method: "GET",
     path: "/api/foods/search",
     description: "Search natural Malaysian foods by name",
-    params: [{ name: "q", type: "string", required: true, description: "Search query" }],
+    params: [
+      {
+        name: "q",
+        type: "string",
+        required: true,
+        description: "Search query",
+      },
+    ],
     defaultExample: "/api/foods/search?q=nasi",
     section: "natural",
   },
@@ -268,9 +319,24 @@ const endpointsData: EndpointData[] = [
     path: "/api/foods",
     description: "List natural foods with pagination and filtering",
     params: [
-      { name: "category", type: "string", required: false, description: "Filter by category" },
-      { name: "limit", type: "integer", required: false, description: "Max results (default: 50, max: 200)" },
-      { name: "offset", type: "integer", required: false, description: "Pagination offset (default: 0)" },
+      {
+        name: "category",
+        type: "string",
+        required: false,
+        description: "Filter by category",
+      },
+      {
+        name: "limit",
+        type: "integer",
+        required: false,
+        description: "Max results (default: 50, max: 200)",
+      },
+      {
+        name: "offset",
+        type: "integer",
+        required: false,
+        description: "Pagination offset (default: 0)",
+      },
     ],
     defaultExample: "/api/foods?limit=5",
     section: "natural",
@@ -280,7 +346,14 @@ const endpointsData: EndpointData[] = [
     method: "GET",
     path: "/api/foods/:id",
     description: "Get a single natural food by ID",
-    params: [{ name: "id", type: "string", required: true, description: "Food ID (MongoDB ObjectId)" }],
+    params: [
+      {
+        name: "id",
+        type: "string",
+        required: true,
+        description: "Food ID (MongoDB ObjectId)",
+      },
+    ],
     defaultExample: "/api/foods/507f1f77bcf86cd799439011",
     section: "natural",
   },
@@ -298,7 +371,14 @@ const endpointsData: EndpointData[] = [
     method: "GET",
     path: "/api/halal/search",
     description: "Search JAKIM certified halal foods",
-    params: [{ name: "q", type: "string", required: true, description: "Search query" }],
+    params: [
+      {
+        name: "q",
+        type: "string",
+        required: true,
+        description: "Search query",
+      },
+    ],
     defaultExample: "/api/halal/search?q=ramly",
     section: "halal",
   },
@@ -308,10 +388,30 @@ const endpointsData: EndpointData[] = [
     path: "/api/halal",
     description: "List halal foods with filtering and pagination",
     params: [
-      { name: "brand", type: "string", required: false, description: "Filter by brand" },
-      { name: "category", type: "string", required: false, description: "Filter by category" },
-      { name: "limit", type: "integer", required: false, description: "Max results (default: 50, max: 200)" },
-      { name: "offset", type: "integer", required: false, description: "Pagination offset (default: 0)" },
+      {
+        name: "brand",
+        type: "string",
+        required: false,
+        description: "Filter by brand",
+      },
+      {
+        name: "category",
+        type: "string",
+        required: false,
+        description: "Filter by category",
+      },
+      {
+        name: "limit",
+        type: "integer",
+        required: false,
+        description: "Max results (default: 50, max: 200)",
+      },
+      {
+        name: "offset",
+        type: "integer",
+        required: false,
+        description: "Pagination offset (default: 0)",
+      },
     ],
     defaultExample: "/api/halal?brand=Ramly&limit=5",
     section: "halal",
@@ -321,7 +421,14 @@ const endpointsData: EndpointData[] = [
     method: "GET",
     path: "/api/halal/:id",
     description: "Get a single halal food by ID",
-    params: [{ name: "id", type: "string", required: true, description: "Food ID (MongoDB ObjectId)" }],
+    params: [
+      {
+        name: "id",
+        type: "string",
+        required: true,
+        description: "Food ID (MongoDB ObjectId)",
+      },
+    ],
     defaultExample: "/api/halal/507f1f77bcf86cd799439011",
     section: "halal",
   },
@@ -331,8 +438,18 @@ const endpointsData: EndpointData[] = [
     path: "/api/halal/brands",
     description: "Get halal brands, optionally filter or include counts",
     params: [
-      { name: "q", type: "string", required: false, description: "Filter brands by name" },
-      { name: "withCount", type: "string", required: false, description: "Set to 'true' to include product count" },
+      {
+        name: "q",
+        type: "string",
+        required: false,
+        description: "Filter brands by name",
+      },
+      {
+        name: "withCount",
+        type: "string",
+        required: false,
+        description: "Set to 'true' to include product count",
+      },
     ],
     defaultExample: "/api/halal/brands?q=ramly",
     section: "halal",
@@ -351,7 +468,9 @@ const endpointsData: EndpointData[] = [
 function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
   const [activeEndpoint, setActiveEndpoint] = useState<string | null>(null);
   const [tryUrls, setTryUrls] = useState<Record<string, string>>({});
-  const [responses, setResponses] = useState<Record<string, { data: string; error: boolean; time: number } | null>>({});
+  const [responses, setResponses] = useState<
+    Record<string, { data: string; error: boolean; time: number } | null>
+  >({});
   const [loadingEndpoint, setLoadingEndpoint] = useState<string | null>(null);
 
   const getTryUrl = (endpointId: string, defaultExample: string) => {
@@ -359,14 +478,18 @@ function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
   };
 
   const setTryUrl = (endpointId: string, url: string) => {
-    setTryUrls(prev => ({ ...prev, [endpointId]: url }));
+    setTryUrls((prev) => ({ ...prev, [endpointId]: url }));
   };
 
   const runEndpoint = async (endpoint: EndpointData) => {
     if (!apiKey.trim()) {
-      setResponses(prev => ({
+      setResponses((prev) => ({
         ...prev,
-        [endpoint.id]: { data: "Please enter an API key above", error: true, time: 0 }
+        [endpoint.id]: {
+          data: "Please enter an API key above",
+          error: true,
+          time: 0,
+        },
       }));
       return;
     }
@@ -375,39 +498,39 @@ function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
     const startTime = performance.now();
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://kalori-api.my";
     const path = getTryUrl(endpoint.id, endpoint.defaultExample);
-    
+
     try {
       const res = await fetch(`${baseUrl}${path}`, {
         headers: { "X-API-Key": apiKey },
       });
       const endTime = performance.now();
       const data = await res.json();
-      
-      setResponses(prev => ({
+
+      setResponses((prev) => ({
         ...prev,
         [endpoint.id]: {
           data: JSON.stringify(data, null, 2),
           error: !res.ok,
-          time: Math.round(endTime - startTime)
-        }
+          time: Math.round(endTime - startTime),
+        },
       }));
     } catch (err) {
-      setResponses(prev => ({
+      setResponses((prev) => ({
         ...prev,
         [endpoint.id]: {
           data: `Network error: ${err instanceof Error ? err.message : "Unknown"}`,
           error: true,
-          time: 0
-        }
+          time: 0,
+        },
       }));
     } finally {
       setLoadingEndpoint(null);
     }
   };
 
-  const naturalEndpoints = endpointsData.filter(e => e.section === "natural");
-  const halalEndpoints = endpointsData.filter(e => e.section === "halal");
-  const generalEndpoints = endpointsData.filter(e => e.section === "general");
+  const naturalEndpoints = endpointsData.filter((e) => e.section === "natural");
+  const halalEndpoints = endpointsData.filter((e) => e.section === "halal");
+  const generalEndpoints = endpointsData.filter((e) => e.section === "general");
 
   const renderEndpoint = (endpoint: EndpointData, color: string) => {
     const isActive = activeEndpoint === endpoint.id;
@@ -415,28 +538,44 @@ function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
     const isLoading = loadingEndpoint === endpoint.id;
 
     return (
-      <div key={endpoint.id} className="border-b border-dark-border last:border-b-0">
+      <div
+        key={endpoint.id}
+        className="border-b border-dark-border last:border-b-0"
+      >
         <button
           onClick={() => setActiveEndpoint(isActive ? null : endpoint.id)}
           className="w-full px-4 py-3 flex items-center justify-between hover:bg-dark-elevated/50 transition-colors text-left"
         >
           <div className="flex items-center gap-2 min-w-0">
-            <span className={`px-2 py-0.5 text-xs font-bold rounded flex-shrink-0 ${color} text-dark`}>
+            <span
+              className={`px-2 py-0.5 text-xs font-bold rounded flex-shrink-0 ${color} text-dark`}
+            >
               {endpoint.method}
             </span>
-            <code className="text-sm text-content-secondary truncate">{endpoint.path}</code>
+            <code className="text-sm text-content-secondary truncate">
+              {endpoint.path}
+            </code>
           </div>
-          <svg 
-            className={`w-4 h-4 text-content-muted transition-transform flex-shrink-0 ${isActive ? 'rotate-180' : ''}`}
-            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          <svg
+            className={`w-4 h-4 text-content-muted transition-transform flex-shrink-0 ${isActive ? "rotate-180" : ""}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
 
         {isActive && (
           <div className="px-4 pb-4 space-y-4">
-            <p className="text-xs md:text-sm text-content-muted">{endpoint.description}</p>
+            <p className="text-xs md:text-sm text-content-muted">
+              {endpoint.description}
+            </p>
 
             {/* Parameters */}
             {endpoint.params && (
@@ -473,12 +612,18 @@ function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
             {response && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs md:text-sm text-content-muted font-medium">Response</span>
+                  <span className="text-xs md:text-sm text-content-muted font-medium">
+                    Response
+                  </span>
                   {response.time > 0 && (
-                    <span className="text-xs text-content-muted bg-dark-elevated px-2 py-0.5 rounded">{response.time}ms</span>
+                    <span className="text-xs text-content-muted bg-dark-elevated px-2 py-0.5 rounded">
+                      {response.time}ms
+                    </span>
                   )}
                 </div>
-                <pre className={`bg-dark-elevated border border-dark-border rounded-lg p-3 text-xs md:text-sm overflow-x-auto max-h-48 overflow-y-auto ${response.error ? 'text-red-400' : 'text-content-secondary'}`}>
+                <pre
+                  className={`bg-dark-elevated border border-dark-border rounded-lg p-3 text-xs md:text-sm overflow-x-auto max-h-48 overflow-y-auto ${response.error ? "text-red-400" : "text-content-secondary"}`}
+                >
                   {response.data}
                 </pre>
               </div>
@@ -493,25 +638,31 @@ function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
     <div className="divide-y divide-dark-border">
       {/* Natural Foods */}
       <div className="p-4">
-        <h3 className="text-sm md:text-base font-semibold text-accent mb-3">Natural Foods</h3>
+        <h3 className="text-sm md:text-base font-semibold text-accent mb-3">
+          Natural Foods
+        </h3>
         <div className="bg-dark-elevated/30 rounded-xl overflow-hidden border border-dark-border">
-          {naturalEndpoints.map(e => renderEndpoint(e, "bg-accent"))}
+          {naturalEndpoints.map((e) => renderEndpoint(e, "bg-accent"))}
         </div>
       </div>
 
       {/* Halal Foods */}
       <div className="p-4">
-        <h3 className="text-sm md:text-base font-semibold text-emerald-400 mb-3">Halal Certified</h3>
+        <h3 className="text-sm md:text-base font-semibold text-emerald-400 mb-3">
+          Halal Certified
+        </h3>
         <div className="bg-dark-elevated/30 rounded-xl overflow-hidden border border-dark-border">
-          {halalEndpoints.map(e => renderEndpoint(e, "bg-emerald-500"))}
+          {halalEndpoints.map((e) => renderEndpoint(e, "bg-emerald-500"))}
         </div>
       </div>
 
       {/* General */}
       <div className="p-4">
-        <h3 className="text-sm md:text-base font-semibold text-accent mb-3">General</h3>
+        <h3 className="text-sm md:text-base font-semibold text-accent mb-3">
+          General
+        </h3>
         <div className="bg-dark-elevated/30 rounded-xl overflow-hidden border border-dark-border">
-          {generalEndpoints.map(e => renderEndpoint(e, "bg-accent"))}
+          {generalEndpoints.map((e) => renderEndpoint(e, "bg-accent"))}
         </div>
       </div>
     </div>
@@ -524,9 +675,9 @@ function SetupContent() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [sharedApiKey, setSharedApiKey] = useState("");
   const { data: apiKeys } = trpc.apiKeys.list.useQuery();
-  
+
   const firstKeyPrefix = apiKeys?.[0]?.keyPrefix || "kal_xxxxxxxx";
-  
+
   const copyToClipboard = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
@@ -537,7 +688,8 @@ function SetupContent() {
   const envSnippets = [
     {
       title: "1. Create .env file",
-      description: "Add your API key to environment variables for secure storage",
+      description:
+        "Add your API key to environment variables for secure storage",
       code: `# .env or .env.local
 KAL_API_KEY=your_api_key_here
 KAL_API_URL=https://kalori-api.my`,
@@ -563,6 +715,192 @@ declare namespace NodeJS {
   }
 }`,
       language: "typescript",
+    },
+  ];
+
+  // curl snippets
+  const curlSnippets: Snippet[] = [
+    {
+      title: "1. Basic search request",
+      description: "Search for Malaysian foods using curl",
+      code: `curl -X GET "https://kalori-api.my/api/foods/search?q=nasi+lemak" \\
+  -H "X-API-Key: YOUR_API_KEY"`,
+      language: "bash",
+    },
+    {
+      title: "2. Search halal certified foods",
+      description: "Find JAKIM certified halal products",
+      code: `curl -X GET "https://kalori-api.my/api/halal/search?q=ramly" \\
+  -H "X-API-Key: YOUR_API_KEY"`,
+      language: "bash",
+    },
+    {
+      title: "3. List foods with pagination",
+      description: "Get paginated list with optional category filter",
+      code: `curl -X GET "https://kalori-api.my/api/foods?category=Rice&limit=10&offset=0" \\
+  -H "X-API-Key: YOUR_API_KEY"`,
+      language: "bash",
+    },
+    {
+      title: "4. Get single food by ID",
+      description: "Retrieve a specific food item",
+      code: `curl -X GET "https://kalori-api.my/api/foods/FOOD_ID" \\
+  -H "X-API-Key: YOUR_API_KEY"`,
+      language: "bash",
+    },
+    {
+      title: "5. Get all categories",
+      description: "List all available food categories",
+      code: `curl -X GET "https://kalori-api.my/api/categories" \\
+  -H "X-API-Key: YOUR_API_KEY"`,
+      language: "bash",
+    },
+    {
+      title: "6. Get halal brands",
+      description: "List all halal certified brands",
+      code: `curl -X GET "https://kalori-api.my/api/halal/brands" \\
+  -H "X-API-Key: YOUR_API_KEY"`,
+      language: "bash",
+    },
+    {
+      title: "7. Pretty print JSON output",
+      description:
+        "Pipe through jq for formatted output (install: brew install jq)",
+      code: `curl -s "https://kalori-api.my/api/foods/search?q=roti" \\
+  -H "X-API-Key: YOUR_API_KEY" | jq '.'`,
+      language: "bash",
+    },
+  ];
+
+  // Node.js snippets
+  const nodejsSnippets: Snippet[] = [
+    {
+      title: "1. Install dependencies",
+      description:
+        "node-fetch is only needed for Node.js < 18, dotenv for env vars",
+      code: `# Node.js 18+ has fetch built-in, only dotenv needed
+npm install dotenv
+# or (for Node.js < 18)
+npm install node-fetch dotenv`,
+      language: "bash",
+    },
+    {
+      title: "2. Basic setup with fetch",
+      description: "Native fetch (Node.js 18+) — no extra packages needed",
+      code: `// search-foods.js
+import 'dotenv/config';
+
+const API_KEY = process.env.KAL_API_KEY;
+const BASE_URL = process.env.KAL_API_URL || 'https://kalori-api.my';
+
+async function searchFoods(query) {
+  const url = \`\${BASE_URL}/api/foods/search?q=\${encodeURIComponent(query)}\`;
+
+  const response = await fetch(url, {
+    headers: {
+      'X-API-Key': API_KEY,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(\`HTTP \${response.status}: \${response.statusText}\`);
+  }
+
+  return response.json();
+}
+
+// Usage
+const data = await searchFoods('nasi lemak');
+console.log(\`Found \${data.count} results\`);
+data.data.forEach(food => {
+  console.log(\`\${food.name}: \${food.calories} cal\`);
+});`,
+      language: "javascript",
+    },
+    {
+      title: "3. Search halal certified foods",
+      description: "Find JAKIM certified products",
+      code: `async function searchHalalFoods(query) {
+  const url = \`\${BASE_URL}/api/halal/search?q=\${encodeURIComponent(query)}\`;
+
+  const response = await fetch(url, {
+    headers: { 'X-API-Key': API_KEY },
+  });
+
+  return response.json();
+}
+
+// Example
+const halal = await searchHalalFoods('ramly');
+console.log(\`Found \${halal.count} halal products\`);
+halal.data.forEach(food => {
+  console.log(\`\${food.brand} - \${food.name}: \${food.calories} cal\`);
+});`,
+      language: "javascript",
+    },
+    {
+      title: "4. With error handling & rate limit retry",
+      description: "Handles 429 rate limit responses with exponential backoff",
+      code: `async function fetchWithRetry(url, options, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    const response = await fetch(url, options);
+
+    if (response.ok) return response.json();
+
+    if (response.status === 429) {
+      const wait = Math.pow(2, i) * 1000; // 1s, 2s, 4s
+      console.log(\`Rate limited — retrying in \${wait}ms...\`);
+      await new Promise(r => setTimeout(r, wait));
+      continue;
+    }
+
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || \`HTTP \${response.status}\`);
+  }
+  throw new Error('Max retries exceeded');
+}
+
+// Usage
+const data = await fetchWithRetry(
+  \`\${BASE_URL}/api/foods/search?q=nasi\`,
+  { headers: { 'X-API-Key': API_KEY } }
+);`,
+      language: "javascript",
+    },
+    {
+      title: "5. Full CLI script example",
+      description: 'Run with: node search-foods.mjs "roti canai"',
+      code: `// search-foods.mjs
+import 'dotenv/config';
+
+const API_KEY = process.env.KAL_API_KEY;
+const BASE_URL = 'https://kalori-api.my';
+
+const query = process.argv[2] || 'nasi lemak';
+
+try {
+  const response = await fetch(
+    \`\${BASE_URL}/api/foods/search?q=\${encodeURIComponent(query)}\`,
+    { headers: { 'X-API-Key': API_KEY } }
+  );
+
+  if (!response.ok) throw new Error(\`HTTP \${response.status}\`);
+
+  const data = await response.json();
+  console.log(\`\\nFound \${data.count} results for "\${query}":\\n\`);
+
+  data.data.forEach(food => {
+    console.log(\`  \${food.name}\`);
+    console.log(\`    Calories: \${food.calories} kcal\`);
+    console.log(\`    Protein: \${food.protein}g | Carbs: \${food.carbs}g | Fat: \${food.fat}g\`);
+    console.log(\`    Serving: \${food.serving}\\n\`);
+  });
+} catch (error) {
+  console.error('Error:', error.message);
+  process.exit(1);
+}`,
+      language: "javascript",
     },
   ];
 
@@ -888,11 +1226,20 @@ export async function GET(request: NextRequest) {
 
   const getSnippets = (): Snippet[] => {
     switch (activeTab) {
-      case "env": return envSnippets;
-      case "python": return pythonSnippets;
-      case "react": return reactSnippets;
-      case "nextjs": return nextjsSnippets;
-      default: return [];
+      case "env":
+        return envSnippets;
+      case "curl":
+        return curlSnippets;
+      case "nodejs":
+        return nodejsSnippets;
+      case "python":
+        return pythonSnippets;
+      case "react":
+        return reactSnippets;
+      case "nextjs":
+        return nextjsSnippets;
+      default:
+        return [];
     }
   };
 
@@ -908,17 +1255,29 @@ export async function GET(request: NextRequest) {
             <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2 flex items-center gap-2">
               <Terminal size={isMobile ? 20 : 24} /> Setup Guide
             </h1>
-            <p className="text-content-secondary text-sm md:text-base">Get started using the Kal API in your project</p>
+            <p className="text-content-secondary text-sm md:text-base">
+              Get started using the Kal API in your project
+            </p>
           </div>
 
           {/* API Key Reminder */}
           <div className="bg-accent/10 border border-accent/30 rounded-xl p-3 md:p-4 mb-6">
             <p className="text-accent text-xs md:text-sm">
-              <strong>Your API Key:</strong> Make sure you have generated an API key from the{" "}
-              <a href="/dashboard/api-keys" className="underline hover:no-underline">API Keys page</a>.
+              <strong>Your API Key:</strong> Make sure you have generated an API
+              key from the{" "}
+              <a
+                href="/dashboard/api-keys"
+                className="underline hover:no-underline"
+              >
+                API Keys page
+              </a>
+              .
               {apiKeys && apiKeys.length > 0 && (
                 <span className="block mt-1 text-content-secondary">
-                  You have {apiKeys.length} active key(s). Latest: <code className="bg-dark-elevated px-1.5 md:px-2 py-0.5 rounded text-xs">{firstKeyPrefix}...</code>
+                  You have {apiKeys.length} active key(s). Latest:{" "}
+                  <code className="bg-dark-elevated px-1.5 md:px-2 py-0.5 rounded text-xs">
+                    {firstKeyPrefix}...
+                  </code>
                 </span>
               )}
             </p>
@@ -933,9 +1292,10 @@ export async function GET(request: NextRequest) {
                 className={`
                   px-3 md:px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap
                   transition-colors
-                  ${activeTab === tab.id
-                    ? "bg-accent text-dark"
-                    : "bg-dark-surface border border-dark-border text-content-secondary hover:text-content-primary hover:border-accent/30"
+                  ${
+                    activeTab === tab.id
+                      ? "bg-accent text-dark"
+                      : "bg-dark-surface border border-dark-border text-content-secondary hover:text-content-primary hover:border-accent/30"
                   }
                 `}
               >
@@ -946,16 +1306,26 @@ export async function GET(request: NextRequest) {
 
           {/* Content */}
           {activeTab === "playground" ? (
-            <ApiPlayground apiKey={sharedApiKey} onApiKeyChange={setSharedApiKey} />
+            <ApiPlayground
+              apiKey={sharedApiKey}
+              onApiKeyChange={setSharedApiKey}
+            />
           ) : (
             <div className="space-y-4 md:space-y-6">
               {snippets.map((snippet, index) => (
-                <div key={index} className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden">
+                <div
+                  key={index}
+                  className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden"
+                >
                   <div className="flex items-start md:items-center justify-between px-3 md:px-4 py-2 md:py-3 bg-dark-elevated border-b border-dark-border gap-2">
                     <div>
-                      <h3 className="font-medium text-content-primary text-sm md:text-base">{snippet.title}</h3>
+                      <h3 className="font-medium text-content-primary text-sm md:text-base">
+                        {snippet.title}
+                      </h3>
                       {"description" in snippet && snippet.description && (
-                        <p className="text-content-muted text-xs mt-0.5">{snippet.description}</p>
+                        <p className="text-content-muted text-xs mt-0.5">
+                          {snippet.description}
+                        </p>
                       )}
                     </div>
                     <button
@@ -964,7 +1334,11 @@ export async function GET(request: NextRequest) {
                     >
                       {copiedIndex === index ? (
                         <>
-                          <Check size={isMobile ? 12 : 14} className="text-accent" /> Copied!
+                          <Check
+                            size={isMobile ? 12 : 14}
+                            className="text-accent"
+                          />{" "}
+                          Copied!
                         </>
                       ) : (
                         <>
@@ -974,7 +1348,9 @@ export async function GET(request: NextRequest) {
                     </button>
                   </div>
                   <pre className="p-3 md:p-4 overflow-x-auto text-xs md:text-sm">
-                    <code className={`language-${snippet.language} text-content-secondary`}>
+                    <code
+                      className={`language-${snippet.language} text-content-secondary`}
+                    >
                       {snippet.code}
                     </code>
                   </pre>
@@ -985,16 +1361,18 @@ export async function GET(request: NextRequest) {
 
           {/* Additional Resources */}
           <div className="mt-6 md:mt-8 bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-            <h3 className="font-medium text-content-primary mb-3 text-sm md:text-base">Need more help?</h3>
+            <h3 className="font-medium text-content-primary mb-3 text-sm md:text-base">
+              Need more help?
+            </h3>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <a 
-                href="/api-docs" 
+              <a
+                href="/api-docs"
                 className="text-accent hover:underline text-xs md:text-sm"
               >
                 View API Documentation →
               </a>
-              <a 
-                href="https://github.com/Zen0space/Kal-Monorepo" 
+              <a
+                href="https://github.com/Zen0space/Kal-Monorepo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-accent hover:underline text-xs md:text-sm"
@@ -1012,8 +1390,18 @@ export async function GET(request: NextRequest) {
               {/* Header - No duplicate API key input */}
               <div className="px-4 py-3 md:px-5 md:py-4 bg-dark-elevated border-b border-dark-border">
                 <h2 className="font-semibold text-content-primary flex items-center gap-2 text-sm md:text-base">
-                  <svg className="w-4 h-4 md:w-5 md:h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    className="w-4 h-4 md:w-5 md:h-5 text-accent"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
                   API Quick Reference
                 </h2>
@@ -1024,7 +1412,9 @@ export async function GET(request: NextRequest) {
                       API key ready — click endpoints to test
                     </span>
                   ) : (
-                    <span>Enter API key in Test API panel to try endpoints</span>
+                    <span>
+                      Enter API key in Test API panel to try endpoints
+                    </span>
                   )}
                 </p>
               </div>
@@ -1036,13 +1426,23 @@ export async function GET(request: NextRequest) {
 
               {/* View Full Docs Link */}
               <div className="p-3 border-t border-dark-border">
-                <a 
-                  href="/api-docs" 
+                <a
+                  href="/api-docs"
                   className="flex items-center justify-center gap-2 w-full py-2 px-3 bg-accent/10 border border-accent/30 rounded-lg text-accent text-sm font-medium hover:bg-accent/20 transition-colors"
                 >
                   View Full Documentation
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
                   </svg>
                 </a>
               </div>
