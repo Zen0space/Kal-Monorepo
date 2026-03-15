@@ -2,6 +2,7 @@ import { applyWSSHandler } from '@trpc/server/adapters/ws';
 import { WebSocketServer } from 'ws';
 
 import { appRouter } from '../routers/index.js';
+
 import { createWsContext } from './wsContext.js';
 
 const WS_PORT = parseInt(process.env.WS_PORT || '3001', 10);

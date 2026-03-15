@@ -1,5 +1,5 @@
-import { getRedis, isRedisAvailable } from "./redis.js";
 import { logger } from "./logger.js";
+import { getRedis, isRedisAvailable } from "./redis.js";
 
 /**
  * Cache service providing high-level caching operations

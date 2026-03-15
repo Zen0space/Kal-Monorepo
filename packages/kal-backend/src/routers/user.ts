@@ -1,5 +1,5 @@
-import { cache } from "../lib/cache.js";
 import { CacheTTL } from "../lib/cache-keys.js";
+import { cache } from "../lib/cache.js";
 import { router, publicProcedure } from "../lib/trpc.js";
 
 export const userRouter = router({
