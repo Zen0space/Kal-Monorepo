@@ -1,5 +1,6 @@
 import { router } from "../lib/trpc.js";
 
+import { adminLogsRouter } from "./admin-logs.js";
 import { apiKeysRouter } from "./api-keys.js";
 import { chatRouter } from "./chat.js";
 import { feedbackRouter } from "./feedback.js";
@@ -18,6 +19,7 @@ export const appRouter = router({
   user: userRouter,
   platformSettings: platformSettingsRouter,
   requestLogs: requestLogsRouter,
+  adminLogs: adminLogsRouter,
 });
 
 // Export type for client

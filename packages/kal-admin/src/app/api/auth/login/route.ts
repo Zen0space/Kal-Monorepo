@@ -1,35 +1,46 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+const SESSION_COOKIE = "kal_admin_session";
+
+export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = (await request.json()) as {
+      username?: unknown;
+      password?: unknown;
+    };
     const { username, password } = body;
 
-    const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
-    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+    const adminUsername = process.env.ADMIN_USERNAME;
+    const adminPassword = process.env.ADMIN_PASSWORD;
 
-    if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
-       return NextResponse.json({ success: false, message: "Server misconfiguration" }, { status: 500 });
+    if (!adminUsername || !adminPassword) {
+      return NextResponse.json(
+        { error: "Admin credentials not configured" },
+        { status: 500 }
+      );
     }
 
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      // Set valid session cookie
-      // In a real app this would be a JWT or session ID
-      // Here we just set a secure flag
-      (await cookies()).set("admin_session", "true", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7 // 1 week
-      });
-      
-      return NextResponse.json({ success: true });
+    if (username !== adminUsername || password !== adminPassword) {
+      // Delay to prevent brute-force timing attacks
+      await new Promise((r) => setTimeout(r, 500));
+      return NextResponse.json(
+        { error: "Invalid username or password" },
+        { status: 401 }
+      );
     }
 
-    return NextResponse.json({ success: false, message: "Invalid credentials" }, { status: 401 });
+    const response = NextResponse.json({ success: true });
+
+    response.cookies.set(SESSION_COOKIE, "authenticated", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 8, // 8 hours
+      path: "/",
+    });
+
+    return response;
   } catch {
-    return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 }

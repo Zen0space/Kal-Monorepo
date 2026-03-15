@@ -1,38 +1,32 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const SESSION_COOKIE = "kal_admin_session";
+
 export function middleware(request: NextRequest) {
-  // 1. Check for session cookie
-  const session = request.cookies.get("admin_session");
-  const path = request.nextUrl.pathname;
+  const { pathname } = request.nextUrl;
 
-  // 2. Define public paths (e.g. login, static assets)
-  const isPublicPath = path === "/login" || path.startsWith("/api/auth") || path.startsWith("/_next") || path.includes(".");
-
-  // 3. Redirect logic
-  if (!session && !isPublicPath) {
-    // If no session and trying to access protected page -> Redirect to /login
-    return NextResponse.redirect(new URL("/login", request.url));
+  // Allow public paths through
+  if (
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/favicon")
+  ) {
+    return NextResponse.next();
   }
 
-  if (session && path === "/login") {
-    // If already logged in and trying to access /login -> Redirect to home
-    return NextResponse.redirect(new URL("/", request.url));
+  // Check for valid session cookie
+  const session = request.cookies.get(SESSION_COOKIE);
+  if (!session || session.value !== "authenticated") {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("from", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
 }
 
-// Ensure middleware runs on relevant paths
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api/trpc (we handle auth inside the route for proxying)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    "/((?!api/trpc|_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

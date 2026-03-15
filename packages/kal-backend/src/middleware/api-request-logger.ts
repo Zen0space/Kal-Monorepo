@@ -1,6 +1,6 @@
 /**
  * API Request Logger Middleware
- * 
+ *
  * Logs all API requests to MongoDB for analytics and debugging.
  * Works for both REST API (/api/*) and tRPC (/trpc/*) endpoints.
  */
@@ -21,8 +21,8 @@ interface LoggerOptions {
   logResponseBody?: boolean;
   /** Sampling rate (0-1, default: 1.0 = log all requests) */
   samplingRate?: number;
-  /** Paths to exclude from logging */
-  excludePaths?: string[];
+  /** Paths to include for logging (if set, only these paths will be logged) */
+  includePaths?: string[];
 }
 
 /**
@@ -80,17 +80,21 @@ function hashIp(ip: string | undefined): string | undefined {
  * Create the API request logger middleware
  */
 export function createApiRequestLogger(options: LoggerOptions = {}) {
-  const {
-    samplingRate = 1.0,
-    excludePaths = ["/health", "/favicon.ico"],
-  } = options;
+  const { includePaths, samplingRate = 1.0 } = options;
 
-  return function apiRequestLogger(req: AuthRequest, res: Response, next: NextFunction): void {
-    // Check if path should be excluded
+  return function apiRequestLogger(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ): void {
     const path = req.originalUrl || req.url;
-    if (excludePaths.some((excludePath) => path.startsWith(excludePath))) {
-      next();
-      return;
+
+    // If includePaths is set, ONLY log paths matching those patterns
+    if (includePaths && includePaths.length > 0) {
+      if (!includePaths.some((p) => path.startsWith(p))) {
+        next();
+        return;
+      }
     }
 
     // Apply sampling
@@ -166,9 +170,9 @@ export function createApiRequestLogger(options: LoggerOptions = {}) {
  * These are internal admin operations, not public API usage
  */
 const ADMIN_TRPC_PREFIXES = [
-  "requestLogs.",    // Analytics queries
-  "apiKeys.",        // API key management
-  "user.",           // User management/stats
+  "requestLogs.", // Analytics queries
+  "apiKeys.", // API key management
+  "user.", // User management/stats
   "platformSettings.", // Platform settings
 ];
 
@@ -181,26 +185,19 @@ function isAdminTrpcPath(path: string): boolean {
   if (!match) return false;
 
   const procedureName = match[1];
-  return ADMIN_TRPC_PREFIXES.some(prefix => procedureName.startsWith(prefix));
+  return ADMIN_TRPC_PREFIXES.some((prefix) => procedureName.startsWith(prefix));
 }
 
 /**
- * Default middleware instance with standard options
- * 
- * Excludes:
- * - Health check endpoints
- * - Static files
- * - Admin tRPC procedures (handled separately via isAdminTrpcPath)
+ * Default middleware instance
+ *
+ * Only logs:
+ * - /api/v1/* (REST API calls)
+ * - /health (for ping monitoring)
  */
 export const apiRequestLogger = createApiRequestLogger({
   samplingRate: parseFloat(process.env.LOG_SAMPLING_RATE || "1.0"),
-  excludePaths: [
-    "/health",
-    "/favicon.ico",
-    "/openapi.json",
-    "/docs",        // API documentation
-    "/api-docs",    // Swagger UI
-  ],
+  includePaths: ["/api/v1/", "/health"],
 });
 
 /**
@@ -210,7 +207,11 @@ export const apiRequestLogger = createApiRequestLogger({
 export function createEnhancedApiRequestLogger(options: LoggerOptions = {}) {
   const baseLogger = createApiRequestLogger(options);
 
-  return function enhancedApiRequestLogger(req: AuthRequest, res: Response, next: NextFunction): void {
+  return function enhancedApiRequestLogger(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ): void {
     const path = req.originalUrl || req.url;
 
     // Skip admin tRPC procedures
@@ -226,15 +227,9 @@ export function createEnhancedApiRequestLogger(options: LoggerOptions = {}) {
 
 /**
  * Default enhanced logger instance
- * This is the recommended logger to use - excludes admin operations
+ * This is the recommended logger to use - only logs /api/v1/* and /health
  */
 export const enhancedApiRequestLogger = createEnhancedApiRequestLogger({
   samplingRate: parseFloat(process.env.LOG_SAMPLING_RATE || "1.0"),
-  excludePaths: [
-    "/health",
-    "/favicon.ico",
-    "/openapi.json",
-    "/docs",
-    "/api-docs",
-  ],
+  includePaths: ["/api/v1/", "/health"],
 });
