@@ -66,7 +66,7 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       kal-shared:
-        specifier: link:../kal-shared
+        specifier: workspace:*
         version: link:../kal-shared
       next:
         specifier: ^15.1.2
@@ -97,7 +97,7 @@ importers:
         specifier: ^10.4.20
         version: 10.4.23(postcss@8.5.6)
       kal-backend:
-        specifier: link:../kal-backend
+        specifier: workspace:*
         version: link:../kal-backend
       postcss:
         specifier: ^8.4.49
