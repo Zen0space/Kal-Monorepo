@@ -56,6 +56,7 @@ jobs:
         run: |
           pnpm --filter kal-shared build
           pnpm --filter kal-baml build
+          pnpm --filter kal-backend build
 
       - name: Lint
         run: pnpm --filter kal-admin lint
@@ -90,6 +91,7 @@ jobs:
         run: |
           pnpm --filter kal-shared build
           pnpm --filter kal-baml build
+          pnpm --filter kal-backend build
 
       - name: Build admin
         run: pnpm --filter kal-admin build
