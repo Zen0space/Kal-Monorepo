@@ -1,19 +1,24 @@
-import type { UserTier, RateLimitUsage } from "kal-shared";
-import { RATE_LIMITS, VPS_SAFETY_CAPS } from "kal-shared";
+import {
+  RATE_LIMITS,
+  VPS_SAFETY_CAPS,
+  type UserTier,
+  type RateLimitUsage,
+} from "kal-shared";
 import type { Db } from "mongodb";
 
+// eslint-disable-next-line import/order
 import { logger } from "../lib/logger.js";
 
 export interface RateLimitResult {
   limited: boolean;
   retryAfter?: number; // seconds until retry allowed
   limitType?: "second" | "minute" | "daily" | "monthly" | "burst";
-  
+
   // Current counts
   secondCount?: number;
   minuteCount?: number;
   dailyCount?: number;
-  
+
   // Limits
   minuteLimit?: number;
   dailyLimit?: number;
@@ -22,13 +27,13 @@ export interface RateLimitResult {
 
 /**
  * Check rate limits for a user based on their tier.
- * 
+ *
  * Rate limit hierarchy (checked in order):
  * 1. VPS Safety Cap: 20 requests/second (global)
  * 2. Minute limit: varies by tier (65/130/110 per minute)
  * 3. Daily limit: varies by tier
  * 4. Monthly limit: varies by tier
- * 
+ *
  * Uses industry-standard MongoDB pattern:
  * - Composite _id: `${userId}_${date}` for uniqueness
  * - Atomic findOneAndUpdate with $inc for race-condition safety
@@ -37,13 +42,13 @@ import { getEffectiveRateLimits } from "../lib/platform-settings.js";
 
 /**
  * Check rate limits for a user based on their tier.
- * 
+ *
  * Rate limit hierarchy (checked in order):
  * 1. VPS Safety Cap: 20 requests/second (global)
  * 2. Minute limit: varies by tier (65/130/110 per minute)
  * 3. Daily limit: varies by tier
  * 4. Monthly limit: varies by tier
- * 
+ *
  * Uses industry-standard MongoDB pattern:
  * - Composite _id: `${userId}_${date}` for uniqueness
  * - Atomic findOneAndUpdate with $inc for race-condition safety
@@ -59,28 +64,30 @@ export async function checkRateLimit(
 
   const now = new Date();
   const today = now.toISOString().split("T")[0]; // YYYY-MM-DD
-  
+
   // Time windows
   const minuteStart = new Date(now);
   minuteStart.setSeconds(0, 0);
-  
+
   const secondStart = new Date(now);
   secondStart.setMilliseconds(0);
 
   const collection = db.collection<RateLimitUsage>("rate_limit_usage");
-  
+
   // Composite _id ensures one document per user per day
   const compositeId = `${userId}_${today}`;
 
   try {
     // First, get current usage to check windows
-    const existingUsage = await collection.findOne({ _id: compositeId as unknown as string });
-    
+    const existingUsage = await collection.findOne({
+      _id: compositeId as unknown as string,
+    });
+
     // Check if we're in new time windows
     const isNewMinute =
       !existingUsage?.minuteWindow ||
       new Date(existingUsage.minuteWindow).getTime() < minuteStart.getTime();
-    
+
     const isNewSecond =
       !existingUsage?.secondWindow ||
       new Date(existingUsage.secondWindow).getTime() < secondStart.getTime();
@@ -91,7 +98,7 @@ export async function checkRateLimit(
       $set: Record<string, Date | number>;
       $setOnInsert?: Record<string, string>;
     }
-    
+
     const updateDoc: UpdateOperation = {
       $inc: { dailyCount: 1 },
       $set: { updatedAt: now },
@@ -128,12 +135,12 @@ export async function checkRateLimit(
     );
 
     const usage = result;
-    
+
     if (!usage) {
       // This shouldn't happen with upsert, but handle gracefully
-      logger.warn("Rate limit upsert returned null", { 
-        userId: userId.substring(0, 8), 
-        compositeId 
+      logger.warn("Rate limit upsert returned null", {
+        userId: userId.substring(0, 8),
+        compositeId,
       });
       return {
         limited: false,
@@ -224,27 +231,33 @@ export async function checkRateLimit(
     // Log the error with full context for debugging
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
-    
+
     logger.error("Rate limit check failed", {
       userId: userId.substring(0, 8),
       compositeId,
       tier,
       error: errorMessage,
     });
-    
+
     // Log additional details for MongoDB-specific errors
-    if (errorMessage.includes("E11000") || errorMessage.includes("duplicate key")) {
-      logger.error("CRITICAL: Duplicate key error in rate_limit_usage - possible _id issue", {
-        compositeId,
-        error: errorMessage,
-      });
+    if (
+      errorMessage.includes("E11000") ||
+      errorMessage.includes("duplicate key")
+    ) {
+      logger.error(
+        "CRITICAL: Duplicate key error in rate_limit_usage - possible _id issue",
+        {
+          compositeId,
+          error: errorMessage,
+        }
+      );
     }
-    
+
     // Log stack trace for debugging
     if (errorStack) {
       console.error("Rate limit error stack trace:", errorStack);
     }
-    
+
     // Return non-limiting result to avoid blocking users due to DB issues
     // But log it so we can investigate
     return {

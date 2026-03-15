@@ -6,11 +6,9 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import session from "express-session";
-import swaggerUi from "swagger-ui-express";
-
 import helmet from "helmet";
-
 import { API_BASE_PATH } from "kal-shared";
+import swaggerUi from "swagger-ui-express";
 
 import { createContext } from "./lib/context.js";
 import { connectDB } from "./lib/db.js";

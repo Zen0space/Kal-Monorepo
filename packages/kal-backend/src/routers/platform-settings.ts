@@ -1,10 +1,12 @@
-import { z } from "zod";
-import { router, publicProcedure, protectedProcedure } from "../lib/trpc.js";
 import { RATE_LIMITS, type RateLimitConfig, type UserTier } from "kal-shared";
+import type { Filter, Document } from "mongodb";
+import { z } from "zod";
+
 import {
   getEffectiveRateLimits,
   invalidateRateLimitsCache,
 } from "../lib/platform-settings.js";
+import { router, publicProcedure, protectedProcedure } from "../lib/trpc.js";
 
 const SETTINGS_ID = "rate_limits";
 
@@ -60,7 +62,7 @@ export const platformSettingsRouter = router({
 
       // Update DB
       await ctx.db.collection("platform_settings").updateOne(
-        { _id: SETTINGS_ID as any },
+        { _id: SETTINGS_ID } as unknown as Filter<Document>,
         {
           $set: {
             [`limits.${tier}`]: newConfig,
@@ -89,7 +91,7 @@ export const platformSettingsRouter = router({
       const defaultLimits = RATE_LIMITS[input.tier as UserTier];
 
       await ctx.db.collection("platform_settings").updateOne(
-        { _id: SETTINGS_ID as any },
+        { _id: SETTINGS_ID } as unknown as Filter<Document>,
         {
           $set: {
             [`limits.${input.tier}`]: defaultLimits,

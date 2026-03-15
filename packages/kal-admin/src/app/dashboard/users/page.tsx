@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,9 +9,11 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Bar } from "react-chartjs-2";
-import { trpc } from "@/lib/trpc";
 import { formatDistanceToNow } from "date-fns";
+import { useMemo, useState } from "react";
+import { Bar } from "react-chartjs-2";
+
+import { trpc } from "@/lib/trpc";
 
 ChartJS.register(
   CategoryScale,
@@ -310,7 +311,7 @@ export default function UsersPage() {
   const { data: growth, isLoading: growthLoading } =
     trpc.user.growth.useQuery();
 
-  const isLoading = usersLoading || statsLoading;
+  const _isLoading = usersLoading || statsLoading;
 
   const filteredUsers = useMemo(() => {
     if (!users) return [];

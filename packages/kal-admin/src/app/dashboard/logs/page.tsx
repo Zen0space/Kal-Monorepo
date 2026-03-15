@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,9 +9,11 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { format } from "date-fns";
+import { useMemo, useState } from "react";
 import { Bar } from "react-chartjs-2";
+
 import { trpc } from "@/lib/trpc";
-import { format, formatDistanceToNow } from "date-fns";
 
 ChartJS.register(
   CategoryScale,
@@ -126,9 +127,9 @@ function StatusBadge({ statusCode }: { statusCode: number }) {
 function LogsTable({
   logs,
   loading,
-  onPageChange,
-  currentPage,
-  pageSize,
+  onPageChange: _onPageChange,
+  currentPage: _currentPage,
+  pageSize: _pageSize,
 }: {
   logs: Array<{
     _id?: string;
@@ -375,10 +376,10 @@ export default function LogsPage() {
       endpointPrefix: "/api/v1/",
     });
 
-  const isLoading = logsLoading || statsLoading;
+  const _isLoading = logsLoading || statsLoading;
   const totalPages = logsData ? Math.ceil(logsData.total / limit) : 0;
 
-  const currentPreset =
+  const _currentPreset =
     presetFilter === "api"
       ? "API"
       : presetFilter === "health"

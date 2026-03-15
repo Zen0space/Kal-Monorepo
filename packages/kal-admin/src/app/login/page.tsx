@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
 
 export default function LoginPage() {
   const router = useRouter();

@@ -1,9 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
 
-import { cache } from "../lib/cache.js";
-import { isRedisAvailable } from "../lib/redis.js";
-import { logger } from "../lib/logger.js";
 import { CacheKeys, CacheTTL } from "../lib/cache-keys.js";
+import { cache } from "../lib/cache.js";
+import { logger } from "../lib/logger.js";
+import { isRedisAvailable } from "../lib/redis.js";
 
 /**
  * Response wrapper to capture response body for caching

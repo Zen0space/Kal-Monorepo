@@ -4,6 +4,13 @@
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
+  "types": "./dist/routers/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/routers/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",

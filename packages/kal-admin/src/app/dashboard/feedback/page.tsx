@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { trpc } from "@/lib/trpc";
 import { format } from "date-fns";
+import { useState } from "react";
+
+import { trpc } from "@/lib/trpc";
 
 type BugStatus = "open" | "in_progress" | "resolved" | "closed" | "wont_fix";
 type BugStatusFilter = "all" | BugStatus;
@@ -24,33 +25,6 @@ function StarRating({ rating }: { rating: number }) {
         </svg>
       ))}
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: BugStatus }) {
-  const styles: Record<BugStatus, string> = {
-    open: "bg-status-warning/15 text-status-warning border-status-warning/20",
-    in_progress: "bg-status-info/15 text-status-info border-status-info/20",
-    resolved:
-      "bg-status-success/15 text-status-success border-status-success/20",
-    closed: "bg-slate-500/15 text-slate-400 border-slate-500/20",
-    wont_fix: "bg-status-danger/15 text-status-danger border-status-danger/20",
-  };
-
-  const labels: Record<BugStatus, string> = {
-    open: "Open",
-    in_progress: "In Progress",
-    resolved: "Resolved",
-    closed: "Closed",
-    wont_fix: "Won't Fix",
-  };
-
-  return (
-    <span
-      className={`inline-flex px-2 py-0.5 rounded text-xs font-medium border ${styles[status]}`}
-    >
-      {labels[status]}
-    </span>
   );
 }
 

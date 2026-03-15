@@ -22,9 +22,10 @@ async function syncUserFromLogto(
 
   const now = new Date();
   const usersCollection = db.collection<User>("users");
-  
+
   // Use name, username, or email (before @) as display name
-  const displayName = claims.name || claims.username || claims.email?.split("@")[0] || "";
+  const displayName =
+    claims.name || claims.username || claims.email?.split("@")[0] || "";
 
   // Upsert user - create if not exists, update if exists
   const result = await usersCollection.findOneAndUpdate(
@@ -76,15 +77,21 @@ export async function createContext({
     // ------------------------------------------------------------------------
     // VIRTUAL ADMIN AUTH (Env-Based for Open Source/Bootstrap)
     // ------------------------------------------------------------------------
-    const adminSecretHeader = req.headers["x-admin-secret"] as string | undefined;
+    const adminSecretHeader = req.headers["x-admin-secret"] as
+      | string
+      | undefined;
     const envAdminSecret = process.env.ADMIN_SECRET;
 
-    if (adminSecretHeader && envAdminSecret && adminSecretHeader === envAdminSecret) {
+    if (
+      adminSecretHeader &&
+      envAdminSecret &&
+      adminSecretHeader === envAdminSecret
+    ) {
       // Create a virtual super admin in memory (no DB access needed)
       // We use a predefined ID and full permissions
       const { ObjectId } = await import("mongodb");
       user = {
-        _id: new ObjectId("000000000000000000000000") as any, // Fixed Virtual ID
+        _id: new ObjectId("000000000000000000000000") as unknown as User["_id"], // Fixed Virtual ID
         logtoId: "admin-virtual-account",
         email: "admin@system.local",
         name: "System Administrator",
@@ -108,9 +115,13 @@ export async function createContext({
         // Try Logto ID from frontend header (when using Next.js proxy/tRPC)
         const headerLogtoId = req.headers["x-logto-id"] as string | undefined;
         if (headerLogtoId) {
-          user = await db.collection<User>("users").findOne({ logtoId: headerLogtoId });
-          
-          const headerEmail = req.headers["x-logto-email"] as string | undefined;
+          user = await db
+            .collection<User>("users")
+            .findOne({ logtoId: headerLogtoId });
+
+          const headerEmail = req.headers["x-logto-email"] as
+            | string
+            | undefined;
           const headerName = req.headers["x-logto-name"] as string | undefined;
 
           // If user not found but we have claims in headers (trusted from frontend), create/sync them
@@ -124,13 +135,15 @@ export async function createContext({
               });
             }
           } else if (headerName && !user.name) {
-             // Update if local name is missing but header has one
-             await db.collection<User>("users").updateOne(
-               { _id: user._id }, 
-               { $set: { name: headerName, email: headerEmail || user.email } } 
-             );
-             user.name = headerName;
-             if (headerEmail) user.email = headerEmail;
+            // Update if local name is missing but header has one
+            await db
+              .collection<User>("users")
+              .updateOne(
+                { _id: user._id },
+                { $set: { name: headerName, email: headerEmail || user.email } }
+              );
+            user.name = headerName;
+            if (headerEmail) user.email = headerEmail;
           }
         }
 
