@@ -96,9 +96,14 @@ export default [
     },
   },
 
-  // React/Next.js TypeScript files (frontend)
+  // React/Next.js TypeScript files (frontend + admin)
   {
-    files: ["packages/kal-frontend/**/*.ts", "packages/kal-frontend/**/*.tsx"],
+    files: [
+      "packages/kal-frontend/**/*.ts",
+      "packages/kal-frontend/**/*.tsx",
+      "packages/kal-admin/**/*.ts",
+      "packages/kal-admin/**/*.tsx",
+    ],
     languageOptions: {
       parser: tsparser,
       parserOptions: {

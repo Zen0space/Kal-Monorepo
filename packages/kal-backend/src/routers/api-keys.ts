@@ -1,4 +1,9 @@
-import type { ApiKey, ApiKeyExpiration, ApiKeyPublic, RateLimitUsage } from "kal-shared";
+import type {
+  ApiKey,
+  ApiKeyExpiration,
+  ApiKeyPublic,
+  RateLimitUsage,
+} from "kal-shared";
 import { ObjectId } from "mongodb";
 import { z } from "zod";
 
@@ -190,12 +195,10 @@ export const apiKeysRouter = router({
     const user = ctx.user;
 
     // Count active keys
-    const activeKeyCount = await ctx.db
-      .collection("api_keys")
-      .countDocuments({
-        userId: ctx.userId,
-        isRevoked: false,
-      });
+    const activeKeyCount = await ctx.db.collection("api_keys").countDocuments({
+      userId: ctx.userId,
+      isRevoked: false,
+    });
 
     return {
       tier: user?.tier || "free",
@@ -203,5 +206,70 @@ export const apiKeysRouter = router({
       monthlyUsed,
       activeKeyCount,
     };
+  }),
+
+  /**
+   * Admin: Get API key counts per user (all users)
+   */
+  adminGetUserKeyCounts: protectedProcedure.query(async ({ ctx }) => {
+    const pipeline = [
+      // Convert _id to string for lookup
+      {
+        $addFields: {
+          userIdString: { $toString: "$_id" },
+        },
+      },
+      // Get all users with their keys
+      {
+        $lookup: {
+          from: "api_keys",
+          localField: "userIdString",
+          foreignField: "userId",
+          as: "keys",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          email: 1,
+          userIdString: 1,
+          totalKeys: { $size: "$keys" },
+          activeKeys: {
+            $size: {
+              $filter: {
+                input: "$keys",
+                cond: { $eq: ["$$this.isRevoked", false] },
+              },
+            },
+          },
+          revokedKeys: {
+            $size: {
+              $filter: {
+                input: "$keys",
+                cond: { $eq: ["$$this.isRevoked", true] },
+              },
+            },
+          },
+        },
+      },
+      {
+        $sort: { totalKeys: -1 },
+      },
+    ];
+
+    const usersWithKeys = await ctx.db
+      .collection("users")
+      .aggregate(pipeline)
+      .toArray();
+
+    return usersWithKeys.map((u) => ({
+      userId: u.userIdString,
+      userName: u.name || null,
+      userEmail: u.email || null,
+      totalKeys: u.totalKeys || 0,
+      activeKeys: u.activeKeys || 0,
+      revokedKeys: u.revokedKeys || 0,
+    }));
   }),
 });

@@ -52,6 +52,7 @@ export interface LogQueryOptions {
   endDate?: Date;
   limit?: number;
   offset?: number;
+  endpointPrefix?: string;
 }
 
 /**
@@ -72,6 +73,7 @@ export interface LogAnalytics {
  */
 export interface AnalyticsOptions {
   userId?: string;
+  endpointPrefix?: string;
 }
 
 /**
@@ -126,12 +128,15 @@ export class RequestLogService {
       endDate,
       limit = 50,
       offset = 0,
+      endpointPrefix,
     } = options;
 
     const filter: Record<string, unknown> = {};
 
     if (userId) filter.userId = userId;
     if (endpoint) filter.endpoint = { $regex: endpoint, $options: "i" };
+    if (endpointPrefix)
+      filter.endpoint = { $regex: `^${endpointPrefix}`, $options: "i" };
     if (type) filter.type = type;
     if (statusCode) filter.statusCode = statusCode;
     if (success !== undefined) filter.success = success;
@@ -156,13 +161,23 @@ export class RequestLogService {
    * Get total count for pagination
    */
   async count(options: LogQueryOptions = {}): Promise<number> {
-    const { userId, endpoint, type, statusCode, success, startDate, endDate } =
-      options;
+    const {
+      userId,
+      endpoint,
+      type,
+      statusCode,
+      success,
+      startDate,
+      endDate,
+      endpointPrefix,
+    } = options;
 
     const filter: Record<string, unknown> = {};
 
     if (userId) filter.userId = userId;
     if (endpoint) filter.endpoint = { $regex: endpoint, $options: "i" };
+    if (endpointPrefix)
+      filter.endpoint = { $regex: `^${endpointPrefix}`, $options: "i" };
     if (type) filter.type = type;
     if (statusCode) filter.statusCode = statusCode;
     if (success !== undefined) filter.success = success;
@@ -195,6 +210,10 @@ export class RequestLogService {
 
     if (options.userId) {
       filter.userId = options.userId;
+    }
+
+    if (options.endpointPrefix) {
+      filter.endpoint = { $regex: `^${options.endpointPrefix}`, $options: "i" };
     }
 
     // Basic stats
@@ -280,6 +299,12 @@ export class RequestLogService {
     };
     if (options.userId) {
       matchFilter.userId = options.userId;
+    }
+    if (options.endpointPrefix) {
+      matchFilter.endpoint = {
+        $regex: `^${options.endpointPrefix}`,
+        $options: "i",
+      };
     }
 
     const result = await this.db
