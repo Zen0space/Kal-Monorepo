@@ -17,7 +17,7 @@
     "@trpc/server": "^11.0.0-rc.682",
     "chart.js": "^4.5.1",
     "date-fns": "^4.1.0",
-    "kal-shared": "link:../kal-shared",
+    "kal-shared": "workspace:*",
     "next": "^15.1.2",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.1",
@@ -29,7 +29,7 @@
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "autoprefixer": "^10.4.20",
-    "kal-backend": "link:../kal-backend",
+    "kal-backend": "workspace:*",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2"

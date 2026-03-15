@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-  "buildCommand": "cd ../.. && pnpm turbo build --filter=kal-admin...",
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm build",
   "outputDirectory": ".next"
 }
