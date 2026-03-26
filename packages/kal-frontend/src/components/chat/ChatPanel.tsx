@@ -1,7 +1,8 @@
 "use client";
 
+import { keepPreviousData } from "@tanstack/react-query";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
-  useState,
   useMemo,
   useRef,
   useCallback,
@@ -20,44 +21,137 @@ import {
 } from "react-feather";
 
 import { ChatMessage } from "./ChatMessage";
-import { ToolStepIndicator, type ToolStep } from "./ToolStepIndicator";
+import { ToolStepIndicator } from "./ToolStepIndicator";
 
+import {
+  activeThreadIdAtom,
+  showThreadListAtom,
+  optimisticMessagesAtom,
+  streamingContentAtom,
+  toolStepsAtom,
+  isSendingAtom,
+  inputAtom,
+  resetStreamStateAtom,
+  type ChatMessageLocal,
+} from "@/atoms/chat";
 import { useToast } from "@/contexts/ToastContext";
 import { useAuth } from "@/lib/auth-context";
 import { sendChatStream } from "@/lib/chat-stream";
 import { trpc } from "@/lib/trpc";
 
-interface Message {
-  _id: string;
-  role: "User" | "Assistant";
-  content: string;
-  createdAt: Date;
-  streaming?: boolean;
-}
+// ---------------------------------------------------------------------------
+// Character-by-character reveal constants
+// ---------------------------------------------------------------------------
+
+/** Characters revealed per animation frame (~60fps → ~180 chars/sec).
+ *  This gives a smooth ChatGPT-like typewriter cadence. */
+const CHARS_PER_FRAME = 3;
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 interface ChatPanelProps {
   onClose: () => void;
 }
 
 export function ChatPanel({ onClose }: ChatPanelProps) {
-  const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
-  const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([]);
-  const [streamingContent, setStreamingContent] = useState("");
-  const [toolSteps, setToolSteps] = useState<ToolStep[]>([]);
-  const [isSending, setIsSending] = useState(false);
-  const [input, setInput] = useState("");
-  const [showThreadList, setShowThreadList] = useState(false);
+  const [activeThreadId, setActiveThreadId] = useAtom(activeThreadIdAtom);
+  const [showThreadList, setShowThreadList] = useAtom(showThreadListAtom);
+  const [optimisticMessages, setOptimisticMessages] = useAtom(
+    optimisticMessagesAtom
+  );
+  const [streamingContent, setStreamingContent] = useAtom(streamingContentAtom);
+  const [toolSteps, setToolSteps] = useAtom(toolStepsAtom);
+  const isSending = useAtomValue(isSendingAtom);
+  const setIsSending = useSetAtom(isSendingAtom);
+  const [input, setInput] = useAtom(inputAtom);
+  const resetStream = useSetAtom(resetStreamStateAtom);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // When true, the next scroll-to-bottom uses "instant" (no animation).
+  // Starts true so the first render after mount jumps straight to the
+  // bottom, then flips false so subsequent new-message scrolls animate.
+  const instantScrollRef = useRef(true);
   const toast = useToast();
   const auth = useAuth();
 
-  // ---- tRPC hooks (threads + messages CRUD, no more sendMessage) ----
+  // ---- Character-by-character reveal queue ----
+  // Text that arrived from SSE but hasn't been revealed yet.
+  const pendingTextRef = useRef("");
+  // How much of the total received text has been revealed so far.
+  const revealedLengthRef = useRef(0);
+  // requestAnimationFrame handle for the reveal loop.
+  const rafRef = useRef(0);
+  // Whether the SSE stream has finished (so the reveal loop knows
+  // to flush remaining text instantly on the next frame).
+  const streamDoneRef = useRef(false);
+
+  /** Drain the pending queue at CHARS_PER_FRAME characters per frame.
+   *  When the SSE stream ends, flush everything remaining in one shot. */
+  const revealLoop = useCallback(() => {
+    const pending = pendingTextRef.current;
+    const revealed = revealedLengthRef.current;
+
+    if (revealed >= pending.length) {
+      // Nothing left to reveal — stop the loop
+      rafRef.current = 0;
+      return;
+    }
+
+    let nextLength: number;
+
+    if (streamDoneRef.current) {
+      // Stream finished — flush all remaining text immediately so the user
+      // doesn't wait for a long tail to trickle out.
+      nextLength = pending.length;
+    } else {
+      nextLength = Math.min(revealed + CHARS_PER_FRAME, pending.length);
+    }
+
+    revealedLengthRef.current = nextLength;
+    setStreamingContent(pending.slice(0, nextLength));
+
+    if (nextLength < pending.length) {
+      rafRef.current = requestAnimationFrame(revealLoop);
+    } else {
+      rafRef.current = 0;
+    }
+  }, [setStreamingContent]);
+
+  /** Append raw delta text to the pending buffer and kick the reveal loop. */
+  const enqueueDelta = useCallback(
+    (delta: string) => {
+      pendingTextRef.current += delta;
+      // Start the reveal loop if it isn't already running
+      if (!rafRef.current) {
+        rafRef.current = requestAnimationFrame(revealLoop);
+      }
+    },
+    [revealLoop]
+  );
+
+  /** Stop the reveal loop and reset all reveal state. */
+  const resetReveal = useCallback(() => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+    }
+    pendingTextRef.current = "";
+    revealedLengthRef.current = 0;
+    streamDoneRef.current = false;
+  }, []);
+
+  // ---- tRPC hooks (threads + messages CRUD) ----
   const threadsQuery = trpc.chat.getThreads.useQuery(
     { limit: 20 },
-    { enabled: true }
+    {
+      // Serve cached data for 30s on panel reopen — avoids a flash of
+      // the empty state while threads re-fetch in the background.
+      staleTime: 30_000,
+    }
   );
 
   const messagesQuery = trpc.chat.getMessages.useQuery(
@@ -65,6 +159,9 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
     {
       enabled: !!activeThreadId,
       refetchOnWindowFocus: false,
+      // Keep the previous thread's messages visible while the new thread's
+      // messages are loading — prevents a blank flash on thread switch.
+      placeholderData: keepPreviousData,
     }
   );
 
@@ -91,14 +188,18 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
     },
   });
 
-  // Derive displayed messages: server data + optimistic overlay + streaming
-  const displayMessages = useMemo<Message[]>(() => {
-    const serverMessages: Message[] = (messagesQuery.data ?? []).map((m) => ({
-      _id: m._id,
-      role: m.role,
-      content: m.content,
-      createdAt: new Date(m.createdAt),
-    }));
+  // Derive displayed messages: server data + optimistic overlay + streaming.
+  // Kept as useMemo (not a jotai derived atom) because it depends on tRPC
+  // query cache data that lives outside the atom graph.
+  const displayMessages = useMemo<ChatMessageLocal[]>(() => {
+    const serverMessages: ChatMessageLocal[] = (messagesQuery.data ?? []).map(
+      (m) => ({
+        _id: m._id,
+        role: m.role,
+        content: m.content,
+        createdAt: new Date(m.createdAt),
+      })
+    );
 
     const messages = [...serverMessages, ...optimisticMessages];
 
@@ -116,12 +217,18 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
     return messages;
   }, [messagesQuery.data, optimisticMessages, streamingContent]);
 
-  // Auto-scroll to bottom when messages change or streaming updates
+  // useLayoutEffect required: DOM scroll must happen synchronously after
+  // render to prevent a visible flicker at the old scroll position.
   useLayoutEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const behavior = instantScrollRef.current ? "instant" : "smooth";
+    messagesEndRef.current?.scrollIntoView({ behavior });
+    // After the first scroll (mount / thread switch), all subsequent
+    // scrolls (new messages, streaming) should animate smoothly.
+    instantScrollRef.current = false;
   }, [displayMessages, toolSteps]);
 
-  // Auto-load the most recent thread on mount
+  // Auto-load the most recent thread on mount (synchronous ref guard —
+  // avoids an extra render cycle that a useEffect would introduce)
   const hasAutoLoaded = useRef(false);
   if (threadsQuery.data && !hasAutoLoaded.current && !activeThreadId) {
     hasAutoLoaded.current = true;
@@ -141,6 +248,8 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
       setIsSending(true);
       setToolSteps([]);
       setStreamingContent("");
+      resetReveal();
+      streamDoneRef.current = false;
 
       // Show optimistic user message
       setOptimisticMessages([
@@ -183,23 +292,35 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
             );
           },
           onStreamDelta: (delta) => {
-            setStreamingContent((prev) => prev + delta);
+            // Push into the reveal queue — the rAF loop will drip-feed
+            // characters into streamingContent at CHARS_PER_FRAME pace.
+            enqueueDelta(delta);
           },
           onStreamEnd: () => {
-            // Streaming complete — refetch real messages from server
-            setStreamingContent("");
-            setOptimisticMessages([]);
-            setToolSteps([]);
-            setIsSending(false);
-            messagesQuery.refetch();
-            threadsQuery.refetch();
+            // Mark stream as done so the reveal loop flushes all remaining
+            // text on the very next animation frame.
+            streamDoneRef.current = true;
+            // Kick one more frame in case the loop already stopped
+            if (!rafRef.current) {
+              rafRef.current = requestAnimationFrame(revealLoop);
+            }
+            // Wait for two frames: the first paints the fully-revealed
+            // text, the second swaps it for the server-fetched message.
+            // Using double-rAF guarantees the flush frame paints before
+            // we clear optimistic state and refetch server data.
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                resetReveal();
+                resetStream();
+                messagesQuery.refetch();
+                threadsQuery.refetch();
+              });
+            });
           },
           onError: (message) => {
             toast.error(message || "Failed to send message");
-            setStreamingContent("");
-            setOptimisticMessages([]);
-            setToolSteps([]);
-            setIsSending(false);
+            resetReveal();
+            resetStream();
           },
           onDone: () => {
             // Final cleanup in case onStreamEnd didn't fire
@@ -210,7 +331,22 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
 
       abortRef.current = controller;
     },
-    [auth.logtoId, auth.email, auth.name, toast, messagesQuery, threadsQuery]
+    [
+      auth.logtoId,
+      auth.email,
+      auth.name,
+      toast,
+      messagesQuery,
+      threadsQuery,
+      setIsSending,
+      setToolSteps,
+      setStreamingContent,
+      setOptimisticMessages,
+      resetStream,
+      resetReveal,
+      enqueueDelta,
+      revealLoop,
+    ]
   );
 
   const handleSend = useCallback(
@@ -232,7 +368,7 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
         });
       }
     },
-    [input, activeThreadId, isSending, startStream, createThread]
+    [input, activeThreadId, isSending, startStream, createThread, setInput]
   );
 
   const handleKeyDown = useCallback(
@@ -248,22 +384,24 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
   const handleNewChat = useCallback(() => {
     // Abort any in-progress stream
     abortRef.current?.abort();
-    setStreamingContent("");
-    setOptimisticMessages([]);
-    setToolSteps([]);
-    setIsSending(false);
+    instantScrollRef.current = true;
+    resetReveal();
+    resetStream();
     createThread.mutate();
-  }, [createThread]);
+  }, [createThread, resetStream, resetReveal]);
 
-  const handleSelectThread = useCallback((threadId: string) => {
-    abortRef.current?.abort();
-    setActiveThreadId(threadId);
-    setOptimisticMessages([]);
-    setStreamingContent("");
-    setToolSteps([]);
-    setIsSending(false);
-    setShowThreadList(false);
-  }, []);
+  const handleSelectThread = useCallback(
+    (threadId: string) => {
+      abortRef.current?.abort();
+      setActiveThreadId(threadId);
+      // Jump straight to the bottom of the new thread — no animation.
+      instantScrollRef.current = true;
+      resetReveal();
+      resetStream();
+      setShowThreadList(false);
+    },
+    [setActiveThreadId, resetStream, resetReveal, setShowThreadList]
+  );
 
   const handleDeleteThread = useCallback(
     (threadId: string) => {
@@ -389,16 +527,26 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 chat-scrollbar">
-        {/* Loading state */}
+        {/* Initial load — spinner while threads are fetching (prevents
+            a flash of the "Ask me anything!" empty state) */}
+        {threadsQuery.isLoading && !activeThreadId && (
+          <div className="flex items-center justify-center py-8">
+            <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+
+        {/* Loading state for messages */}
         {messagesQuery.isLoading && activeThreadId && (
           <div className="flex items-center justify-center py-8">
             <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
           </div>
         )}
 
-        {/* Empty state */}
+        {/* Empty state — only shown once we KNOW there are no threads,
+            not while they're still loading */}
         {displayMessages.length === 0 &&
           !messagesQuery.isLoading &&
+          !threadsQuery.isLoading &&
           !isSending && (
             <div className="flex flex-col items-center justify-center h-full text-center px-4">
               <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-3">

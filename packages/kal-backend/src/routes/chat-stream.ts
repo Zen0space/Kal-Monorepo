@@ -11,8 +11,8 @@
 import { Router, type Request, type Response } from "express";
 import type { User } from "kal-shared";
 
-import { getDB } from "../lib/db.js";
 import { runChatWorkflow } from "../lib/chat-workflow.js";
+import { getDB } from "../lib/db.js";
 
 export const chatStreamRouter: Router = Router();
 
@@ -95,11 +95,28 @@ chatStreamRouter.post("/stream", async (req: Request, res: Response) => {
   // Flush headers immediately
   res.flushHeaders();
 
+  // Disable Nagle's algorithm so each SSE frame is sent as its own TCP
+  // packet immediately, rather than being coalesced with subsequent writes.
+  // This is critical for real-time character-by-character streaming.
+  res.socket?.setNoDelay(true);
+
   // Handle client disconnect
   let aborted = false;
   req.on("close", () => {
     aborted = true;
   });
+
+  /** Write a single SSE frame and flush it to the wire immediately. */
+  const writeSSE = (event: { type: string } & Record<string, unknown>) => {
+    res.write(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
+    // Flush explicitly — no-op on vanilla http.ServerResponse but ensures
+    // immediate delivery if compression or proxy middleware wraps the stream.
+    if (
+      typeof (res as unknown as { flush?: () => void }).flush === "function"
+    ) {
+      (res as unknown as { flush: () => void }).flush();
+    }
+  };
 
   // --- Run workflow and stream events ---
   const db = getDB();
@@ -114,24 +131,14 @@ chatStreamRouter.post("/stream", async (req: Request, res: Response) => {
 
     for await (const event of workflow) {
       if (aborted) break;
-
-      // Write SSE: event type + JSON data
-      res.write(`event: ${event.type}\n`);
-      res.write(`data: ${JSON.stringify(event)}\n\n`);
+      writeSSE(event);
     }
   } catch (error) {
     console.error("[SSE] Workflow error:", error);
 
     if (!aborted) {
-      const errorEvent = JSON.stringify({
-        type: "error",
-        message: "Internal server error",
-      });
-      res.write(`event: error\n`);
-      res.write(`data: ${errorEvent}\n\n`);
-
-      res.write(`event: done\n`);
-      res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
+      writeSSE({ type: "error", message: "Internal server error" });
+      writeSSE({ type: "done" });
     }
   } finally {
     if (!aborted) {

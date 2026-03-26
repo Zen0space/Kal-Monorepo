@@ -1,8 +1,10 @@
 "use client";
 
+import { useAtom } from "jotai";
+import { useCallback } from "react";
 import { MessageCircle } from "react-feather";
 
-import { useChatPanel } from "@/contexts/ChatPanelContext";
+import { chatPanelOpenAtom } from "@/atoms/chat";
 import { useAuth } from "@/lib/auth-context";
 
 /**
@@ -12,7 +14,9 @@ import { useAuth } from "@/lib/auth-context";
  */
 export function ChatActivityBar() {
   const { logtoId } = useAuth();
-  const { isOpen, toggle } = useChatPanel();
+  const [isOpen, setIsOpen] = useAtom(chatPanelOpenAtom);
+
+  const toggle = useCallback(() => setIsOpen((prev) => !prev), [setIsOpen]);
 
   // Only show for authenticated users
   if (!logtoId) return null;
