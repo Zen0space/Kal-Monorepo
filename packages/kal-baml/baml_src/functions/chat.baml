@@ -4,7 +4,7 @@
 
 // Simple chat completion
 function Chat(messages: ChatMessage[], system_prompt: string?) -> ChatResponse {
-  client GLM46
+  client Claude
   prompt #"
     {{ _.role("system") }}
     {{ system_prompt | default("You are a helpful AI assistant. Always respond in English only.") }}
@@ -21,7 +21,7 @@ function Chat(messages: ChatMessage[], system_prompt: string?) -> ChatResponse {
 
 // Chat with structured response
 function StructuredChat(messages: ChatMessage[], system_prompt: string?, extract_sources: bool, suggest_followups: bool) -> StructuredChatResponse {
-  client GLM46
+  client Claude
   prompt #"
     {{ _.role("system") }}
     {{ system_prompt | default("You are a helpful AI assistant. Always respond in English only.") }}
@@ -47,7 +47,7 @@ function StructuredChat(messages: ChatMessage[], system_prompt: string?, extract
 
 // Single-turn quick chat
 function QuickChat(user_message: string, system_prompt: string?) -> string {
-  client GLM46
+  client Claude
   prompt #"
     {{ _.role("system") }}
     {{ system_prompt | default("You are a helpful AI assistant. Be concise and direct. Always respond in English only.") }}

@@ -7,6 +7,7 @@ import cors from "cors";
 import express from "express";
 import session from "express-session";
 import helmet from "helmet";
+import { quickChat } from "kal-baml";
 import { API_BASE_PATH } from "kal-shared";
 import swaggerUi from "swagger-ui-express";
 
@@ -26,6 +27,7 @@ import {
   configureServerTimeouts,
 } from "./middleware/timeout.js";
 import { apiRouter } from "./routers/api.js";
+import { chatStreamRouter } from "./routes/chat-stream.js";
 import { appRouter } from "./routers/index.js";
 
 const PORT = process.env.BACKEND_PORT || 3000;
@@ -41,6 +43,17 @@ async function main() {
     console.log("✅ Connected to Redis (caching enabled)");
   } else {
     console.log("⚠️  Redis not available (caching disabled)");
+  }
+
+  // Verify BAML/LLM connection (Anthropic via Pika AI proxy)
+  try {
+    await quickChat("Say hi in one word.", "Respond with a single word only.");
+    console.log("✅ BAML connected (claude-haiku-4.5 via pikaai.xyz)");
+  } catch (error) {
+    console.warn(
+      "⚠️  BAML/LLM connection failed:",
+      error instanceof Error ? error.message : String(error)
+    );
   }
 
   const app = express();
@@ -95,6 +108,7 @@ async function main() {
 
   // Apply PRIVATE CORS to everything else (tRPC, health, auth routes)
   app.use("/trpc", cors(privateCorsOptions));
+  app.use("/api/chat", cors(privateCorsOptions));
   app.use("/health", cors(privateCorsOptions));
 
   // Request timeout middleware (scalable - uses native req.setTimeout)
@@ -284,6 +298,9 @@ async function main() {
 </html>
     `);
   });
+
+  // Chat SSE streaming endpoint (private — requires x-logto-id header)
+  app.use("/api/chat", chatStreamRouter);
 
   // REST API routes
   app.use(API_BASE_PATH, apiRouter);

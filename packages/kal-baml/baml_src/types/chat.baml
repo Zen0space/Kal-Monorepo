@@ -91,6 +91,7 @@ enum UserIntent {
   FoodQuery              // Asking about food nutrition
   RecipeRequest          // Asking for a recipe
   RecipeNutrition        // Asking about nutrition of a recipe
+  ApiHelp                // Asking about API endpoints, integration, or docs
   GeneralChat            // General conversation
   Greeting               // Simple greeting
   Unknown                // Unable to classify

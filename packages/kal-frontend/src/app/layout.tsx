@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import "./globals.css";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 import { ToastContainer } from "@/components/ui/Toast";
+import { ChatPanelProvider } from "@/contexts/ChatPanelContext";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { AuthProvider } from "@/lib/auth-context";
 import { TRPCProvider } from "@/lib/trpc-provider";
@@ -82,7 +84,18 @@ export default function RootLayout({
       <body className={inter.className}>
         <ToastProvider>
           <AuthProvider logtoId={null}>
-            <TRPCProvider>{children}</TRPCProvider>
+            <TRPCProvider>
+              <ChatPanelProvider>
+                <div className="flex h-screen overflow-hidden">
+                  {/* Main content — scrollable, takes remaining space */}
+                  <div className="flex-1 min-w-0 overflow-y-auto">
+                    {children}
+                  </div>
+                  {/* Right side: activity bar + chat panel (auth-gated internally) */}
+                  <ChatWidget />
+                </div>
+              </ChatPanelProvider>
+            </TRPCProvider>
           </AuthProvider>
           <ToastContainer />
         </ToastProvider>
@@ -90,4 +103,3 @@ export default function RootLayout({
     </html>
   );
 }
-

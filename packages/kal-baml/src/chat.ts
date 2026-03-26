@@ -1,4 +1,4 @@
-import { b } from '../baml_client/baml_client/index.js';
+import { b } from "../baml_client/baml_client/index.js";
 import {
   Role,
   UserIntent,
@@ -11,14 +11,14 @@ import {
   type ParsedRecipe,
   type IntentClassification,
   type ThinkingResult,
-} from '../baml_client/baml_client/types.js';
+} from "../baml_client/baml_client/types.js";
 
 // ============================================
 // Type Exports
 // ============================================
 
 export interface ChatInput {
-  messages: Array<{ role: 'User' | 'Assistant' | 'System'; content: string }>;
+  messages: Array<{ role: "User" | "Assistant" | "System"; content: string }>;
   systemPrompt?: string;
 }
 
@@ -29,7 +29,7 @@ export interface ChatResult {
 }
 
 export interface SmartChatInput {
-  messages: Array<{ role: 'User' | 'Assistant' | 'System'; content: string }>;
+  messages: Array<{ role: "User" | "Assistant" | "System"; content: string }>;
   systemPrompt?: string;
   foodContext?: string;
   threadSummary?: string;
@@ -39,10 +39,8 @@ export interface SmartChatInput {
 // Helper Functions
 // ============================================
 
-
-
 function toMessages(
-  messages: Array<{ role: 'User' | 'Assistant' | 'System'; content: string }>
+  messages: Array<{ role: "User" | "Assistant" | "System"; content: string }>
 ): ChatMessage[] {
   return messages.map((m) => ({
     role: m.role.toLowerCase(),
@@ -63,10 +61,10 @@ export async function chat(input: ChatInput): Promise<ChatResult> {
     const response = await b.Chat(messages, input.systemPrompt ?? null);
     return { success: true, data: response };
   } catch (error) {
-    console.error('[kal-baml] Chat error:', error);
+    console.error("[kal-baml] Chat error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -121,12 +119,12 @@ export async function* streamQuickChat(
     const stream = b.stream.QuickChat(message, systemPrompt ?? null);
 
     for await (const chunk of stream) {
-      if (chunk && typeof chunk === 'string') {
+      if (chunk && typeof chunk === "string") {
         yield chunk;
       }
     }
   } catch (error) {
-    console.error('[kal-baml] Stream error:', error);
+    console.error("[kal-baml] Stream error:", error);
     throw error;
   }
 }
@@ -190,7 +188,7 @@ export async function extractFoodSearchTerm(message: string): Promise<string> {
     const term = await b.ExtractFoodSearchTerm(message);
     return term.trim().toLowerCase();
   } catch (error) {
-    console.error('[kal-baml] Extract food term error:', error);
+    console.error("[kal-baml] Extract food term error:", error);
     return message;
   }
 }
@@ -200,12 +198,14 @@ export async function extractFoodSearchTerm(message: string): Promise<string> {
  * Removes preparation words (patty, slice), cooking methods (fried, grilled),
  * and state words (fresh, frozen) while keeping brand names and core food identity
  */
-export async function normalizeIngredientName(ingredientName: string): Promise<string> {
+export async function normalizeIngredientName(
+  ingredientName: string
+): Promise<string> {
   try {
     const normalized = await b.NormalizeIngredientName(ingredientName);
     return normalized.trim().toLowerCase();
   } catch (error) {
-    console.error('[kal-baml] Normalize ingredient error:', error);
+    console.error("[kal-baml] Normalize ingredient error:", error);
     return ingredientName.toLowerCase();
   }
 }
@@ -246,6 +246,160 @@ export async function summarizeNutrition(
     ingredientsData,
     servings ?? null
   );
+}
+
+// ============================================
+// Agent Workflow Functions (NEW)
+// ============================================
+
+/**
+ * Format a food response using ONLY database data.
+ * The prompt is strict: it will not hallucinate nutrition numbers.
+ */
+export async function formatFoodResponse(params: {
+  userMessage: string;
+  foodData: string;
+  hasDbResults: boolean;
+  conversationContext?: string;
+}): Promise<string> {
+  return await b.FormatFoodResponse(
+    params.userMessage,
+    params.foodData,
+    params.hasDbResults,
+    params.conversationContext ?? null
+  );
+}
+
+/**
+ * Stream a food response using ONLY database data.
+ * Yields partial strings as the AI generates them.
+ */
+export async function* streamFormatFoodResponse(params: {
+  userMessage: string;
+  foodData: string;
+  hasDbResults: boolean;
+  conversationContext?: string;
+}): AsyncGenerator<string, void, unknown> {
+  const stream = b.stream.FormatFoodResponse(
+    params.userMessage,
+    params.foodData,
+    params.hasDbResults,
+    params.conversationContext ?? null
+  );
+
+  for await (const chunk of stream) {
+    if (chunk && typeof chunk === "string") {
+      yield chunk;
+    }
+  }
+}
+
+/**
+ * Format a recipe response with optional ingredient nutrition from DB.
+ */
+export async function formatRecipeResponse(params: {
+  userMessage: string;
+  recipeData?: string;
+  ingredientNutrition?: string;
+  conversationContext?: string;
+}): Promise<string> {
+  return await b.FormatRecipeResponse(
+    params.userMessage,
+    params.recipeData ?? null,
+    params.ingredientNutrition ?? null,
+    params.conversationContext ?? null
+  );
+}
+
+/**
+ * Stream a recipe response with optional ingredient nutrition from DB.
+ */
+export async function* streamFormatRecipeResponse(params: {
+  userMessage: string;
+  recipeData?: string;
+  ingredientNutrition?: string;
+  conversationContext?: string;
+}): AsyncGenerator<string, void, unknown> {
+  const stream = b.stream.FormatRecipeResponse(
+    params.userMessage,
+    params.recipeData ?? null,
+    params.ingredientNutrition ?? null,
+    params.conversationContext ?? null
+  );
+
+  for await (const chunk of stream) {
+    if (chunk && typeof chunk === "string") {
+      yield chunk;
+    }
+  }
+}
+
+/**
+ * Stream a general chat response (non-food queries).
+ */
+export async function* streamGeneralChat(params: {
+  userMessage: string;
+  systemPrompt?: string;
+  conversationContext?: string;
+}): AsyncGenerator<string, void, unknown> {
+  const stream = b.stream.StreamChat(
+    params.userMessage,
+    params.systemPrompt ?? null,
+    params.conversationContext ?? null
+  );
+
+  for await (const chunk of stream) {
+    if (chunk && typeof chunk === "string") {
+      yield chunk;
+    }
+  }
+}
+
+/**
+ * Non-streaming general chat response (non-food queries).
+ */
+export async function generalChat(params: {
+  userMessage: string;
+  systemPrompt?: string;
+  conversationContext?: string;
+}): Promise<string> {
+  return await b.StreamChat(
+    params.userMessage,
+    params.systemPrompt ?? null,
+    params.conversationContext ?? null
+  );
+}
+
+/**
+ * Format an API help response with full Kalori API reference.
+ */
+export async function formatApiHelpResponse(params: {
+  userMessage: string;
+  conversationContext?: string;
+}): Promise<string> {
+  return await b.FormatApiHelpResponse(
+    params.userMessage,
+    params.conversationContext ?? null
+  );
+}
+
+/**
+ * Stream an API help response with full Kalori API reference.
+ */
+export async function* streamFormatApiHelpResponse(params: {
+  userMessage: string;
+  conversationContext?: string;
+}): AsyncGenerator<string, void, unknown> {
+  const stream = b.stream.FormatApiHelpResponse(
+    params.userMessage,
+    params.conversationContext ?? null
+  );
+
+  for await (const chunk of stream) {
+    if (chunk && typeof chunk === "string") {
+      yield chunk;
+    }
+  }
 }
 
 // ============================================

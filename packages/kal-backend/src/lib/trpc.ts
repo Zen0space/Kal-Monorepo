@@ -6,6 +6,7 @@ const t = initTRPC.context<Context>().create();
 
 export const router = t.router;
 export const publicProcedure = t.procedure;
+export const createCallerFactory = t.createCallerFactory;
 
 // Middleware to check if user is authenticated
 const isAuthenticated = t.middleware(({ ctx, next }) => {

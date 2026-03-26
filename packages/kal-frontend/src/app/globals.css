@@ -16,6 +16,27 @@
 
 * {
   box-sizing: border-box;
+  /* Seamless dark scrollbar everywhere */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 body {
@@ -669,8 +690,60 @@ html {
   display: none;
 }
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Thin seamless scrollbar for chat widget */
+.chat-scrollbar {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--border-color) transparent;
+}
+.chat-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.chat-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 9999px;
+}
+.chat-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Gradient green chat icon */
+.chat-gradient-icon svg {
+  stroke: url(#chat-icon-gradient);
+}
+
+/* Chat markdown — list styling */
+.chat-md-ul {
+  list-style: none;
+}
+.chat-md-ul > .chat-md-li::before {
+  content: "•";
+  color: var(--accent-green);
+  font-weight: bold;
+  display: inline-block;
+  width: 1em;
+  margin-left: -0.25em;
+}
+.chat-md-ol {
+  list-style: decimal;
+  list-style-position: inside;
+}
+.chat-md-ol > .chat-md-li::marker {
+  color: var(--text-muted);
+}
+
+/* Chat markdown — remove spacing from last child in nested contexts */
+.chat-markdown > :first-child {
+  margin-top: 0;
+}
+.chat-markdown > :last-child {
+  margin-bottom: 0;
 }
 
 /* ============================================
@@ -764,7 +837,9 @@ html {
   padding: 0.25rem;
   margin: -0.25rem;
   border-radius: 0.25rem;
-  transition: color 0.2s, background-color 0.2s;
+  transition:
+    color 0.2s,
+    background-color 0.2s;
 }
 
 .toast-close:hover {
@@ -875,7 +950,7 @@ html {
     right: 1rem;
     width: auto;
   }
-  
+
   .toast {
     padding: 0.875rem;
   }
@@ -894,7 +969,7 @@ html {
   --grid-min-md: 280px;
   --grid-min-lg: 320px;
   --grid-min-xl: 400px;
-  
+
   /* Responsive max-widths */
   --container-lg: 1024px;
   --container-xl: 1280px;

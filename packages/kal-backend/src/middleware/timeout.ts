@@ -38,8 +38,10 @@ export function requestTimeout(timeoutMs: number = DEFAULT_TIMEOUT_MS) {
     }
 
     // Use extended timeout for AI/chat routes that may take longer
-    const extendedTimeoutPaths = ["/trpc/chat.sendMessage", "/trpc/chat"];
-    const isExtendedPath = extendedTimeoutPaths.some((path) => req.path.includes(path));
+    const extendedTimeoutPaths = ["/trpc/chat", "/api/chat/stream"];
+    const isExtendedPath = extendedTimeoutPaths.some((path) =>
+      req.path.includes(path)
+    );
     const effectiveTimeout = isExtendedPath ? EXTENDED_TIMEOUT_MS : timeoutMs;
 
     // Use native request timeout - no custom timers needed

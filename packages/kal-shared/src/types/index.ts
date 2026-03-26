@@ -1,7 +1,7 @@
 // ===================
 // User Tiers
 // ===================
-export type UserTier = 'free' | 'tier_1' | 'tier_2';
+export type UserTier = "free" | "tier_1" | "tier_2";
 
 export interface User {
   _id: string;
@@ -18,14 +18,14 @@ export interface User {
 // ===================
 export interface RateLimitConfig {
   // Base limits
-  minuteLimit: number;       // requests per minute
-  dailyLimit: number;        // requests per day
-  monthlyLimit: number;      // requests per month
-  
+  minuteLimit: number; // requests per minute
+  dailyLimit: number; // requests per day
+  monthlyLimit: number; // requests per month
+
   // Burst configuration
-  burstBonus: number;        // extra requests allowed during burst
+  burstBonus: number; // extra requests allowed during burst
   burstWindowSeconds: number; // burst window duration (typically 10 seconds)
-  maxBurstTotal: number;     // max total requests including burst
+  maxBurstTotal: number; // max total requests including burst
 }
 
 export const RATE_LIMITS: Record<UserTier, RateLimitConfig> = {
@@ -70,22 +70,22 @@ export interface RateLimitUsage {
   _id: string;
   userId: string;
   date: string; // YYYY-MM-DD format
-  
+
   // Daily tracking
   dailyCount: number;
-  
+
   // Minute tracking
   minuteWindow: Date;
   minuteCount: number;
-  
+
   // Second tracking (for VPS safety cap)
   secondWindow?: Date;
   secondCount?: number;
-  
+
   // Burst window tracking
   burstWindowStart?: Date;
   burstCount?: number;
-  
+
   updatedAt: Date;
 }
 
@@ -103,16 +103,16 @@ export interface LogtoUserInfo {
 // ===================
 // API Keys
 // ===================
-export type ApiKeyExpiration = '1_week' | '1_month' | 'never';
+export type ApiKeyExpiration = "1_week" | "1_month" | "never";
 
 export interface ApiKey {
   _id: string;
-  userId: string;           // Reference to user
-  key: string;              // The actual API key (hashed in DB)
-  keyPrefix: string;        // First 8 chars for display (e.g., "kal_a1b2...")
-  name: string;             // User-defined name for the key
+  userId: string; // Reference to user
+  key: string; // The actual API key (hashed in DB)
+  keyPrefix: string; // First 8 chars for display (e.g., "kal_a1b2...")
+  name: string; // User-defined name for the key
   expiration: ApiKeyExpiration;
-  expiresAt: Date | null;   // null = never expires
+  expiresAt: Date | null; // null = never expires
   createdAt: Date;
   lastUsedAt: Date | null;
   isRevoked: boolean;
@@ -130,8 +130,6 @@ export interface ApiKeyPublic {
   lastUsedAt: Date | null;
   isRevoked: boolean;
 }
-
-
 
 export interface FoodEntry {
   _id: string;
@@ -161,14 +159,14 @@ export interface PaginatedResponse<T> {
 }
 
 // ===================
-// Chat (BAML + GLM 4.6)
+// Chat (BAML + Claude via Pika AI)
 // ===================
-export type ChatRole = 'User' | 'Assistant';
+export type ChatRole = "User" | "Assistant";
 
 export interface ChatThread {
   _id: string;
-  userId: string;           // Logto user ID
-  title: string;            // Auto-generated from first message
+  userId: string; // Logto user ID
+  title: string; // Auto-generated from first message
   createdAt: Date;
   updatedAt: Date;
   messageCount: number;
@@ -176,8 +174,8 @@ export interface ChatThread {
 
 export interface ChatMessage {
   _id: string;
-  threadId: string;         // Reference to chat_threads
-  userId: string;           // Logto user ID
+  threadId: string; // Reference to chat_threads
+  userId: string; // Logto user ID
   role: ChatRole;
   content: string;
   createdAt: Date;
@@ -189,6 +187,33 @@ export interface ChatThreadPreview {
   title: string;
   updatedAt: Date;
   messageCount: number;
-  lastMessage?: string;     // Preview of last message content
+  lastMessage?: string; // Preview of last message content
 }
 
+// ===================
+// Chat SSE Streaming Events
+// ===================
+
+/** Tool step names used in the chat workflow */
+export type ChatToolName =
+  | "classify_intent"
+  | "extract_search_term"
+  | "search_database"
+  | "estimate_nutrition"
+  | "parse_recipe"
+  | "generate_response";
+
+/** SSE events sent during chat streaming */
+export type ChatSSEEvent =
+  | { type: "tool_start"; tool: ChatToolName; message: string }
+  | {
+      type: "tool_end";
+      tool: ChatToolName;
+      message: string;
+      data?: Record<string, unknown>;
+    }
+  | { type: "stream_start" }
+  | { type: "stream_delta"; delta: string }
+  | { type: "stream_end"; messageId: string }
+  | { type: "error"; message: string }
+  | { type: "done" };
