@@ -71,32 +71,6 @@ services:
       timeout: 3s
       retries: 5
 
-  backend:
-    # Image built in GitHub Actions and pushed to GHCR on every merge to main.
-    # To update on VPS: docker compose pull backend && docker compose up -d backend
-    image: ghcr.io/zen0space/kal-monorepo/kal-backend:latest
-    container_name: kal-backend
-    ports:
-      - "${BACKEND_PORT:-4000}:3000"
-    environment:
-      - NODE_ENV=production
-      - MONGODB_URI=mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@mongodb:27017/${MONGODB_DATABASE}?authSource=admin
-      - REDIS_URL=redis://redis:6379
-      - LOGTO_ENDPOINT=${LOGTO_ENDPOINT}
-      - LOGTO_APP_ID=${LOGTO_APP_ID}
-      - LOGTO_APP_SECRET=${LOGTO_APP_SECRET}
-      - SESSION_SECRET=${SESSION_SECRET}
-      - GLM_API_BASE_URL=${GLM_API_BASE_URL}
-      - GLM_API_KEY=${GLM_API_KEY}
-      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
-      - FRONTEND_URL=${FRONTEND_URL}
-    depends_on:
-      - mongodb
-      - logto
-      - redis
-    networks:
-      - kal-network
-
 volumes:
   mongodb_data:
   postgres_data:

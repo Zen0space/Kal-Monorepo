@@ -1,5 +1,5 @@
 // Re-export all BAML generated types and functions
-export * from '../baml_client/baml_client/index.js';
+export * from "../baml_client/baml_client/index.js";
 
 // Export convenience wrapper functions
 export {
@@ -9,6 +9,15 @@ export {
   smartChat,
   streamQuickChat,
   structuredChat,
+  // Agent workflow (NEW)
+  formatFoodResponse,
+  streamFormatFoodResponse,
+  formatRecipeResponse,
+  streamFormatRecipeResponse,
+  streamGeneralChat,
+  generalChat,
+  formatApiHelpResponse,
+  streamFormatApiHelpResponse,
   // Thinking & Intent
   classifyIntent,
   think,
@@ -24,7 +33,7 @@ export {
   // Enums
   Role,
   UserIntent,
-} from './chat.js';
+} from "./chat.js";
 
 // Export types
 export type {
@@ -40,4 +49,4 @@ export type {
   ParsedRecipe,
   IntentClassification,
   ThinkingResult,
-} from './chat.js';
+} from "./chat.js";

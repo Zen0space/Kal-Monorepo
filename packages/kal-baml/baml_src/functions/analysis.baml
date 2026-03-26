@@ -4,7 +4,7 @@
 
 // Analyze food from text description
 function AnalyzeFood(description: string) -> NutritionAnalysis {
-  client GLM46
+  client Claude
   prompt #"
     {{ _.role("system") }}
     You are a nutrition expert. Analyze the food described and provide
@@ -23,7 +23,7 @@ function EstimateNutrition(
   food_name: string,
   quantity: string?
 ) -> NutritionItem {
-  client GLM46
+  client Claude
   prompt #"
     {{ _.role("system") }}
     You are a nutrition expert. Estimate the nutrition for this food item.

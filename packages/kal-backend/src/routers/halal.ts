@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { CacheKeys, CacheTTL } from "../lib/cache-keys.js";
 import { cache } from "../lib/cache.js";
+import { buildSearchQuery } from "../lib/search.js";
 import { router, publicProcedure } from "../lib/trpc.js";
 
 export const halalRouter = router({
@@ -12,9 +13,10 @@ export const halalRouter = router({
       const cacheKey = CacheKeys.trpcHalalSearch(input.query);
 
       return cache.wrap(cacheKey, CacheTTL.SEARCH_RESULTS, async () => {
+        const searchQuery = buildSearchQuery(input.query);
         const foods = await ctx.db
           .collection("halal_foods")
-          .find({ name: { $regex: input.query, $options: "i" } })
+          .find(searchQuery)
           .limit(20)
           .toArray();
 
@@ -117,9 +119,7 @@ export const halalRouter = router({
     const cacheKey = CacheKeys.trpcHalalBrands();
 
     return cache.wrap(cacheKey, CacheTTL.BRANDS, async () => {
-      const brands = await ctx.db
-        .collection("halal_foods")
-        .distinct("brand");
+      const brands = await ctx.db.collection("halal_foods").distinct("brand");
       return brands.filter(Boolean).sort();
     });
   }),

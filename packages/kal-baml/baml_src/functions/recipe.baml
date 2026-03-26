@@ -5,7 +5,7 @@
 
 // Parse a recipe text and extract ingredients
 function ParseRecipe(recipe_text: string) -> ParsedRecipe {
-  client GLM46
+  client Claude
   prompt #"
     {{ _.role("system") }}
     You are a recipe parser. Extract the recipe name and ingredients from the text.
@@ -33,7 +33,7 @@ function GenerateRecipe(
   preferences: string?,
   dietary_restrictions: string?
 ) -> ParsedRecipe {
-  client GLM46
+  client Claude
   prompt #"
     {{ _.role("system") }}
     You are a Malaysian cooking expert. Generate a simple, practical recipe.
@@ -62,7 +62,7 @@ function GenerateRecipe(
 
 // Extract food search terms from any text (improved version)
 function ExtractFoodSearchTerm(user_message: string) -> string {
-  client GLM46
+  client Claude
   prompt #"
     {{ _.role("system") }}
     You are a food search term extractor for a Malaysian nutrition database.
@@ -94,7 +94,7 @@ function ExtractFoodSearchTerm(user_message: string) -> string {
 // Normalize ingredient name for database search
 // This function cleans up recipe ingredient names to match database entries
 function NormalizeIngredientName(ingredient_name: string) -> string {
-  client GLM46
+  client Claude
   prompt #"
     {{ _.role("system") }}
     You are a food database search optimizer. Convert recipe ingredient names to simple, searchable food names that would match a nutrition database.
@@ -133,7 +133,7 @@ function SummarizeNutrition(
   ingredients_data: string,
   servings: int?
 ) -> NutritionSummary {
-  client GLM46
+  client Claude
   prompt #"
     {{ _.role("system") }}
     You are a nutrition calculator. Given ingredient nutrition data, calculate totals.
