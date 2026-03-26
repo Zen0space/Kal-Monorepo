@@ -1,64 +1,79 @@
 "use client";
 
+import { useAtom } from "jotai";
+import { useCallback } from "react";
 import { MessageCircle, X } from "react-feather";
 
 import { ChatActivityBar } from "./ChatActivityBar";
 import { ChatPanel } from "./ChatPanel";
 
-import { useChatPanel } from "@/contexts/ChatPanelContext";
+import { chatPanelOpenAtom } from "@/atoms/chat";
 import { useAuth } from "@/lib/auth-context";
 
 /**
  * Chat widget — orchestrates the right-side panel layout.
  *
- * Desktop (sm+): Activity bar (always visible) + push panel that takes space in the flex row.
- * Mobile (<sm): Floating action button + fullscreen overlay.
+ * The ChatPanel is **always mounted** (never unmounted on close). Open/close
+ * is purely CSS-driven (width transition on desktop, translate on mobile).
+ * This preserves scroll position, input text, query cache, and streaming
+ * state across open/close cycles — and eliminates the "scroll to bottom"
+ * animation that used to play on every panel open.
  *
- * Rendered at the root layout level, auth-gated internally.
+ * Desktop (sm+): Activity bar (always visible) + push panel (width transition).
+ * Mobile (<sm): FAB + fullscreen overlay (translate-y transition).
  */
 export function ChatWidget() {
   const { logtoId } = useAuth();
-  const { isOpen, toggle, close } = useChatPanel();
+  const [isOpen, setIsOpen] = useAtom(chatPanelOpenAtom);
+
+  const toggle = useCallback(() => setIsOpen((prev) => !prev), [setIsOpen]);
+  const close = useCallback(() => setIsOpen(false), [setIsOpen]);
 
   // Only show for authenticated users
   if (!logtoId) return null;
 
   return (
     <>
-      {/* ── Desktop: Activity bar + push panel ── */}
+      {/* ── Desktop: Activity bar (always visible) ── */}
       <ChatActivityBar />
 
-      {isOpen && (
-        <div
-          className={[
-            // Desktop: inline push panel (part of flex row)
-            "hidden sm:flex flex-col shrink-0",
-            "w-[400px] lg:w-[500px]",
-            "h-full",
-            "bg-dark-surface border-l border-dark-border",
-            "animate-panel-slide-in",
-          ].join(" ")}
-        >
+      {/* ── Mobile backdrop ── */}
+      <div
+        className={[
+          "fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] sm:hidden",
+          "transition-opacity duration-300",
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
+        ].join(" ")}
+        onClick={close}
+      />
+
+      {/* ── Chat panel — always mounted, CSS-driven show/hide ── */}
+      <div
+        aria-hidden={!isOpen}
+        className={[
+          "flex flex-col bg-dark-surface",
+          // Mobile: fullscreen fixed overlay that slides up from bottom
+          "max-sm:fixed max-sm:inset-0 max-sm:z-[61]",
+          "max-sm:transition-transform max-sm:duration-300 max-sm:ease-out",
+          isOpen
+            ? "max-sm:translate-y-0"
+            : "max-sm:translate-y-full max-sm:pointer-events-none",
+          // Desktop: push panel in flex row with width transition
+          "sm:shrink-0 sm:h-full sm:overflow-hidden",
+          "sm:border-l sm:border-dark-border",
+          "sm:transition-[width,opacity] sm:duration-300 sm:ease-out",
+          isOpen
+            ? "sm:w-[400px] lg:w-[500px] sm:opacity-100"
+            : "sm:w-0 sm:opacity-0 sm:pointer-events-none",
+        ].join(" ")}
+      >
+        {/* Inner wrapper preserves content width during desktop width transition */}
+        <div className="h-full flex flex-col sm:min-w-[400px] lg:min-w-[500px]">
           <ChatPanel onClose={close} />
         </div>
-      )}
+      </div>
 
-      {/* ── Mobile: FAB + fullscreen overlay ── */}
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] sm:hidden"
-            onClick={close}
-          />
-          {/* Fullscreen panel */}
-          <div className="fixed inset-0 z-[61] sm:hidden bg-dark-surface flex flex-col animate-fade-in">
-            <ChatPanel onClose={close} />
-          </div>
-        </>
-      )}
-
-      {/* Mobile FAB (visible only on mobile) */}
+      {/* ── Mobile FAB ── */}
       <button
         onClick={toggle}
         className={[
@@ -67,7 +82,7 @@ export function ChatWidget() {
           "flex items-center justify-center",
           "shadow-lg shadow-black/30",
           "transition-all duration-200",
-          "sm:hidden", // hide on desktop — activity bar handles it
+          "sm:hidden",
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-dark",
           isOpen
             ? "bg-dark-elevated border border-dark-border text-content-secondary hover:text-content-primary"
