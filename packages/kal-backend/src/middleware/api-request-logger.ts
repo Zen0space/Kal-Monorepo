@@ -131,6 +131,14 @@ export function createApiRequestLogger(options: LoggerOptions = {}) {
       const statusCode = res.statusCode;
       const success = statusCode >= 200 && statusCode < 400;
 
+      // Determine error message for failed requests
+      let error: string | undefined;
+      if (statusCode === 429) {
+        error = "Rate limit exceeded";
+      } else if (statusCode >= 400) {
+        error = `HTTP ${statusCode}`;
+      }
+
       // Build log entry
       const logEntry = {
         requestId,
@@ -143,6 +151,7 @@ export function createApiRequestLogger(options: LoggerOptions = {}) {
         statusCode,
         duration,
         success,
+        error,
         userAgent: req.headers["user-agent"],
         ip: hashIp(req.ip || req.socket?.remoteAddress),
       };

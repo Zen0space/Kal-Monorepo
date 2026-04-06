@@ -36,6 +36,7 @@ pnpm-debug.log*
 # Testing
 coverage/
 .nyc_output/
+packages/kal-backend/tests/
 
 # Turbo
 .turbo/

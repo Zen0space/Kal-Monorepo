@@ -9,3 +9,4 @@
 **/*.log
 **/.DS_Store
 packages/kal-frontend-chat
+**/tests
