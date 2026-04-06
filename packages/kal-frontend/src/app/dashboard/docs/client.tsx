@@ -238,8 +238,10 @@ function RateLimitsTab() {
 
   const tier = stats?.tier ?? "free";
   const limits = RATE_LIMITS[tier];
+  const minuteUsed = stats?.minuteUsed ?? 0;
   const dailyUsed = stats?.dailyUsed ?? 0;
   const monthlyUsed = stats?.monthlyUsed ?? 0;
+  const minutePct = Math.min(100, (minuteUsed / limits.minuteLimit) * 100);
   const dailyPct = Math.min(100, (dailyUsed / limits.dailyLimit) * 100);
   const monthlyPct = Math.min(100, (monthlyUsed / limits.monthlyLimit) * 100);
 
@@ -286,6 +288,25 @@ function RateLimitsTab() {
       <SectionCard>
         <SectionTitle>Your Current Usage</SectionTitle>
         <div className="space-y-4">
+          <div>
+            <div className="flex justify-between text-sm mb-1.5">
+              <span className="text-content-secondary">Per minute</span>
+              <span className="font-mono text-content-primary">
+                {minuteUsed.toLocaleString()} /{" "}
+                {limits.minuteLimit.toLocaleString()}
+              </span>
+            </div>
+            <div className="h-2 bg-dark-elevated rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${minutePct > 80 ? "bg-red-400" : minutePct > 60 ? "bg-yellow-400" : "bg-accent"}`}
+                style={{ width: `${minutePct}%` }}
+              />
+            </div>
+            <p className="text-xs text-content-muted mt-1">
+              {Math.max(0, limits.minuteLimit - minuteUsed).toLocaleString()}{" "}
+              remaining &middot; resets every minute
+            </p>
+          </div>
           <div>
             <div className="flex justify-between text-sm mb-1.5">
               <span className="text-content-secondary">Today</span>
