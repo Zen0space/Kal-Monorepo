@@ -200,11 +200,23 @@ export const apiKeysRouter = router({
       isRevoked: false,
     });
 
+    // Minute usage — only valid if minuteWindow is within the current minute
+    const now = new Date();
+    const currentMinuteStart = new Date(now);
+    currentMinuteStart.setSeconds(0, 0);
+
+    const minuteWindowIsStale =
+      !usage?.minuteWindow ||
+      new Date(usage.minuteWindow).getTime() < currentMinuteStart.getTime();
+
+    const minuteUsed = minuteWindowIsStale ? 0 : usage?.minuteCount || 0;
+
     return {
       tier: user?.tier || "free",
       dailyUsed: usage?.dailyCount || 0,
       monthlyUsed,
       activeKeyCount,
+      minuteUsed,
     };
   }),
 

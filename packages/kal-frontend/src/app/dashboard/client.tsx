@@ -70,6 +70,12 @@ function DashboardContent({ nameProp }: { nameProp?: string | null }) {
     100,
     (monthlyUsed / limits.monthlyLimit) * 100
   );
+  const minuteUsed = stats?.minuteUsed || 0;
+  const minuteRemaining = Math.max(0, limits.minuteLimit - minuteUsed);
+  const minutePercentage = Math.min(
+    100,
+    (minuteUsed / limits.minuteLimit) * 100
+  );
 
   const displayName = userInfo?.name || nameProp || "Developer";
 
@@ -157,18 +163,21 @@ function DashboardContent({ nameProp }: { nameProp?: string | null }) {
         <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-content-secondary text-xs md:text-sm">
-              Active API Keys
+              Minute Usage
             </span>
-            <span className="text-accent font-semibold text-xl md:text-2xl">
-              {stats?.activeKeyCount || 0}
+            <span className="text-accent font-semibold text-sm md:text-base">
+              {minuteUsed} / {limits.minuteLimit}
             </span>
           </div>
-          <Link
-            href="/dashboard/api-keys"
-            className="text-accent text-xs md:text-sm hover:underline"
-          >
-            Manage keys →
-          </Link>
+          <div className="h-2 bg-dark-elevated rounded-full overflow-hidden mb-2">
+            <div
+              className="h-full bg-accent rounded-full transition-all duration-300"
+              style={{ width: `${minutePercentage}%` }}
+            />
+          </div>
+          <p className="text-content-muted text-xs md:text-sm">
+            {minuteRemaining} remaining &middot; resets every minute
+          </p>
         </div>
       </div>
 
