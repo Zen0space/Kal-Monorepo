@@ -54,6 +54,27 @@ const CATEGORY_GROUPS: Record<string, string[]> = {
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Build a compact page-number array with ellipsis for large page counts. */
+function getPageNumbers(current: number, total: number): (number | "...")[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  const pages: (number | "...")[] = [1];
+
+  if (current > 3) pages.push("...");
+
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
+
+  if (current < total - 2) pages.push("...");
+
+  pages.push(total);
+  return pages;
+}
+
 interface FoodsClientProps {
   logtoId?: string;
   email?: string | null;
@@ -360,25 +381,49 @@ function FoodsContent() {
 
       {/* Pagination */}
       {data && data.total > PAGE_SIZE && (
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-center gap-1.5 flex-wrap">
+          {/* Previous */}
           <button
             onClick={handlePrev}
             disabled={cursor === 0}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-dark-surface border border-dark-border text-content-secondary hover:text-content-primary hover:border-accent/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-dark-surface border border-dark-border text-content-secondary hover:text-content-primary hover:border-accent/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm"
           >
-            <ChevronLeft size={16} /> Previous
+            <ChevronLeft size={16} />
+            <span className="hidden sm:inline">Previous</span>
           </button>
 
-          <span className="text-content-muted text-sm">
-            Page {currentPage} of {totalPages}
-          </span>
+          {/* Page numbers */}
+          {getPageNumbers(currentPage, totalPages).map((page, i) =>
+            page === "..." ? (
+              <span
+                key={`ellipsis-${i}`}
+                className="px-1.5 py-1.5 text-content-muted text-sm select-none"
+              >
+                &hellip;
+              </span>
+            ) : (
+              <button
+                key={page}
+                onClick={() => setCursor(((page as number) - 1) * PAGE_SIZE)}
+                className={`min-w-[36px] px-2.5 py-1.5 rounded-lg border text-sm font-medium transition-all ${
+                  page === currentPage
+                    ? "bg-accent/15 border-accent/40 text-accent"
+                    : "bg-dark-surface border-dark-border text-content-secondary hover:text-content-primary hover:border-accent/30"
+                }`}
+              >
+                {page}
+              </button>
+            )
+          )}
 
+          {/* Next */}
           <button
             onClick={handleNext}
             disabled={data.nextCursor === null || data.nextCursor === undefined}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-dark-surface border border-dark-border text-content-secondary hover:text-content-primary hover:border-accent/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-dark-surface border border-dark-border text-content-secondary hover:text-content-primary hover:border-accent/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm"
           >
-            Next <ChevronRight size={16} />
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight size={16} />
           </button>
         </div>
       )}

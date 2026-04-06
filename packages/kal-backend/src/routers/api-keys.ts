@@ -200,11 +200,63 @@ export const apiKeysRouter = router({
       isRevoked: false,
     });
 
+    // Minute usage — only valid if minuteWindow is within the current minute
+    const now = new Date();
+    const currentMinuteStart = new Date(now);
+    currentMinuteStart.setSeconds(0, 0);
+
+    const minuteWindowIsStale =
+      !usage?.minuteWindow ||
+      new Date(usage.minuteWindow).getTime() < currentMinuteStart.getTime();
+
+    const minuteUsed = minuteWindowIsStale ? 0 : usage?.minuteCount || 0;
+
     return {
       tier: user?.tier || "free",
       dailyUsed: usage?.dailyCount || 0,
       monthlyUsed,
       activeKeyCount,
+      minuteUsed,
+    };
+  }),
+
+  /**
+   * Get key-specific stats: active, revoked, and expired counts
+   */
+  getKeyStats: protectedProcedure.query(async ({ ctx }) => {
+    const now = new Date();
+    const keysCollection = ctx.db.collection<ApiKey>("api_keys");
+
+    const [activeCount, revokedCount, expiredCount, totalCount] =
+      await Promise.all([
+        // Active: not revoked and not expired
+        keysCollection.countDocuments({
+          userId: ctx.userId,
+          isRevoked: false,
+          $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }],
+        }),
+        // Revoked
+        keysCollection.countDocuments({
+          userId: ctx.userId,
+          isRevoked: true,
+        }),
+        // Expired: not revoked but past expiration
+        keysCollection.countDocuments({
+          userId: ctx.userId,
+          isRevoked: false,
+          expiresAt: { $ne: null, $lte: now },
+        }),
+        // Total ever created
+        keysCollection.countDocuments({
+          userId: ctx.userId,
+        }),
+      ]);
+
+    return {
+      active: activeCount,
+      revoked: revokedCount,
+      expired: expiredCount,
+      total: totalCount,
     };
   }),
 

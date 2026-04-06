@@ -2,12 +2,82 @@
 
 import { RATE_LIMITS } from "kal-shared";
 import Link from "next/link";
-import { Book, Code, Key, List, Search, Settings } from "react-feather";
+import { useState, useEffect } from "react";
+import { Book, Clock, Code, Key, List, Search, Settings } from "react-feather";
 
 import { UsageChart } from "@/components/dashboard/UsageChart";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { AuthUpdater, useAuth } from "@/lib/auth-context";
 import { trpc } from "@/lib/trpc";
+
+// ─── Countdown helpers ────────────────────────────────────────────────────────
+function getMsUntilMidnightUTC(): number {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setUTCDate(midnight.getUTCDate() + 1);
+  midnight.setUTCHours(0, 0, 0, 0);
+  return midnight.getTime() - now.getTime();
+}
+
+function getMsUntilNextMonthUTC(): number {
+  const now = new Date();
+  const nextMonth = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)
+  );
+  return nextMonth.getTime() - now.getTime();
+}
+
+function getMsUntilNextMinute(): number {
+  const now = new Date();
+  return (60 - now.getSeconds()) * 1_000 - now.getMilliseconds();
+}
+
+function formatCountdown(ms: number, compact = false): string {
+  const totalSec = Math.max(0, Math.floor(ms / 1_000));
+
+  if (compact) {
+    const s = totalSec % 60;
+    return `${s}s`;
+  }
+
+  const d = Math.floor(totalSec / 86_400);
+  const h = Math.floor((totalSec % 86_400) / 3_600);
+  const m = Math.floor((totalSec % 3_600) / 60);
+  const s = totalSec % 60;
+
+  if (d > 0) {
+    return `${d}d ${h}h ${String(m).padStart(2, "0")}m`;
+  }
+  return `${h}h ${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
+}
+
+function useCountdown(getMsFn: () => number, interval = 1_000): number {
+  const [ms, setMs] = useState(getMsFn);
+
+  useEffect(() => {
+    const id = setInterval(() => setMs(getMsFn()), interval);
+    return () => clearInterval(id);
+  }, [getMsFn, interval]);
+
+  return ms;
+}
+
+function ResetBadge({
+  ms,
+  compact = false,
+}: {
+  ms: number;
+  compact?: boolean;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1 text-content-muted text-xs">
+      <Clock size={10} className="text-accent/60 shrink-0" />
+      <span className="font-mono text-content-secondary">
+        {formatCountdown(ms, compact)}
+      </span>
+    </span>
+  );
+}
 
 interface DashboardClientProps {
   logtoId?: string;
@@ -59,6 +129,10 @@ function DashboardContent({ nameProp }: { nameProp?: string | null }) {
   const { data: chartData, isLoading: isLoadingChart } =
     trpc.requestLogs.requestsByDay.useQuery({ days: 30 });
 
+  const dailyResetMs = useCountdown(getMsUntilMidnightUTC);
+  const monthlyResetMs = useCountdown(getMsUntilNextMonthUTC);
+  const minuteResetMs = useCountdown(getMsUntilNextMinute, 1_000);
+
   const tier = stats?.tier || "free";
   const limits = RATE_LIMITS[tier];
   const dailyUsed = stats?.dailyUsed || 0;
@@ -69,6 +143,12 @@ function DashboardContent({ nameProp }: { nameProp?: string | null }) {
   const monthlyPercentage = Math.min(
     100,
     (monthlyUsed / limits.monthlyLimit) * 100
+  );
+  const minuteUsed = stats?.minuteUsed || 0;
+  const minuteRemaining = Math.max(0, limits.minuteLimit - minuteUsed);
+  const minutePercentage = Math.min(
+    100,
+    (minuteUsed / limits.minuteLimit) * 100
   );
 
   const displayName = userInfo?.name || nameProp || "Developer";
@@ -128,9 +208,12 @@ function DashboardContent({ nameProp }: { nameProp?: string | null }) {
               style={{ width: `${dailyPercentage}%` }}
             />
           </div>
-          <p className="text-content-muted text-xs md:text-sm">
-            {dailyRemaining} remaining
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-content-muted text-xs md:text-sm">
+              {dailyRemaining} remaining
+            </p>
+            <ResetBadge ms={dailyResetMs} />
+          </div>
         </div>
 
         <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
@@ -149,26 +232,35 @@ function DashboardContent({ nameProp }: { nameProp?: string | null }) {
               style={{ width: `${monthlyPercentage}%` }}
             />
           </div>
-          <p className="text-content-muted text-xs md:text-sm">
-            {monthlyRemaining.toLocaleString()} remaining
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-content-muted text-xs md:text-sm">
+              {monthlyRemaining.toLocaleString()} remaining
+            </p>
+            <ResetBadge ms={monthlyResetMs} />
+          </div>
         </div>
 
         <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-content-secondary text-xs md:text-sm">
-              Active API Keys
+              Minute Usage
             </span>
-            <span className="text-accent font-semibold text-xl md:text-2xl">
-              {stats?.activeKeyCount || 0}
+            <span className="text-accent font-semibold text-sm md:text-base">
+              {minuteUsed} / {limits.minuteLimit}
             </span>
           </div>
-          <Link
-            href="/dashboard/api-keys"
-            className="text-accent text-xs md:text-sm hover:underline"
-          >
-            Manage keys →
-          </Link>
+          <div className="h-2 bg-dark-elevated rounded-full overflow-hidden mb-2">
+            <div
+              className="h-full bg-accent rounded-full transition-all duration-300"
+              style={{ width: `${minutePercentage}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-content-muted text-xs md:text-sm">
+              {minuteRemaining} remaining
+            </p>
+            <ResetBadge ms={minuteResetMs} compact />
+          </div>
         </div>
       </div>
 
