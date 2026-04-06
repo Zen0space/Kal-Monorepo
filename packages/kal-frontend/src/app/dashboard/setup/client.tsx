@@ -99,7 +99,8 @@ function ApiPlayground({
     setResponseTime(null);
 
     const startTime = performance.now();
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.kalori-api.my";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_URL || "https://api.kalori-api.my";
     const url =
       endpoint === "halal"
         ? `${baseUrl}/api/v1/halal/search?q=${encodeURIComponent(query)}`
@@ -354,7 +355,7 @@ const endpointsData: EndpointData[] = [
         description: "Food ID (MongoDB ObjectId)",
       },
     ],
-    defaultExample: "/api/v1/foods/507f1f77bcf86cd799439011",
+    defaultExample: "/api/v1/foods/696d6752260e86a2b61634ef",
     section: "natural",
   },
   {
@@ -429,7 +430,7 @@ const endpointsData: EndpointData[] = [
         description: "Food ID (MongoDB ObjectId)",
       },
     ],
-    defaultExample: "/api/v1/halal/507f1f77bcf86cd799439011",
+    defaultExample: "/api/v1/halal/696d6752260e86a2b616381b",
     section: "halal",
   },
   {
@@ -496,7 +497,8 @@ function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
 
     setLoadingEndpoint(endpoint.id);
     const startTime = performance.now();
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.kalori-api.my";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_URL || "https://api.kalori-api.my";
     const path = getTryUrl(endpoint.id, endpoint.defaultExample);
 
     try {
