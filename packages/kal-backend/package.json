@@ -20,7 +20,11 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
     "cleanup-db": "tsx scripts/cleanup-db.ts",
-    "migrate-feedback": "tsx scripts/migrate-feedback.ts"
+    "migrate-feedback": "tsx scripts/migrate-feedback.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:min": "vitest run tests/integration/rate-limit-tier1.test.ts",
+    "test:daily": "vitest run tests/integration/rate-limit-daily.test.ts"
   },
   "dependencies": {
     "@logto/express": "^3.0.12",
@@ -49,6 +53,7 @@
     "@types/swagger-ui-express": "^4.1.8",
     "@types/ws": "^8.18.1",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.0"
   }
 }

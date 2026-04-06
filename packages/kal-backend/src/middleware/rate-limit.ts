@@ -23,6 +23,12 @@ export interface RateLimitResult {
   minuteLimit?: number;
   dailyLimit?: number;
   monthlyLimit?: number;
+
+  // Burst tracking
+  burstUsed?: number;
+  burstRemaining?: number;
+  burstWindowActive?: boolean;
+  effectiveMinuteLimit?: number;
 }
 
 /**
@@ -30,7 +36,9 @@ export interface RateLimitResult {
  *
  * Rate limit hierarchy (checked in order):
  * 1. VPS Safety Cap: 20 requests/second (global)
- * 2. Minute limit: varies by tier (65/130/110 per minute)
+ * 2. Minute limit: varies by tier (65/130/145 per minute)
+ *    - Burst window: First 10 seconds of each minute allows up to maxBurstTotal
+ *    - After burst window: Standard minuteLimit applies
  * 3. Daily limit: varies by tier
  * 4. Monthly limit: varies by tier
  *
@@ -45,13 +53,18 @@ import { getEffectiveRateLimits } from "../lib/platform-settings.js";
  *
  * Rate limit hierarchy (checked in order):
  * 1. VPS Safety Cap: 20 requests/second (global)
- * 2. Minute limit: varies by tier (65/130/110 per minute)
+ * 2. Minute limit with burst: varies by tier
+ *    - Burst window (first N seconds): allows up to maxBurstTotal requests
+ *    - After burst window: standard minuteLimit applies
  * 3. Daily limit: varies by tier
  * 4. Monthly limit: varies by tier
  *
+ * IMPORTANT: Counters are only incremented for ALLOWED requests.
+ * Rate-limited requests do NOT count towards usage.
+ *
  * Uses industry-standard MongoDB pattern:
  * - Composite _id: `${userId}_${date}` for uniqueness
- * - Atomic findOneAndUpdate with $inc for race-condition safety
+ * - Check limits BEFORE incrementing to ensure accurate counting
  */
 export async function checkRateLimit(
   db: Db,
@@ -72,13 +85,23 @@ export async function checkRateLimit(
   const secondStart = new Date(now);
   secondStart.setMilliseconds(0);
 
+  // Burst window calculation: first N seconds of each minute
+  const burstWindowEnd = new Date(minuteStart);
+  burstWindowEnd.setSeconds(limits.burstWindowSeconds); // e.g., 10 seconds
+  const isInBurstWindow = now < burstWindowEnd;
+
+  // Determine effective minute limit based on burst window
+  const effectiveMinuteLimit = isInBurstWindow
+    ? limits.maxBurstTotal // e.g., 160 for tier_1
+    : limits.minuteLimit; // e.g., 130 for tier_1
+
   const collection = db.collection<RateLimitUsage>("rate_limit_usage");
 
   // Composite _id ensures one document per user per day
   const compositeId = `${userId}_${today}`;
 
   try {
-    // First, get current usage to check windows
+    // Step 1: Get current usage WITHOUT incrementing
     const existingUsage = await collection.findOne({
       _id: compositeId as unknown as string,
     });
@@ -92,7 +115,125 @@ export async function checkRateLimit(
       !existingUsage?.secondWindow ||
       new Date(existingUsage.secondWindow).getTime() < secondStart.getTime();
 
-    // Build update document based on window states
+    // Step 2: Calculate PROJECTED counts (what they would be after this request)
+    const projectedSecondCount = isNewSecond
+      ? 1
+      : (existingUsage?.secondCount || 0) + 1;
+    const projectedMinuteCount = isNewMinute
+      ? 1
+      : (existingUsage?.minuteCount || 0) + 1;
+    const projectedDailyCount = (existingUsage?.dailyCount || 0) + 1;
+
+    // Calculate burst usage based on projected counts
+    const projectedBurstUsed = Math.max(
+      0,
+      projectedMinuteCount - limits.minuteLimit
+    );
+    const projectedBurstRemaining = Math.max(
+      0,
+      limits.burstBonus - projectedBurstUsed
+    );
+
+    // Step 3: Check VPS safety cap BEFORE incrementing
+    if (projectedSecondCount > VPS_SAFETY_CAPS.maxRequestsPerSecond) {
+      logger.info("VPS safety cap exceeded (per-second)", {
+        userId: userId.substring(0, 8),
+        secondCount: projectedSecondCount - 1, // Current count (not projected)
+        limit: VPS_SAFETY_CAPS.maxRequestsPerSecond,
+        tier,
+      });
+      // DON'T increment - return limited
+      return {
+        limited: true,
+        retryAfter: 1, // Wait 1 second
+        limitType: "second",
+        secondCount: existingUsage?.secondCount || 0,
+        minuteCount: existingUsage?.minuteCount || 0,
+        dailyCount: existingUsage?.dailyCount || 0,
+        minuteLimit: limits.minuteLimit,
+        dailyLimit: limits.dailyLimit,
+        burstUsed: Math.max(
+          0,
+          (existingUsage?.minuteCount || 0) - limits.minuteLimit
+        ),
+        burstRemaining: Math.max(
+          0,
+          limits.burstBonus -
+            Math.max(0, (existingUsage?.minuteCount || 0) - limits.minuteLimit)
+        ),
+        burstWindowActive: isInBurstWindow,
+        effectiveMinuteLimit,
+      };
+    }
+
+    // Step 4: Check minute limit BEFORE incrementing
+    if (projectedMinuteCount > effectiveMinuteLimit) {
+      const secondsInMinute = now.getSeconds();
+      const retryAfter = 60 - secondsInMinute;
+      logger.info("Minute rate limit exceeded", {
+        userId: userId.substring(0, 8),
+        minuteCount: existingUsage?.minuteCount || 0, // Current count
+        minuteLimit: limits.minuteLimit,
+        effectiveMinuteLimit,
+        burstWindowActive: isInBurstWindow,
+        tier,
+      });
+      // DON'T increment - return limited
+      return {
+        limited: true,
+        retryAfter,
+        limitType: "minute",
+        minuteCount: existingUsage?.minuteCount || 0,
+        dailyCount: existingUsage?.dailyCount || 0,
+        minuteLimit: limits.minuteLimit,
+        dailyLimit: limits.dailyLimit,
+        burstUsed: Math.max(
+          0,
+          (existingUsage?.minuteCount || 0) - limits.minuteLimit
+        ),
+        burstRemaining: Math.max(
+          0,
+          limits.burstBonus -
+            Math.max(0, (existingUsage?.minuteCount || 0) - limits.minuteLimit)
+        ),
+        burstWindowActive: isInBurstWindow,
+        effectiveMinuteLimit,
+      };
+    }
+
+    // Step 5: Check daily limit BEFORE incrementing
+    if (projectedDailyCount > limits.dailyLimit) {
+      const secondsUntilMidnight = getSecondsUntilMidnight();
+      logger.info("Daily rate limit exceeded", {
+        userId: userId.substring(0, 8),
+        dailyCount: existingUsage?.dailyCount || 0, // Current count
+        dailyLimit: limits.dailyLimit,
+        tier,
+      });
+      // DON'T increment - return limited
+      return {
+        limited: true,
+        retryAfter: secondsUntilMidnight,
+        limitType: "daily",
+        dailyCount: existingUsage?.dailyCount || 0,
+        minuteCount: existingUsage?.minuteCount || 0,
+        dailyLimit: limits.dailyLimit,
+        monthlyLimit: limits.monthlyLimit,
+        burstUsed: Math.max(
+          0,
+          (existingUsage?.minuteCount || 0) - limits.minuteLimit
+        ),
+        burstRemaining: Math.max(
+          0,
+          limits.burstBonus -
+            Math.max(0, (existingUsage?.minuteCount || 0) - limits.minuteLimit)
+        ),
+        burstWindowActive: isInBurstWindow,
+        effectiveMinuteLimit,
+      };
+    }
+
+    // Step 6: All checks passed - NOW increment counters
     interface UpdateOperation {
       $inc: Record<string, number>;
       $set: Record<string, Date | number>;
@@ -153,79 +294,25 @@ export async function checkRateLimit(
       };
     }
 
-    // Check VPS safety cap: 20 requests per second
-    const secondCount = usage.secondCount || 1;
-    if (secondCount > VPS_SAFETY_CAPS.maxRequestsPerSecond) {
-      logger.info("VPS safety cap exceeded (per-second)", {
-        userId: userId.substring(0, 8),
-        secondCount,
-        limit: VPS_SAFETY_CAPS.maxRequestsPerSecond,
-        tier,
-      });
-      return {
-        limited: true,
-        retryAfter: 1, // Wait 1 second
-        limitType: "second",
-        secondCount,
-        minuteCount: usage.minuteCount,
-        dailyCount: usage.dailyCount,
-        minuteLimit: limits.minuteLimit,
-        dailyLimit: limits.dailyLimit,
-      };
-    }
-
-    // Check minute limit
-    if (usage.minuteCount > limits.minuteLimit) {
-      const secondsInMinute = now.getSeconds();
-      const retryAfter = 60 - secondsInMinute;
-      logger.info("Minute rate limit exceeded", {
-        userId: userId.substring(0, 8),
-        minuteCount: usage.minuteCount,
-        minuteLimit: limits.minuteLimit,
-        tier,
-      });
-      return {
-        limited: true,
-        retryAfter,
-        limitType: "minute",
-        minuteCount: usage.minuteCount,
-        dailyCount: usage.dailyCount,
-        minuteLimit: limits.minuteLimit,
-        dailyLimit: limits.dailyLimit,
-      };
-    }
-
-    // Check daily limit
-    if (usage.dailyCount > limits.dailyLimit) {
-      const secondsUntilMidnight = getSecondsUntilMidnight();
-      logger.info("Daily rate limit exceeded", {
-        userId: userId.substring(0, 8),
-        dailyCount: usage.dailyCount,
-        dailyLimit: limits.dailyLimit,
-        tier,
-      });
-      return {
-        limited: true,
-        retryAfter: secondsUntilMidnight,
-        limitType: "daily",
-        dailyCount: usage.dailyCount,
-        minuteCount: usage.minuteCount,
-        dailyLimit: limits.dailyLimit,
-        monthlyLimit: limits.monthlyLimit,
-      };
-    }
+    // Calculate actual burst usage after increment
+    const burstUsed = Math.max(0, usage.minuteCount - limits.minuteLimit);
+    const burstRemaining = Math.max(0, limits.burstBonus - burstUsed);
 
     // Monthly limit is checked via aggregation in getUsageStats
     // We don't block here as it requires summing all daily counts
 
     return {
       limited: false,
-      secondCount,
+      secondCount: usage.secondCount || 1,
       minuteCount: usage.minuteCount,
       dailyCount: usage.dailyCount,
       minuteLimit: limits.minuteLimit,
       dailyLimit: limits.dailyLimit,
       monthlyLimit: limits.monthlyLimit,
+      burstUsed,
+      burstRemaining,
+      burstWindowActive: isInBurstWindow,
+      effectiveMinuteLimit,
     };
   } catch (error) {
     // Log the error with full context for debugging
@@ -320,6 +407,24 @@ export function getRateLimitHeaders(
   }
   if (result.limitType) {
     headers["X-RateLimit-Type"] = result.limitType;
+  }
+
+  // Burst-related headers
+  if (result.burstRemaining !== undefined) {
+    headers["X-RateLimit-Burst-Remaining"] = String(result.burstRemaining);
+  }
+  if (result.burstUsed !== undefined) {
+    headers["X-RateLimit-Burst-Used"] = String(result.burstUsed);
+  }
+  if (result.burstWindowActive !== undefined) {
+    headers["X-RateLimit-Burst-Window-Active"] = result.burstWindowActive
+      ? "true"
+      : "false";
+  }
+  if (result.effectiveMinuteLimit !== undefined) {
+    headers["X-RateLimit-Effective-Limit"] = String(
+      result.effectiveMinuteLimit
+    );
   }
 
   return headers;
