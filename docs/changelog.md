@@ -4,6 +4,19 @@ All notable changes to Kal will be documented in this file.
 
 ---
 
+## [1.0.2] - 2026-04-07
+
+### Added
+
+- Per-minute usage progress bar in the Rate Limits documentation tab — see your real-time minute-level usage alongside daily limits
+- Numbered page navigation on the Food Database — quickly jump to any page instead of clicking through one at a time
+
+### Fixed
+
+- Corrected example MongoDB IDs in the Setup page API quick reference to match actual database records
+
+---
+
 ## [1.0.1] - 2026-04-06
 
 ### Fixed
