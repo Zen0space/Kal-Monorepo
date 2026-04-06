@@ -1,17 +1,74 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import { trpc } from "@/lib/trpc";
 
+// ─── Countdown hook ───────────────────────────────────────────────────────────
+/** Returns a live "HHh MMm SSs" string counting down to midnight UTC. */
+function useCountdownToMidnightUTC(): string {
+  const [timeLeft, setTimeLeft] = useState(() => getMsUntilMidnightUTC());
+
+  useEffect(() => {
+    const id = setInterval(() => setTimeLeft(getMsUntilMidnightUTC()), 1_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const totalSec = Math.max(0, Math.floor(timeLeft / 1_000));
+  const h = Math.floor(totalSec / 3_600);
+  const m = Math.floor((totalSec % 3_600) / 60);
+  const s = totalSec % 60;
+  return `${h}h ${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
+}
+
+function getMsUntilMidnightUTC(): number {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setUTCDate(midnight.getUTCDate() + 1);
+  midnight.setUTCHours(0, 0, 0, 0);
+  return midnight.getTime() - now.getTime();
+}
+
+/** Inline countdown badge for stat cards. */
+function ResetTimer() {
+  const countdown = useCountdownToMidnightUTC();
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs text-text-muted">
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        className="text-status-info shrink-0"
+      >
+        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+        <polyline
+          points="12 6 12 12 16 14"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      Resets in{" "}
+      <span className="font-mono text-text-secondary">{countdown}</span>
+    </span>
+  );
+}
+
+// ─── Stat card ────────────────────────────────────────────────────────────────
 function StatCard({
   label,
   value,
   sub,
+  subNode,
   color = "primary",
   icon,
 }: {
   label: string;
   value: string | number;
   sub?: string;
+  subNode?: React.ReactNode;
   color?: "primary" | "success" | "warning" | "info";
   icon: React.ReactNode;
 }) {
@@ -39,6 +96,7 @@ function StatCard({
           {value}
         </p>
         {sub && <p className="text-xs text-text-muted mt-1.5">{sub}</p>}
+        {subNode && <div className="mt-1.5">{subNode}</div>}
       </div>
     </div>
   );
@@ -107,9 +165,11 @@ export default function DashboardPage() {
         <StatCard
           label="Requests Today"
           value={
-            isLoading ? "—" : (quickStats?.week?.requests ?? 0).toLocaleString()
+            isLoading
+              ? "—"
+              : (quickStats?.today?.requests ?? 0).toLocaleString()
           }
-          sub={`${foodStats?.foods ?? 0} natural · ${foodStats?.halal ?? 0} halal`}
+          subNode={<ResetTimer />}
           color="info"
           icon={
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -172,6 +232,50 @@ export default function DashboardPage() {
                 y2="10"
                 stroke="currentColor"
                 strokeWidth="2"
+              />
+            </svg>
+          }
+        />
+        <StatCard
+          label="Food Database"
+          value={isLoading ? "—" : (foodStats?.total ?? 0).toLocaleString()}
+          sub={`${foodStats?.foods ?? 0} natural · ${foodStats?.halal ?? 0} halal`}
+          color="success"
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <line
+                x1="6"
+                y1="1"
+                x2="6"
+                y2="4"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <line
+                x1="10"
+                y1="1"
+                x2="10"
+                y2="4"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <line
+                x1="14"
+                y1="1"
+                x2="14"
+                y2="4"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
               />
             </svg>
           }
