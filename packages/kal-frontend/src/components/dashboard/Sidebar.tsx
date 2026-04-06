@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Code,
   Database,
+  FileText,
   Home,
   Key,
   List,
@@ -175,6 +176,30 @@ export function Sidebar({ onSignOut }: SidebarProps) {
               })}
             </nav>
 
+            {/* Changelog */}
+            <div className="border-t border-dark-border py-4">
+              <Link
+                href="/dashboard/changelog"
+                onClick={() => setMobileOpen(false)}
+                className={`
+                  flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
+                  ${
+                    pathname === "/dashboard/changelog"
+                      ? "bg-accent/10 text-accent border border-accent/30"
+                      : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
+                  }
+                `}
+              >
+                <FileText
+                  size={20}
+                  className="text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]"
+                />
+                <span className="font-medium text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]">
+                  Changelog
+                </span>
+              </Link>
+            </div>
+
             {/* Feedback */}
             <div className="border-t border-dark-border py-4">
               <Link
@@ -191,9 +216,6 @@ export function Sidebar({ onSignOut }: SidebarProps) {
               >
                 <MessageSquare size={20} />
                 <span className="font-medium">Review & Bug</span>
-                <span className="ml-auto px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 text-white shadow-sm">
-                  new
-                </span>
               </Link>
             </div>
 
@@ -270,6 +292,32 @@ export function Sidebar({ onSignOut }: SidebarProps) {
           })}
         </nav>
 
+        {/* Changelog */}
+        <div className="border-t border-dark-border py-4">
+          <Link
+            href="/dashboard/changelog"
+            className={`
+              flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
+              ${
+                pathname === "/dashboard/changelog"
+                  ? "bg-accent/10 text-accent border border-accent/30"
+                  : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
+              }
+            `}
+            title={collapsed ? "Changelog" : undefined}
+          >
+            <FileText
+              size={20}
+              className="flex-shrink-0 text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]"
+            />
+            {!collapsed && (
+              <span className="font-medium whitespace-nowrap text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]">
+                Changelog
+              </span>
+            )}
+          </Link>
+        </div>
+
         {/* Feedback */}
         <div className="border-t border-dark-border py-4">
           <Link
@@ -286,14 +334,9 @@ export function Sidebar({ onSignOut }: SidebarProps) {
           >
             <MessageSquare size={20} className="flex-shrink-0" />
             {!collapsed && (
-              <>
-                <span className="font-medium whitespace-nowrap">
-                  Review & Bug
-                </span>
-                <span className="ml-auto px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 text-white shadow-sm">
-                  new
-                </span>
-              </>
+              <span className="font-medium whitespace-nowrap">
+                Review & Bug
+              </span>
             )}
           </Link>
         </div>

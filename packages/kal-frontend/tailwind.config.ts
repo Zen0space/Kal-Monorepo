@@ -36,6 +36,7 @@ const config: Config = {
         "fade-in": "fadeIn 0.5s ease-out",
         "slide-up": "slideUp 0.5s ease-out",
         "panel-slide-in": "panelSlideIn 0.25s ease-out",
+        "neon-pulse": "neonPulse 2s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -49,6 +50,16 @@ const config: Config = {
         panelSlideIn: {
           "0%": { opacity: "0", transform: "translateX(100%)" },
           "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+        neonPulse: {
+          "0%, 100%": {
+            boxShadow:
+              "0 0 4px rgba(16,185,129,0.4), 0 0 8px rgba(16,185,129,0.2)",
+          },
+          "50%": {
+            boxShadow:
+              "0 0 8px rgba(16,185,129,0.6), 0 0 16px rgba(16,185,129,0.3)",
+          },
         },
       },
     },
