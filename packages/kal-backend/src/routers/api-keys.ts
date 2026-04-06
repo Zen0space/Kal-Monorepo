@@ -221,6 +221,46 @@ export const apiKeysRouter = router({
   }),
 
   /**
+   * Get key-specific stats: active, revoked, and expired counts
+   */
+  getKeyStats: protectedProcedure.query(async ({ ctx }) => {
+    const now = new Date();
+    const keysCollection = ctx.db.collection<ApiKey>("api_keys");
+
+    const [activeCount, revokedCount, expiredCount, totalCount] =
+      await Promise.all([
+        // Active: not revoked and not expired
+        keysCollection.countDocuments({
+          userId: ctx.userId,
+          isRevoked: false,
+          $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }],
+        }),
+        // Revoked
+        keysCollection.countDocuments({
+          userId: ctx.userId,
+          isRevoked: true,
+        }),
+        // Expired: not revoked but past expiration
+        keysCollection.countDocuments({
+          userId: ctx.userId,
+          isRevoked: false,
+          expiresAt: { $ne: null, $lte: now },
+        }),
+        // Total ever created
+        keysCollection.countDocuments({
+          userId: ctx.userId,
+        }),
+      ]);
+
+    return {
+      active: activeCount,
+      revoked: revokedCount,
+      expired: expiredCount,
+      total: totalCount,
+    };
+  }),
+
+  /**
    * Admin: Get API key counts per user (all users)
    */
   adminGetUserKeyCounts: protectedProcedure.query(async ({ ctx }) => {

@@ -1,9 +1,16 @@
 "use client";
 
 import type { ApiKeyExpiration } from "kal-shared";
-import { RATE_LIMITS } from "kal-shared";
 import { useState } from "react";
-import { AlertTriangle, Check, CheckCircle, Plus } from "react-feather";
+import {
+  AlertTriangle,
+  Check,
+  CheckCircle,
+  Key,
+  Plus,
+  Slash,
+  Clock,
+} from "react-feather";
 
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { AuthUpdater, useAuth } from "@/lib/auth-context";
@@ -26,7 +33,11 @@ interface ApiKeysClientProps {
   name?: string | null;
 }
 
-export default function ApiKeysClient({ logtoId, email, name }: ApiKeysClientProps) {
+export default function ApiKeysClient({
+  logtoId,
+  email,
+  name,
+}: ApiKeysClientProps) {
   return (
     <>
       <AuthUpdater logtoId={logtoId} email={email} name={name} />
@@ -35,9 +46,13 @@ export default function ApiKeysClient({ logtoId, email, name }: ApiKeysClientPro
   );
 }
 
-function ApiKeysContentWrapper({ expectedLogtoId }: { expectedLogtoId?: string }) {
+function ApiKeysContentWrapper({
+  expectedLogtoId,
+}: {
+  expectedLogtoId?: string;
+}) {
   const { logtoId } = useAuth();
-  
+
   if (expectedLogtoId && logtoId !== expectedLogtoId) {
     return (
       <div className="p-4 md:p-8">
@@ -56,12 +71,14 @@ function ApiKeysContent() {
   const { isMobile } = useBreakpoint();
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
-  const [newKeyExpiration, setNewKeyExpiration] = useState<"1_week" | "1_month" | "never">("1_month");
+  const [newKeyExpiration, setNewKeyExpiration] = useState<
+    "1_week" | "1_month" | "never"
+  >("1_month");
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const { data: apiKeys, refetch: refetchKeys } = trpc.apiKeys.list.useQuery();
-  const { data: stats } = trpc.apiKeys.getUsageStats.useQuery();
+  const { data: keyStats } = trpc.apiKeys.getKeyStats.useQuery();
 
   const generateMutation = trpc.apiKeys.generate.useMutation({
     onSuccess: (data) => {
@@ -101,76 +118,83 @@ function ApiKeysContent() {
   };
 
   const handleRevoke = (keyId: string, keyName: string) => {
-    if (confirm(`Are you sure you want to revoke "${keyName}"? This action cannot be undone.`)) {
+    if (
+      confirm(
+        `Are you sure you want to revoke "${keyName}"? This action cannot be undone.`
+      )
+    ) {
       revokeMutation.mutate({ keyId });
     }
   };
 
-  const tier = stats?.tier || "free";
-  const limits = RATE_LIMITS[tier];
-  const dailyUsed = stats?.dailyUsed || 0;
-  const dailyRemaining = Math.max(0, limits.dailyLimit - dailyUsed);
-  const dailyPercentage = Math.min(100, (dailyUsed / limits.dailyLimit) * 100);
-  const monthlyUsed = stats?.monthlyUsed || 0;
-  const monthlyRemaining = Math.max(0, limits.monthlyLimit - monthlyUsed);
-  const monthlyPercentage = Math.min(100, (monthlyUsed / limits.monthlyLimit) * 100);
-
   return (
     <div className="p-4 md:p-6 lg:p-8 w-full">
       <div className="mb-6 md:mb-8">
-        <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2">API Keys</h1>
-        <p className="text-content-secondary text-sm md:text-base">Manage your API keys and view rate limit analytics</p>
+        <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2">
+          API Keys
+        </h1>
+        <p className="text-content-secondary text-sm md:text-base">
+          Manage your API keys
+        </p>
       </div>
 
-      {/* Usage Stats */}
+      {/* Key Stats */}
       <section className="mb-6 md:mb-8">
-        <h2 className="text-base md:text-lg font-semibold text-content-primary mb-3 md:mb-4">Rate Limit Analytics</h2>
-        <div className="grid-auto-fit-md">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-content-secondary text-xs md:text-sm">Current Tier</span>
-              <span className={`px-2 py-1 rounded text-xs font-medium tier-badge tier-${tier}`}>
-                {tier === "free" ? "Free" : tier === "tier_1" ? "Tier 1" : "Tier 2"}
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                <Key size={16} className="text-accent" />
+              </div>
+              <span className="text-content-secondary text-xs md:text-sm">
+                Active
               </span>
             </div>
-            <p className="text-content-muted text-xs md:text-sm">{limits.minuteLimit} requests/minute</p>
-            <p className="text-content-muted text-xs md:text-sm">{limits.dailyLimit.toLocaleString()} requests/day</p>
-            <p className="text-content-muted text-xs md:text-sm">{limits.monthlyLimit.toLocaleString()} requests/month</p>
+            <span className="text-accent font-bold text-2xl md:text-3xl">
+              {keyStats?.active ?? 0}
+            </span>
           </div>
 
           <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-content-secondary text-xs md:text-sm">Today&apos;s Usage</span>
-              <span className="text-accent font-semibold text-sm md:text-base">{dailyUsed} / {limits.dailyLimit}</span>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+                <Slash size={16} className="text-red-400" />
+              </div>
+              <span className="text-content-secondary text-xs md:text-sm">
+                Revoked
+              </span>
             </div>
-            <div className="h-2 bg-dark-elevated rounded-full overflow-hidden mb-2">
-              <div 
-                className="h-full bg-accent rounded-full transition-all duration-300" 
-                style={{ width: `${dailyPercentage}%` }}
-              />
-            </div>
-            <p className="text-content-muted text-xs md:text-sm">{dailyRemaining} requests remaining</p>
+            <span className="text-content-primary font-bold text-2xl md:text-3xl">
+              {keyStats?.revoked ?? 0}
+            </span>
           </div>
 
           <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-content-secondary text-xs md:text-sm">Monthly Usage</span>
-              <span className="text-accent font-semibold text-sm md:text-base">{monthlyUsed.toLocaleString()} / {limits.monthlyLimit.toLocaleString()}</span>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <Clock size={16} className="text-amber-400" />
+              </div>
+              <span className="text-content-secondary text-xs md:text-sm">
+                Expired
+              </span>
             </div>
-            <div className="h-2 bg-dark-elevated rounded-full overflow-hidden mb-2">
-              <div 
-                className="h-full bg-accent rounded-full transition-all duration-300" 
-                style={{ width: `${monthlyPercentage}%` }}
-              />
-            </div>
-            <p className="text-content-muted text-xs md:text-sm">{monthlyRemaining.toLocaleString()} requests remaining</p>
+            <span className="text-content-primary font-bold text-2xl md:text-3xl">
+              {keyStats?.expired ?? 0}
+            </span>
           </div>
 
           <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-content-secondary text-xs md:text-sm">Active Keys</span>
-              <span className="text-accent font-semibold text-xl md:text-2xl">{stats?.activeKeyCount || 0}</span>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-dark-elevated flex items-center justify-center">
+                <Key size={16} className="text-content-muted" />
+              </div>
+              <span className="text-content-secondary text-xs md:text-sm">
+                Total Created
+              </span>
             </div>
+            <span className="text-content-primary font-bold text-2xl md:text-3xl">
+              {keyStats?.total ?? 0}
+            </span>
           </div>
         </div>
       </section>
@@ -178,8 +202,10 @@ function ApiKeysContent() {
       {/* API Keys List */}
       <section>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <h2 className="text-base md:text-lg font-semibold text-content-primary">Your API Keys</h2>
-          <button 
+          <h2 className="text-base md:text-lg font-semibold text-content-primary">
+            Your API Keys
+          </h2>
+          <button
             className="flex items-center justify-center gap-2 px-4 py-2 bg-accent text-dark font-medium rounded-lg hover:bg-accent/90 transition-colors text-sm md:text-base"
             onClick={() => setShowGenerateModal(true)}
           >
@@ -197,18 +223,26 @@ function ApiKeysContent() {
               <span>Last Used</span>
               <span>Actions</span>
             </div>
-            
+
             {apiKeys.map((key: SerializedApiKey) => (
               <div key={key._id}>
                 {/* Desktop Row */}
                 <div className="hidden md:grid grid-cols-5 gap-4 px-6 py-4 border-t border-dark-border items-center">
-                  <span className="font-medium text-content-primary truncate">{key.name}</span>
-                  <code className="text-content-secondary text-sm bg-dark-elevated px-2 py-1 rounded truncate">{key.keyPrefix}</code>
+                  <span className="font-medium text-content-primary truncate">
+                    {key.name}
+                  </span>
+                  <code className="text-content-secondary text-sm bg-dark-elevated px-2 py-1 rounded truncate">
+                    {key.keyPrefix}
+                  </code>
                   <span className="text-content-secondary text-sm">
-                    {key.expiresAt ? new Date(key.expiresAt).toLocaleDateString() : "Never"}
+                    {key.expiresAt
+                      ? new Date(key.expiresAt).toLocaleDateString()
+                      : "Never"}
                   </span>
                   <span className="text-content-muted text-sm">
-                    {key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleDateString() : "Never"}
+                    {key.lastUsedAt
+                      ? new Date(key.lastUsedAt).toLocaleDateString()
+                      : "Never"}
                   </span>
                   <button
                     className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
@@ -218,11 +252,13 @@ function ApiKeysContent() {
                     Revoke
                   </button>
                 </div>
-                
+
                 {/* Mobile Card */}
                 <div className="md:hidden p-4 border-t border-dark-border">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-content-primary">{key.name}</span>
+                    <span className="font-medium text-content-primary">
+                      {key.name}
+                    </span>
                     <button
                       className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
                       onClick={() => handleRevoke(key._id, key.name)}
@@ -231,10 +267,22 @@ function ApiKeysContent() {
                       Revoke
                     </button>
                   </div>
-                  <code className="block text-content-secondary text-xs bg-dark-elevated px-2 py-1 rounded mb-2">{key.keyPrefix}</code>
+                  <code className="block text-content-secondary text-xs bg-dark-elevated px-2 py-1 rounded mb-2">
+                    {key.keyPrefix}
+                  </code>
                   <div className="flex gap-4 text-xs text-content-muted">
-                    <span>Expires: {key.expiresAt ? new Date(key.expiresAt).toLocaleDateString() : "Never"}</span>
-                    <span>Used: {key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleDateString() : "Never"}</span>
+                    <span>
+                      Expires:{" "}
+                      {key.expiresAt
+                        ? new Date(key.expiresAt).toLocaleDateString()
+                        : "Never"}
+                    </span>
+                    <span>
+                      Used:{" "}
+                      {key.lastUsedAt
+                        ? new Date(key.lastUsedAt).toLocaleDateString()
+                        : "Never"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -242,23 +290,35 @@ function ApiKeysContent() {
           </div>
         ) : (
           <div className="bg-dark-surface border border-dark-border rounded-xl p-8 md:p-12 text-center">
-            <p className="text-content-secondary text-sm md:text-base">No API keys yet. Generate one to get started!</p>
+            <p className="text-content-secondary text-sm md:text-base">
+              No API keys yet. Generate one to get started!
+            </p>
           </div>
         )}
       </section>
 
       {/* Generate Key Modal */}
       {showGenerateModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4" onClick={handleCloseModal}>
-          <div 
-            className="bg-dark-surface border border-dark-border rounded-t-2xl sm:rounded-2xl p-4 md:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto" 
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4"
+          onClick={handleCloseModal}
+        >
+          <div
+            className="bg-dark-surface border border-dark-border rounded-t-2xl sm:rounded-2xl p-4 md:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {!generatedKey ? (
               <>
-                <h3 className="text-lg md:text-xl font-semibold text-content-primary mb-4 md:mb-6">Generate New API Key</h3>
+                <h3 className="text-lg md:text-xl font-semibold text-content-primary mb-4 md:mb-6">
+                  Generate New API Key
+                </h3>
                 <div className="mb-4">
-                  <label htmlFor="keyName" className="block text-xs md:text-sm font-medium text-content-secondary mb-2">Key Name</label>
+                  <label
+                    htmlFor="keyName"
+                    className="block text-xs md:text-sm font-medium text-content-secondary mb-2"
+                  >
+                    Key Name
+                  </label>
                   <input
                     id="keyName"
                     type="text"
@@ -270,7 +330,9 @@ function ApiKeysContent() {
                   />
                 </div>
                 <div className="mb-4 md:mb-6">
-                  <label className="block text-xs md:text-sm font-medium text-content-secondary mb-2">Expiration</label>
+                  <label className="block text-xs md:text-sm font-medium text-content-secondary mb-2">
+                    Expiration
+                  </label>
                   <div className="flex gap-2">
                     {[
                       { value: "1_week", label: "1 Week" },
@@ -284,7 +346,11 @@ function ApiKeysContent() {
                             ? "bg-accent text-dark"
                             : "bg-dark-elevated text-content-secondary border border-dark-border hover:border-accent/30"
                         }`}
-                        onClick={() => setNewKeyExpiration(opt.value as "1_week" | "1_month" | "never")}
+                        onClick={() =>
+                          setNewKeyExpiration(
+                            opt.value as "1_week" | "1_month" | "never"
+                          )
+                        }
                       >
                         {opt.label}
                       </button>
@@ -292,7 +358,10 @@ function ApiKeysContent() {
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <button className="flex-1 py-2 md:py-3 rounded-lg font-medium bg-dark-elevated text-content-secondary hover:text-content-primary transition-colors text-sm md:text-base" onClick={handleCloseModal}>
+                  <button
+                    className="flex-1 py-2 md:py-3 rounded-lg font-medium bg-dark-elevated text-content-secondary hover:text-content-primary transition-colors text-sm md:text-base"
+                    onClick={handleCloseModal}
+                  >
                     Cancel
                   </button>
                   <button
@@ -300,31 +369,48 @@ function ApiKeysContent() {
                     onClick={handleGenerate}
                     disabled={!newKeyName.trim() || generateMutation.isPending}
                   >
-                    {generateMutation.isPending ? "Generating..." : "Generate Key"}
+                    {generateMutation.isPending
+                      ? "Generating..."
+                      : "Generate Key"}
                   </button>
                 </div>
               </>
             ) : (
               <>
                 <h3 className="text-lg md:text-xl font-semibold text-content-primary mb-4 flex items-center gap-2">
-                  <CheckCircle size={isMobile ? 18 : 20} className="text-accent" /> API Key Generated!
+                  <CheckCircle
+                    size={isMobile ? 18 : 20}
+                    className="text-accent"
+                  />{" "}
+                  API Key Generated!
                 </h3>
                 <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 md:p-4 mb-4">
                   <p className="text-yellow-400 text-xs md:text-sm flex items-center gap-2">
-                    <AlertTriangle size={isMobile ? 14 : 16} /> <strong>Save this key now!</strong>
+                    <AlertTriangle size={isMobile ? 14 : 16} />{" "}
+                    <strong>Save this key now!</strong>
                   </p>
-                  <p className="text-yellow-400/80 text-xs md:text-sm mt-1">This is the only time you&apos;ll see this key.</p>
+                  <p className="text-yellow-400/80 text-xs md:text-sm mt-1">
+                    This is the only time you&apos;ll see this key.
+                  </p>
                 </div>
                 <div className="bg-dark-elevated rounded-lg p-3 md:p-4 mb-4 md:mb-6">
-                  <code className="block text-content-primary text-xs md:text-sm break-all mb-3">{generatedKey}</code>
-                  <button 
+                  <code className="block text-content-primary text-xs md:text-sm break-all mb-3">
+                    {generatedKey}
+                  </code>
+                  <button
                     className="w-full sm:w-auto px-4 py-2 bg-accent text-dark font-medium rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center gap-1 text-sm"
                     onClick={handleCopyKey}
                   >
-                    {copied ? <><Check size={14} /> Copied!</> : "Copy"}
+                    {copied ? (
+                      <>
+                        <Check size={14} /> Copied!
+                      </>
+                    ) : (
+                      "Copy"
+                    )}
                   </button>
                 </div>
-                <button 
+                <button
                   className="w-full py-2 md:py-3 rounded-lg font-medium bg-accent text-dark hover:bg-accent/90 transition-colors text-sm md:text-base"
                   onClick={handleCloseModal}
                 >
