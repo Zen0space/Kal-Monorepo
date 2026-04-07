@@ -130,6 +130,7 @@ function LogsTable({
   onPageChange: _onPageChange,
   currentPage: _currentPage,
   pageSize: _pageSize,
+  userMap = {},
 }: {
   logs: Array<{
     _id?: string;
@@ -146,6 +147,7 @@ function LogsTable({
   onPageChange: (page: number) => void;
   currentPage: number;
   pageSize: number;
+  userMap?: Record<string, string>;
 }) {
   if (loading) {
     return (
@@ -212,8 +214,13 @@ function LogsTable({
                 </span>
               </td>
               <td className="py-2.5">
-                <span className="text-text-muted font-mono text-xs">
-                  {log.userId ? log.userId.slice(-8) : "—"}
+                <span
+                  className="text-text-muted font-mono text-xs"
+                  title={log.userId || undefined}
+                >
+                  {log.userId
+                    ? userMap[log.userId] || log.userId.slice(-8)
+                    : "—"}
                 </span>
               </td>
               <td className="py-2.5">
@@ -356,6 +363,18 @@ export default function LogsPage() {
     if (presetFilter === "health") return "/health";
     return undefined; // all
   };
+
+  const { data: usersData } = trpc.user.list.useQuery();
+
+  const userMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (usersData) {
+      for (const u of usersData) {
+        map[u._id] = u.name || u.email || "Unknown";
+      }
+    }
+    return map;
+  }, [usersData]);
 
   const { data: logsData, isLoading: logsLoading } =
     trpc.adminLogs.list.useQuery({
@@ -512,6 +531,7 @@ export default function LogsPage() {
           onPageChange={setPage}
           currentPage={page}
           pageSize={limit}
+          userMap={userMap}
         />
       </div>
 
