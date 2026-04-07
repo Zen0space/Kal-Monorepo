@@ -68,7 +68,7 @@ function VersionCard({
           className={`w-3.5 h-3.5 rounded-full border-2 ${
             isLatest
               ? "bg-accent border-accent shadow-[0_0_10px_rgba(16,185,129,0.5)]"
-              : "bg-dark-elevated border-dark-border"
+              : "bg-white/[0.04] border-white/[0.06]"
           }`}
         />
       </div>
@@ -80,8 +80,8 @@ function VersionCard({
           hover:border-accent/20 hover:shadow-[0_0_20px_rgba(16,185,129,0.05)]
           ${
             isLatest
-              ? "bg-gradient-to-br from-dark-surface to-dark-elevated border-accent/20 shadow-[0_0_30px_rgba(16,185,129,0.06)]"
-              : "bg-dark-surface border-dark-border"
+              ? "bg-gradient-to-br from-white/[0.02] to-white/[0.04] border-accent/20 shadow-[0_0_30px_rgba(16,185,129,0.06)]"
+              : "bg-white/[0.02] border-white/[0.06]"
           }
         `}
       >
@@ -156,7 +156,7 @@ function HighlightCode({ text }: { text: string }) {
         part.startsWith("`") && part.endsWith("`") ? (
           <code
             key={i}
-            className="px-1.5 py-0.5 rounded bg-dark/60 border border-dark-border text-xs font-mono text-accent"
+            className="px-1.5 py-0.5 rounded bg-[#0a0a0a]/60 border border-white/[0.06] text-xs font-mono text-accent"
           >
             {part.slice(1, -1)}
           </code>
@@ -196,7 +196,7 @@ export default function ChangelogClient({ entries }: ChangelogClientProps) {
       </div>
 
       {entries.length === 0 ? (
-        <div className="bg-dark-surface border border-dark-border rounded-xl p-8 md:p-12 text-center">
+        <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-8 md:p-12 text-center">
           <FileText size={40} className="text-content-muted mx-auto mb-4" />
           <p className="text-content-secondary">
             No changelog entries yet. Check back soon.
@@ -206,7 +206,7 @@ export default function ChangelogClient({ entries }: ChangelogClientProps) {
         /* Timeline */
         <div className="relative">
           {/* Vertical timeline line */}
-          <div className="absolute left-[6px] md:left-[13px] top-6 bottom-6 w-px bg-gradient-to-b from-accent/40 via-dark-border to-transparent" />
+          <div className="absolute left-[6px] md:left-[13px] top-6 bottom-6 w-px bg-gradient-to-b from-accent/40 via-white/[0.06] to-transparent" />
 
           {/* Entries */}
           <div className="space-y-6 md:space-y-8">

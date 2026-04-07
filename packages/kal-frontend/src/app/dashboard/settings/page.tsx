@@ -1,4 +1,4 @@
-import { getLogtoContext } from "@logto/next/server-actions";
+import { getLogtoContext, signOut } from "@logto/next/server-actions";
 import { redirect } from "next/navigation";
 
 import SettingsClient from "./client";
@@ -19,10 +19,14 @@ export default async function SettingsPage() {
   }
 
   return (
-    <SettingsClient 
-      logtoId={claims?.sub} 
+    <SettingsClient
+      logtoId={claims?.sub}
       email={claims?.email}
       name={claims?.name || claims?.username}
+      onSignOut={async () => {
+        "use server";
+        await signOut(config);
+      }}
     />
   );
 }
