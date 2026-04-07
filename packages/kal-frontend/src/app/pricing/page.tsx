@@ -1,5 +1,5 @@
+import { signIn } from "@logto/next/server-actions";
 import { getLogtoContext } from "@logto/next/server-actions";
-import { redirect } from "next/navigation";
 
 import PricingClient from "./client";
 
@@ -14,15 +14,19 @@ export default async function PricingPage() {
   const config = getLogtoConfig();
   const { isAuthenticated, claims } = await getLogtoContext(config);
 
-  if (!isAuthenticated) {
-    redirect("/");
-  }
+  const onSignIn = async () => {
+    "use server";
+    const cfg = getLogtoConfig();
+    await signIn(cfg);
+  };
 
   return (
     <PricingClient
-      logtoId={claims?.sub}
-      email={claims?.email}
-      name={claims?.name || claims?.username}
+      isAuthenticated={isAuthenticated}
+      logtoId={isAuthenticated ? claims?.sub : undefined}
+      email={isAuthenticated ? claims?.email : undefined}
+      name={isAuthenticated ? claims?.name || claims?.username : undefined}
+      onSignIn={onSignIn}
     />
   );
 }

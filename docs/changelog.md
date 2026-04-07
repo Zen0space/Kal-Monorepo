@@ -4,6 +4,22 @@ All notable changes to Kal will be documented in this file.
 
 ---
 
+## [1.1.0] - 2026-04-07
+
+### Added
+
+- **Subscription billing** — upgrade to Tier 1 (RM45/mo) or Tier 2 (RM75/mo) for higher rate limits and priority support
+- **Public pricing page** (`/pricing`) — view all plans and pricing without signing in; sign in to subscribe directly
+- Manage your subscription, update payment methods, and view invoices from the billing portal
+- Pricing link in the landing page navbar
+- Upgrade and billing management buttons in dashboard settings
+
+### Fixed
+
+- Fixed an issue where accounts with no email could fail to be created
+
+---
+
 ## [1.0.2] - 2026-04-07
 
 ### Added
