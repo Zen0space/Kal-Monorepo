@@ -8,6 +8,7 @@ import { foodRouter } from "./food.js";
 import { halalRouter } from "./halal.js";
 import { platformSettingsRouter } from "./platform-settings.js";
 import { requestLogsRouter } from "./request-logs.js";
+import { subscriptionRouter } from "./subscription.js";
 import { userRouter } from "./user.js";
 
 export const appRouter = router({
@@ -20,6 +21,7 @@ export const appRouter = router({
   platformSettings: platformSettingsRouter,
   requestLogs: requestLogsRouter,
   adminLogs: adminLogsRouter,
+  subscription: subscriptionRouter,
 });
 
 // Export type for client

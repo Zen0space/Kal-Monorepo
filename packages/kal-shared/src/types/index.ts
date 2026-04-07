@@ -9,6 +9,9 @@ export interface User {
   email: string | null;
   name?: string;
   tier: UserTier;
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
+  stripeCurrentPeriodEnd?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
