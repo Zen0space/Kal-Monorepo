@@ -9,7 +9,9 @@
 import { z } from "zod";
 
 import { RequestLogService } from "../lib/request-log-service.js";
-import { protectedProcedure, router } from "../lib/trpc.js";
+import { CacheKeys, CacheTTL } from "../lib/cache-keys.js";
+import { cache } from "../lib/cache.js";
+import { protectedProcedure, publicProcedure, router } from "../lib/trpc.js";
 
 export const requestLogsRouter = router({
   /**
@@ -132,5 +134,26 @@ export const requestLogsRouter = router({
         topEndpoints: weekStats.topEndpoints.slice(0, 5),
       },
     };
+  }),
+
+  /**
+   * Get total successful requests this month across all users (public, cached 1hr)
+   */
+  publicMonthlyStats: publicProcedure.query(async ({ ctx }) => {
+    const cacheKey = CacheKeys.trpcPublicMonthlyStats();
+
+    return cache.wrap(cacheKey, CacheTTL.CATEGORIES, async () => {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const successfulRequests = await ctx.db
+        .collection("api_request_logs")
+        .countDocuments({
+          success: true,
+          timestamp: { $gte: monthStart },
+        });
+
+      return { successfulRequests };
+    });
   }),
 });

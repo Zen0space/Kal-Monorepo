@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 
 export function Hero() {
   const { data: stats } = trpc.food.stats.useQuery();
+  const { data: logStats } = trpc.requestLogs.publicMonthlyStats.useQuery();
 
   return (
     <section className="pt-32 pb-20 md:pt-40 md:pb-28">
@@ -27,17 +28,27 @@ export function Hero() {
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-content-secondary max-w-2xl mx-auto mb-10 leading-relaxed">
-            Access comprehensive nutritional data for Malaysian foods. 
-            Build health apps, track calories, or integrate food data into your projects 
-            with our free REST API.
+            Access comprehensive nutritional data for Malaysian foods. Build
+            health apps, track calories, or integrate food data into your
+            projects with our free REST API.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <Button href="/api-docs" size="lg">
               View API Documentation
-              <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              <svg
+                className="w-5 h-5 ml-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
               </svg>
             </Button>
             <Button href="/search" variant="secondary" size="lg">
@@ -46,7 +57,7 @@ export function Hero() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
+          <div className="grid grid-cols-3 gap-6 max-w-xl mx-auto">
             {/* Foods Count */}
             <div className="text-center">
               <div className="text-2xl md:text-3xl font-bold text-accent mb-1 h-9 flex items-center justify-center">
@@ -56,9 +67,7 @@ export function Hero() {
                   <span className="animate-pulse">...</span>
                 )}
               </div>
-              <div className="text-sm text-content-muted">
-                Foods
-              </div>
+              <div className="text-sm text-content-muted">Foods</div>
             </div>
 
             {/* Halal Foods Count */}
@@ -70,28 +79,20 @@ export function Hero() {
                   <span className="animate-pulse">...</span>
                 )}
               </div>
-              <div className="text-sm text-content-muted">
-                Halal Certified
-              </div>
+              <div className="text-sm text-content-muted">Halal Certified</div>
             </div>
 
-            {/* Free */}
+            {/* Requests This Month */}
             <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-accent mb-1">
-                Free
+              <div className="text-2xl md:text-3xl font-bold text-accent mb-1 h-9 flex items-center justify-center">
+                {logStats?.successfulRequests != null ? (
+                  <TypewriterNumber value={logStats.successfulRequests} />
+                ) : (
+                  <span className="animate-pulse">...</span>
+                )}
               </div>
               <div className="text-sm text-content-muted">
-                API Access
-              </div>
-            </div>
-
-            {/* Response Time */}
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-accent mb-1">
-                &lt;50ms
-              </div>
-              <div className="text-sm text-content-muted">
-                Response Time
+                Requests This Month
               </div>
             </div>
           </div>
