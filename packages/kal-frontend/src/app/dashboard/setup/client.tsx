@@ -1,16 +1,62 @@
 "use client";
 
 import { useState } from "react";
-import { AlertCircle, Check, Copy, Play, Terminal } from "react-feather";
+import {
+  AlertCircle,
+  Book,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Code,
+  Copy,
+  ExternalLink,
+  Play,
+  Terminal,
+} from "react-feather";
 
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { AuthUpdater, useAuth } from "@/lib/auth-context";
 import { API_URL_DISPLAY } from "@/lib/site-config";
 import { trpc } from "@/lib/trpc";
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
 interface SetupClientProps {
   logtoId?: string;
 }
+
+type TabType =
+  | "playground"
+  | "env"
+  | "curl"
+  | "nodejs"
+  | "python"
+  | "react"
+  | "nextjs";
+
+interface Snippet {
+  title: string;
+  description?: string;
+  code: string;
+  language: string;
+}
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const GETTING_STARTED_TABS: { id: TabType; label: string }[] = [
+  { id: "playground", label: "Test API" },
+  { id: "env", label: "Environment" },
+];
+
+const CODE_EXAMPLE_TABS: { id: TabType; label: string }[] = [
+  { id: "curl", label: "curl" },
+  { id: "nodejs", label: "Node.js" },
+  { id: "python", label: "Python" },
+  { id: "react", label: "React" },
+  { id: "nextjs", label: "Next.js" },
+];
+
+// ─── Entry / wrapper ─────────────────────────────────────────────────────────
 
 export default function SetupClient({ logtoId }: SetupClientProps) {
   return (
@@ -31,9 +77,16 @@ function SetupContentWrapper({
   if (expectedLogtoId && logtoId !== expectedLogtoId) {
     return (
       <div className="p-4 md:p-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-dark-elevated rounded w-48 mb-4" />
-          <div className="h-4 bg-dark-elevated rounded w-32" />
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-white/[0.04] rounded w-48" />
+          <div className="h-4 bg-white/[0.04] rounded w-64" />
+          <div className="h-12 bg-white/[0.04] rounded-xl mt-4" />
+          <div className="flex gap-2 mt-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-9 bg-white/[0.04] rounded-xl w-24" />
+            ))}
+          </div>
+          <div className="h-64 bg-white/[0.04] rounded-xl mt-4" />
         </div>
       </div>
     );
@@ -42,33 +95,47 @@ function SetupContentWrapper({
   return <SetupContent />;
 }
 
-type TabType =
-  | "playground"
-  | "env"
-  | "curl"
-  | "nodejs"
-  | "python"
-  | "react"
-  | "nextjs";
+// ─── Shared: Copy hook ───────────────────────────────────────────────────────
 
-const tabs: { id: TabType; label: string }[] = [
-  { id: "playground", label: "🧪 Test API" },
-  { id: "env", label: "Environment" },
-  { id: "curl", label: "curl" },
-  { id: "nodejs", label: "Node.js" },
-  { id: "python", label: "Python" },
-  { id: "react", label: "React" },
-  { id: "nextjs", label: "Next.js" },
-];
+function useCopy() {
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-interface Snippet {
-  title: string;
-  description?: string;
-  code: string;
-  language: string;
+  function copy(text: string, key: string) {
+    navigator.clipboard.writeText(text).catch(() => {});
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  }
+
+  return { copy, isCopied: (key: string) => copiedKey === key };
 }
 
-// API Playground Component - uses shared API key from parent
+// ─── Tab Pill ────────────────────────────────────────────────────────────────
+
+function TabPill({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 md:px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
+        active
+          ? "bg-accent/[0.1] text-accent border border-accent/20 shadow-[0_0_12px_rgba(16,185,129,0.1)]"
+          : "bg-white/[0.02] text-content-secondary border border-white/[0.06] hover:border-white/[0.1] hover:text-content-primary"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+// ─── API Playground ──────────────────────────────────────────────────────────
+
 function ApiPlayground({
   apiKey,
   onApiKeyChange,
@@ -76,7 +143,6 @@ function ApiPlayground({
   apiKey: string;
   onApiKeyChange: (key: string) => void;
 }) {
-  const { isMobile } = useBreakpoint();
   const [query, setQuery] = useState("nasi lemak");
   const [endpoint, setEndpoint] = useState<"foods" | "halal">("foods");
   const [loading, setLoading] = useState(false);
@@ -108,9 +174,7 @@ function ApiPlayground({
 
     try {
       const res = await fetch(url, {
-        headers: {
-          "X-API-Key": apiKey,
-        },
+        headers: { "X-API-Key": apiKey },
       });
 
       const endTime = performance.now();
@@ -134,153 +198,173 @@ function ApiPlayground({
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      {/* API Key Input */}
-      <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-        <h3 className="font-medium text-content-primary mb-4 text-sm md:text-base">
-          Test Your API Key
+    <div className="space-y-4">
+      {/* Request Builder */}
+      <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 md:p-5 hover:border-white/[0.1] transition-all duration-200">
+        <h3 className="text-sm font-semibold text-content-secondary uppercase tracking-wider mb-4">
+          Request Builder
         </h3>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs md:text-sm font-medium text-content-secondary mb-2">
-              API Key
-            </label>
-            <input
-              type="password"
-              value={apiKey}
-              onChange={(e) => onApiKeyChange(e.target.value)}
-              placeholder="kal_xxxxxxxxxxxxxxxxxxxxxxxx"
-              className="w-full px-3 md:px-4 py-2 md:py-3 bg-dark-elevated border border-dark-border rounded-lg text-content-primary placeholder-content-muted focus:ring-2 focus:ring-accent/50 focus:border-accent/50 text-sm md:text-base font-mono"
-            />
-          </div>
+        {/* API Key */}
+        <div className="mb-4">
+          <label className="block text-xs font-medium text-content-muted mb-1.5">
+            API Key
+          </label>
+          <input
+            type="password"
+            value={apiKey}
+            onChange={(e) => onApiKeyChange(e.target.value)}
+            placeholder="kal_xxxxxxxxxxxxxxxxxxxxxxxx"
+            className="w-full px-3.5 py-2.5 bg-white/[0.02] border border-white/[0.06] rounded-xl
+              text-content-primary placeholder-content-muted font-mono text-sm
+              focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/20
+              transition-all duration-200"
+          />
+        </div>
 
-          <div>
-            <label className="block text-xs md:text-sm font-medium text-content-secondary mb-2">
-              Endpoint
-            </label>
-            <div className="flex gap-2">
+        {/* Endpoint + Query + Run — horizontal on desktop */}
+        <div className="flex flex-col md:flex-row gap-3">
+          {/* Endpoint picker */}
+          <div className="flex gap-1.5 md:flex-shrink-0">
+            {(
+              [
+                { value: "foods", label: "/foods/search" },
+                { value: "halal", label: "/halal/search" },
+              ] as const
+            ).map((opt) => (
               <button
-                onClick={() => setEndpoint("foods")}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  endpoint === "foods"
-                    ? "bg-accent text-dark"
-                    : "bg-dark-elevated text-content-secondary border border-dark-border hover:border-accent/30"
+                key={opt.value}
+                onClick={() => setEndpoint(opt.value)}
+                className={`px-3 py-2.5 rounded-xl text-xs font-medium font-mono transition-all duration-200 ${
+                  endpoint === opt.value
+                    ? "bg-accent text-dark shadow-[0_0_12px_rgba(16,185,129,0.15)]"
+                    : "bg-white/[0.04] text-content-secondary border border-white/[0.06] hover:border-white/[0.12]"
                 }`}
               >
-                /api/v1/foods/search
+                {opt.label}
               </button>
-              <button
-                onClick={() => setEndpoint("halal")}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  endpoint === "halal"
-                    ? "bg-accent text-dark"
-                    : "bg-dark-elevated text-content-secondary border border-dark-border hover:border-accent/30"
-                }`}
-              >
-                /api/v1/halal/search
-              </button>
-            </div>
+            ))}
           </div>
 
-          <div>
-            <label className="block text-xs md:text-sm font-medium text-content-secondary mb-2">
-              Search Query
-            </label>
+          {/* Search query */}
+          <div className="relative flex-1">
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g., nasi lemak, roti canai, teh tarik..."
-              className="w-full px-3 md:px-4 py-2 md:py-3 bg-dark-elevated border border-dark-border rounded-lg text-content-primary placeholder-content-muted focus:ring-2 focus:ring-accent/50 focus:border-accent/50 text-sm md:text-base"
+              placeholder="e.g., nasi lemak, roti canai…"
+              onKeyDown={(e) => e.key === "Enter" && handleTest()}
+              className="w-full px-3.5 py-2.5 bg-white/[0.02] border border-white/[0.06] rounded-xl
+                text-content-primary placeholder-content-muted text-sm
+                focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/20
+                transition-all duration-200"
             />
           </div>
 
+          {/* Run button */}
           <button
             onClick={handleTest}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-accent text-dark font-medium rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-accent text-dark font-semibold rounded-xl
+              hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] transition-all duration-200
+              disabled:opacity-50 disabled:cursor-not-allowed text-sm md:flex-shrink-0"
           >
             {loading ? (
               <>
-                <div className="w-4 h-4 border-2 border-dark border-t-transparent rounded-full animate-spin" />
-                Testing...
+                <div className="w-3.5 h-3.5 border-2 border-dark border-t-transparent rounded-full animate-spin" />
+                Running…
               </>
             ) : (
               <>
-                <Play size={isMobile ? 16 : 18} />
-                Test API
+                <Play size={14} />
+                Run
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* Response Section */}
+      {/* Response Viewer */}
       {(response || error) && (
-        <div className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden">
-          <div className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 bg-dark-elevated border-b border-dark-border">
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-content-primary text-sm md:text-base">
+        <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden">
+          {/* Response header */}
+          <div className="flex items-center justify-between px-4 py-3 bg-white/[0.04] border-b border-white/[0.06]">
+            <div className="flex items-center gap-2.5">
+              <span className="text-sm font-medium text-content-primary">
                 Response
               </span>
-              {responseTime && (
-                <span className="text-xs text-content-muted bg-dark px-2 py-0.5 rounded">
+              {responseTime != null && (
+                <span className="text-[11px] font-mono text-content-muted bg-white/[0.06] px-2 py-0.5 rounded-md">
                   {responseTime}ms
                 </span>
               )}
             </div>
             {error ? (
-              <span className="flex items-center gap-1 text-red-400 text-xs md:text-sm">
-                <AlertCircle size={14} /> Error
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                Error
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-accent text-xs md:text-sm">
-                <Check size={14} /> Success
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Success
               </span>
             )}
           </div>
 
+          {/* Error banner */}
           {error && (
-            <div className="px-3 md:px-4 py-2 bg-red-500/10 border-b border-red-500/30">
-              <p className="text-red-400 text-xs md:text-sm">{error}</p>
+            <div className="px-4 py-2.5 bg-red-500/[0.06] border-b border-red-500/20">
+              <p className="text-red-400 text-xs flex items-center gap-1.5">
+                <AlertCircle size={12} className="shrink-0" />
+                {error}
+              </p>
             </div>
           )}
 
-          <pre className="p-3 md:p-4 overflow-x-auto text-xs md:text-sm max-h-96 overflow-y-auto">
+          {/* Response body */}
+          <pre className="p-4 overflow-x-auto text-xs md:text-sm max-h-96 overflow-y-auto bg-[#0a0a0a]">
             <code className="text-content-secondary">{response}</code>
           </pre>
         </div>
       )}
 
       {/* Tips */}
-      <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-        <h4 className="font-medium text-content-primary mb-2 text-sm">
-          💡 Tips
+      <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 md:p-5 hover:border-white/[0.1] transition-all duration-200">
+        <h4 className="text-sm font-semibold text-content-secondary uppercase tracking-wider mb-3">
+          Tips
         </h4>
-        <ul className="text-content-muted text-xs md:text-sm space-y-1">
-          <li>
-            • Your API key starts with{" "}
-            <code className="bg-dark-elevated px-1 rounded">kal_</code>
-          </li>
-          <li>
-            • Try searching for: nasi lemak, roti canai, teh tarik, mee goreng
-          </li>
-          <li>• The halal endpoint returns JAKIM certified products only</li>
-          <li>
-            • Check the{" "}
-            <a href="/api-docs" className="text-accent hover:underline">
-              API docs
-            </a>{" "}
-            for all available endpoints
-          </li>
+        <ul className="text-content-muted text-xs md:text-sm space-y-2">
+          {[
+            <>
+              Your API key starts with{" "}
+              <code className="bg-white/[0.06] px-1.5 py-0.5 rounded-md text-xs text-accent font-mono">
+                kal_
+              </code>
+            </>,
+            "Try searching for: nasi lemak, roti canai, teh tarik, mee goreng",
+            "The halal endpoint returns JAKIM certified products only",
+            <>
+              Press{" "}
+              <kbd className="bg-white/[0.06] px-1.5 py-0.5 rounded-md text-[11px] font-mono text-content-secondary">
+                Enter
+              </kbd>{" "}
+              in the search field to run quickly
+            </>,
+          ].map((tip, i) => (
+            <li key={i} className="flex items-start gap-2">
+              <span className="w-1 h-1 rounded-full bg-accent/40 mt-2 shrink-0" />
+              <span>{tip}</span>
+            </li>
+          ))}
         </ul>
       </div>
     </div>
   );
 }
 
-// Interactive API Endpoints component with Try it functionality
+// ─── Interactive Endpoints (right panel) ─────────────────────────────────────
+
 interface EndpointData {
   id: string;
   method: string;
@@ -297,7 +381,6 @@ interface EndpointData {
 }
 
 const endpointsData: EndpointData[] = [
-  // Natural Foods
   {
     id: "foods-search",
     method: "GET",
@@ -366,7 +449,6 @@ const endpointsData: EndpointData[] = [
     defaultExample: "/api/v1/categories",
     section: "natural",
   },
-  // Halal Foods
   {
     id: "halal-search",
     method: "GET",
@@ -455,7 +537,6 @@ const endpointsData: EndpointData[] = [
     defaultExample: "/api/v1/halal/brands?q=ramly",
     section: "halal",
   },
-  // General
   {
     id: "stats",
     method: "GET",
@@ -482,12 +563,12 @@ function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
     setTryUrls((prev) => ({ ...prev, [endpointId]: url }));
   };
 
-  const runEndpoint = async (endpoint: EndpointData) => {
+  const runEndpoint = async (ep: EndpointData) => {
     if (!apiKey.trim()) {
       setResponses((prev) => ({
         ...prev,
-        [endpoint.id]: {
-          data: "Please enter an API key above",
+        [ep.id]: {
+          data: "Please enter an API key in the Test API panel first",
           error: true,
           time: 0,
         },
@@ -495,13 +576,12 @@ function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
       return;
     }
 
-    setLoadingEndpoint(endpoint.id);
+    setLoadingEndpoint(ep.id);
     const startTime = performance.now();
-    const baseUrl = API_URL_DISPLAY;
-    const path = getTryUrl(endpoint.id, endpoint.defaultExample);
+    const path = getTryUrl(ep.id, ep.defaultExample);
 
     try {
-      const res = await fetch(`${baseUrl}${path}`, {
+      const res = await fetch(`${API_URL_DISPLAY}${path}`, {
         headers: { "X-API-Key": apiKey },
       });
       const endTime = performance.now();
@@ -509,7 +589,7 @@ function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
 
       setResponses((prev) => ({
         ...prev,
-        [endpoint.id]: {
+        [ep.id]: {
           data: JSON.stringify(data, null, 2),
           error: !res.ok,
           time: Math.round(endTime - startTime),
@@ -518,7 +598,7 @@ function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
     } catch (err) {
       setResponses((prev) => ({
         ...prev,
-        [endpoint.id]: {
+        [ep.id]: {
           data: `Network error: ${err instanceof Error ? err.message : "Unknown"}`,
           error: true,
           time: 0,
@@ -529,164 +609,155 @@ function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
     }
   };
 
-  const naturalEndpoints = endpointsData.filter((e) => e.section === "natural");
-  const halalEndpoints = endpointsData.filter((e) => e.section === "halal");
-  const generalEndpoints = endpointsData.filter((e) => e.section === "general");
-
-  const renderEndpoint = (endpoint: EndpointData, color: string) => {
-    const isActive = activeEndpoint === endpoint.id;
-    const response = responses[endpoint.id];
-    const isLoading = loadingEndpoint === endpoint.id;
-
-    return (
-      <div
-        key={endpoint.id}
-        className="border-b border-dark-border last:border-b-0"
-      >
-        <button
-          onClick={() => setActiveEndpoint(isActive ? null : endpoint.id)}
-          className="w-full px-4 py-3 flex items-center justify-between hover:bg-dark-elevated/50 transition-colors text-left"
-        >
-          <div className="flex items-center gap-2 min-w-0">
-            <span
-              className={`px-2 py-0.5 text-xs font-bold rounded flex-shrink-0 ${color} text-dark`}
-            >
-              {endpoint.method}
-            </span>
-            <code className="text-sm text-content-secondary truncate">
-              {endpoint.path}
-            </code>
-          </div>
-          <svg
-            className={`w-4 h-4 text-content-muted transition-transform flex-shrink-0 ${isActive ? "rotate-180" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </button>
-
-        {isActive && (
-          <div className="px-4 pb-4 space-y-4">
-            <p className="text-xs md:text-sm text-content-muted">
-              {endpoint.description}
-            </p>
-
-            {/* Parameters */}
-            {endpoint.params && (
-              <div className="text-xs md:text-sm">
-                <span className="text-content-muted">Params: </span>
-                {endpoint.params.map((p, i) => (
-                  <span key={p.name}>
-                    <code className="text-accent">{p.name}</code>
-                    {p.required && <span className="text-red-400">*</span>}
-                    {i < endpoint.params!.length - 1 && ", "}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Try it input */}
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={getTryUrl(endpoint.id, endpoint.defaultExample)}
-                onChange={(e) => setTryUrl(endpoint.id, e.target.value)}
-                className="flex-1 bg-dark-elevated border border-dark-border rounded-lg px-3 py-2 font-mono text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50"
-              />
-              <button
-                onClick={() => runEndpoint(endpoint)}
-                disabled={isLoading}
-                className={`px-4 py-2 ${color} text-dark text-sm font-semibold rounded-lg hover:opacity-90 transition-colors disabled:opacity-50`}
-              >
-                {isLoading ? "..." : "Run"}
-              </button>
-            </div>
-
-            {/* Response */}
-            {response && (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs md:text-sm text-content-muted font-medium">
-                    Response
-                  </span>
-                  {response.time > 0 && (
-                    <span className="text-xs text-content-muted bg-dark-elevated px-2 py-0.5 rounded">
-                      {response.time}ms
-                    </span>
-                  )}
-                </div>
-                <pre
-                  className={`bg-dark-elevated border border-dark-border rounded-lg p-3 text-xs md:text-sm overflow-x-auto max-h-48 overflow-y-auto ${response.error ? "text-red-400" : "text-content-secondary"}`}
-                >
-                  {response.data}
-                </pre>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
+  const sections = [
+    {
+      label: "Natural Foods",
+      endpoints: endpointsData.filter((e) => e.section === "natural"),
+    },
+    {
+      label: "Halal Certified",
+      endpoints: endpointsData.filter((e) => e.section === "halal"),
+    },
+    {
+      label: "General",
+      endpoints: endpointsData.filter((e) => e.section === "general"),
+    },
+  ];
 
   return (
-    <div className="divide-y divide-dark-border">
-      {/* Natural Foods */}
-      <div className="p-4">
-        <h3 className="text-sm md:text-base font-semibold text-accent mb-3">
-          Natural Foods
-        </h3>
-        <div className="bg-dark-elevated/30 rounded-xl overflow-hidden border border-dark-border">
-          {naturalEndpoints.map((e) => renderEndpoint(e, "bg-accent"))}
-        </div>
-      </div>
+    <div className="divide-y divide-white/[0.06]">
+      {sections.map((section) => (
+        <div key={section.label} className="p-4">
+          <h3 className="text-[11px] font-semibold text-content-muted uppercase tracking-wider mb-2.5">
+            {section.label}
+          </h3>
+          <div className="rounded-xl border border-white/[0.06] overflow-hidden divide-y divide-white/[0.04]">
+            {section.endpoints.map((ep) => {
+              const isActive = activeEndpoint === ep.id;
+              const epResponse = responses[ep.id];
+              const isLoading = loadingEndpoint === ep.id;
 
-      {/* Halal Foods */}
-      <div className="p-4">
-        <h3 className="text-sm md:text-base font-semibold text-emerald-400 mb-3">
-          Halal Certified
-        </h3>
-        <div className="bg-dark-elevated/30 rounded-xl overflow-hidden border border-dark-border">
-          {halalEndpoints.map((e) => renderEndpoint(e, "bg-emerald-500"))}
-        </div>
-      </div>
+              return (
+                <div key={ep.id}>
+                  <button
+                    onClick={() => setActiveEndpoint(isActive ? null : ep.id)}
+                    className="w-full px-3.5 py-2.5 flex items-center justify-between hover:bg-white/[0.03] transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold font-mono uppercase tracking-wide text-sky-400 bg-sky-500/10 shrink-0">
+                        {ep.method}
+                      </span>
+                      <code className="text-xs text-content-secondary truncate">
+                        {ep.path}
+                      </code>
+                    </div>
+                    {isActive ? (
+                      <ChevronUp
+                        size={13}
+                        className="text-content-muted shrink-0"
+                      />
+                    ) : (
+                      <ChevronDown
+                        size={13}
+                        className="text-content-muted shrink-0"
+                      />
+                    )}
+                  </button>
 
-      {/* General */}
-      <div className="p-4">
-        <h3 className="text-sm md:text-base font-semibold text-accent mb-3">
-          General
-        </h3>
-        <div className="bg-dark-elevated/30 rounded-xl overflow-hidden border border-dark-border">
-          {generalEndpoints.map((e) => renderEndpoint(e, "bg-accent"))}
+                  {isActive && (
+                    <div className="mx-3 mb-3 mt-1 rounded-xl bg-white/[0.02] border border-white/[0.06] p-3.5 space-y-3">
+                      <p className="text-xs text-content-muted">
+                        {ep.description}
+                      </p>
+
+                      {/* Params */}
+                      {ep.params && (
+                        <div className="text-xs text-content-muted">
+                          <span className="text-content-muted/60">
+                            Params:{" "}
+                          </span>
+                          {ep.params.map((p, i) => (
+                            <span key={p.name}>
+                              <code className="text-accent">{p.name}</code>
+                              {p.required && (
+                                <span className="text-red-400">*</span>
+                              )}
+                              {i < ep.params!.length - 1 && ", "}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Try it */}
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={getTryUrl(ep.id, ep.defaultExample)}
+                          onChange={(e) => setTryUrl(ep.id, e.target.value)}
+                          className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 font-mono text-xs text-content-primary
+                            focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/20 transition-all duration-200"
+                        />
+                        <button
+                          onClick={() => runEndpoint(ep)}
+                          disabled={isLoading}
+                          className="px-3 py-2 bg-accent text-dark text-xs font-semibold rounded-xl
+                            hover:shadow-[0_0_12px_rgba(16,185,129,0.15)] transition-all duration-200
+                            disabled:opacity-50"
+                        >
+                          {isLoading ? "…" : "Run"}
+                        </button>
+                      </div>
+
+                      {/* Response */}
+                      {epResponse && (
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[11px] text-content-muted font-medium uppercase tracking-wider">
+                              Response
+                            </span>
+                            {epResponse.time > 0 && (
+                              <span className="text-[10px] font-mono text-content-muted bg-white/[0.06] px-1.5 py-0.5 rounded-md">
+                                {epResponse.time}ms
+                              </span>
+                            )}
+                          </div>
+                          <pre
+                            className={`bg-[#0a0a0a] border border-white/[0.06] rounded-xl p-3 text-xs overflow-x-auto max-h-40 overflow-y-auto ${
+                              epResponse.error
+                                ? "text-red-400"
+                                : "text-content-secondary"
+                            }`}
+                          >
+                            {epResponse.data}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      ))}
     </div>
   );
 }
 
+// ─── Main content ─────────────────────────────────────────────────────────────
+
 function SetupContent() {
   const { isMobile } = useBreakpoint();
   const [activeTab, setActiveTab] = useState<TabType>("playground");
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const { copy, isCopied } = useCopy();
   const [sharedApiKey, setSharedApiKey] = useState("");
   const { data: apiKeys } = trpc.apiKeys.list.useQuery();
 
   const firstKeyPrefix = apiKeys?.[0]?.keyPrefix || "kal_xxxxxxxx";
 
-  const copyToClipboard = (text: string, index: number) => {
-    navigator.clipboard.writeText(text);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 2000);
-  };
+  // ── Snippet definitions ──
 
-  // Environment setup snippets
-  const envSnippets = [
+  const envSnippets: Snippet[] = [
     {
       title: "1. Create .env file",
       description:
@@ -719,7 +790,6 @@ declare namespace NodeJS {
     },
   ];
 
-  // curl snippets
   const curlSnippets: Snippet[] = [
     {
       title: "1. Basic search request",
@@ -773,7 +843,6 @@ declare namespace NodeJS {
     },
   ];
 
-  // Node.js snippets
   const nodejsSnippets: Snippet[] = [
     {
       title: "1. Install dependencies",
@@ -905,8 +974,7 @@ try {
     },
   ];
 
-  // Python snippets
-  const pythonSnippets = [
+  const pythonSnippets: Snippet[] = [
     {
       title: "1. Install dependencies",
       code: `pip install requests python-dotenv`,
@@ -961,8 +1029,7 @@ for food in halal_foods.get("data", []):
     },
   ];
 
-  // React snippets
-  const reactSnippets = [
+  const reactSnippets: Snippet[] = [
     {
       title: "1. Install dependencies",
       code: `npm install axios
@@ -1092,8 +1159,7 @@ export function FoodSearch() {
     },
   ];
 
-  // Next.js snippets
-  const nextjsSnippets = [
+  const nextjsSnippets: Snippet[] = [
     {
       title: "1. Environment setup",
       description: "Add to .env.local (client-side needs NEXT_PUBLIC_ prefix)",
@@ -1248,205 +1314,198 @@ export async function GET(request: NextRequest) {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 w-full">
-      {/* 50/50 split on large screens */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-8">
-        {/* Main Content - Left Column */}
+      {/* Header */}
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1">
+          Setup Guide
+        </h1>
+        <p className="text-content-secondary text-sm md:text-base">
+          Get started using the Kal API in your project
+        </p>
+        <div className="mt-3 h-px bg-gradient-to-r from-accent/40 via-accent/10 to-transparent" />
+      </div>
+
+      {/* API Key Reminder */}
+      <div className="bg-accent/[0.06] border border-accent/20 rounded-xl p-3.5 md:p-4 mb-6">
+        <p className="text-accent text-xs md:text-sm">
+          <strong>Your API Key:</strong> Make sure you have generated an API key
+          from the{" "}
+          <a
+            href="/dashboard/api-keys"
+            className="underline hover:no-underline"
+          >
+            API Keys page
+          </a>
+          .
+          {apiKeys && apiKeys.length > 0 && (
+            <span className="block mt-1 text-content-secondary">
+              You have {apiKeys.length} active key(s). Latest:{" "}
+              <code className="bg-white/[0.06] px-1.5 py-0.5 rounded-md text-xs font-mono">
+                {firstKeyPrefix}…
+              </code>
+            </span>
+          )}
+        </p>
+      </div>
+
+      {/* Grouped tab bar */}
+      <div className="flex flex-wrap items-center gap-1.5 mb-6 md:mb-8">
+        {/* Getting Started group */}
+        <span className="text-[10px] font-semibold text-content-muted uppercase tracking-widest mr-1 hidden sm:inline">
+          Start
+        </span>
+        {GETTING_STARTED_TABS.map((tab) => (
+          <TabPill
+            key={tab.id}
+            label={tab.label}
+            active={activeTab === tab.id}
+            onClick={() => setActiveTab(tab.id)}
+          />
+        ))}
+
+        {/* Divider */}
+        <span className="w-px h-6 bg-white/[0.06] mx-1.5 hidden sm:block" />
+
+        {/* Code Examples group */}
+        <span className="text-[10px] font-semibold text-content-muted uppercase tracking-widest mr-1 hidden sm:inline">
+          Code
+        </span>
+        {CODE_EXAMPLE_TABS.map((tab) => (
+          <TabPill
+            key={tab.id}
+            label={tab.label}
+            active={activeTab === tab.id}
+            onClick={() => setActiveTab(tab.id)}
+          />
+        ))}
+      </div>
+
+      {/* 60/40 split on xl */}
+      <div className="grid grid-cols-1 xl:grid-cols-[3fr_2fr] gap-6 xl:gap-8">
+        {/* ── Left column: Tab content ── */}
         <div className="min-w-0">
-          <div className="mb-6 md:mb-8">
-            <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2 flex items-center gap-2">
-              <Terminal size={isMobile ? 20 : 24} /> Setup Guide
-            </h1>
-            <p className="text-content-secondary text-sm md:text-base">
-              Get started using the Kal API in your project
-            </p>
-          </div>
-
-          {/* API Key Reminder */}
-          <div className="bg-accent/10 border border-accent/30 rounded-xl p-3 md:p-4 mb-6">
-            <p className="text-accent text-xs md:text-sm">
-              <strong>Your API Key:</strong> Make sure you have generated an API
-              key from the{" "}
-              <a
-                href="/dashboard/api-keys"
-                className="underline hover:no-underline"
-              >
-                API Keys page
-              </a>
-              .
-              {apiKeys && apiKeys.length > 0 && (
-                <span className="block mt-1 text-content-secondary">
-                  You have {apiKeys.length} active key(s). Latest:{" "}
-                  <code className="bg-dark-elevated px-1.5 md:px-2 py-0.5 rounded text-xs">
-                    {firstKeyPrefix}...
-                  </code>
-                </span>
-              )}
-            </p>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex gap-1 md:gap-2 mb-6 overflow-x-auto pb-2">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`
-                  px-3 md:px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap
-                  transition-colors
-                  ${
-                    activeTab === tab.id
-                      ? "bg-accent text-dark"
-                      : "bg-dark-surface border border-dark-border text-content-secondary hover:text-content-primary hover:border-accent/30"
-                  }
-                `}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Content */}
           {activeTab === "playground" ? (
             <ApiPlayground
               apiKey={sharedApiKey}
               onApiKeyChange={setSharedApiKey}
             />
           ) : (
-            <div className="space-y-4 md:space-y-6">
+            <div className="space-y-4">
               {snippets.map((snippet, index) => (
                 <div
                   key={index}
-                  className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden"
+                  className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden
+                    hover:border-white/[0.1] transition-all duration-200"
                 >
-                  <div className="flex items-start md:items-center justify-between px-3 md:px-4 py-2 md:py-3 bg-dark-elevated border-b border-dark-border gap-2">
+                  {/* Snippet header */}
+                  <div className="flex items-start md:items-center justify-between px-4 py-3 bg-white/[0.04] border-b border-white/[0.06] gap-2">
                     <div>
-                      <h3 className="font-medium text-content-primary text-sm md:text-base">
+                      <h3 className="font-medium text-content-primary text-sm">
                         {snippet.title}
                       </h3>
-                      {"description" in snippet && snippet.description && (
+                      {snippet.description && (
                         <p className="text-content-muted text-xs mt-0.5">
                           {snippet.description}
                         </p>
                       )}
                     </div>
                     <button
-                      onClick={() => copyToClipboard(snippet.code, index)}
-                      className="flex items-center gap-1 text-xs md:text-sm text-content-muted hover:text-content-primary transition-colors p-1 flex-shrink-0"
+                      onClick={() => copy(snippet.code, `snippet-${index}`)}
+                      className="flex items-center gap-1.5 text-xs text-content-muted hover:text-content-primary
+                        transition-colors p-1.5 rounded-lg hover:bg-white/[0.06] flex-shrink-0"
                     >
-                      {copiedIndex === index ? (
+                      {isCopied(`snippet-${index}`) ? (
                         <>
-                          <Check
-                            size={isMobile ? 12 : 14}
-                            className="text-accent"
-                          />{" "}
-                          Copied!
+                          <Check size={12} className="text-accent" />
+                          <span className="hidden md:inline">Copied!</span>
                         </>
                       ) : (
                         <>
-                          <Copy size={isMobile ? 12 : 14} /> Copy
+                          <Copy size={12} />
+                          <span className="hidden md:inline">Copy</span>
                         </>
                       )}
                     </button>
                   </div>
-                  <pre className="p-3 md:p-4 overflow-x-auto text-xs md:text-sm">
-                    <code
-                      className={`language-${snippet.language} text-content-secondary`}
-                    >
-                      {snippet.code}
-                    </code>
-                  </pre>
+
+                  {/* Code block */}
+                  <div className="relative">
+                    <span className="absolute top-2.5 right-3 text-[10px] text-content-muted/40 uppercase tracking-widest select-none">
+                      {snippet.language}
+                    </span>
+                    <pre className="p-4 overflow-x-auto text-xs md:text-sm bg-[#0a0a0a]">
+                      <code className="text-content-secondary leading-relaxed">
+                        {snippet.code}
+                      </code>
+                    </pre>
+                  </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Additional Resources */}
-          <div className="mt-6 md:mt-8 bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-            <h3 className="font-medium text-content-primary mb-3 text-sm md:text-base">
+          {/* Need more help */}
+          <div className="mt-6 md:mt-8 bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 md:p-5 hover:border-white/[0.1] transition-all duration-200">
+            <h3 className="text-sm font-semibold text-content-secondary uppercase tracking-wider mb-3">
               Need more help?
             </h3>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
               <a
-                href="/api-docs"
-                className="text-accent hover:underline text-xs md:text-sm"
+                href="/dashboard/docs"
+                className="text-accent hover:underline text-xs md:text-sm flex items-center gap-1.5"
               >
-                View API Documentation →
+                <Book size={12} />
+                View API Documentation
+                <ExternalLink size={10} className="text-accent/50" />
               </a>
               <a
                 href="https://github.com/Zen0space/Kal-Monorepo"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-accent hover:underline text-xs md:text-sm"
+                className="text-accent hover:underline text-xs md:text-sm flex items-center gap-1.5"
               >
-                GitHub Repository →
+                <Code size={12} />
+                GitHub Repository
+                <ExternalLink size={10} className="text-accent/50" />
               </a>
             </div>
           </div>
         </div>
 
-        {/* API Quick Reference - Right Column (Interactive) */}
-        <div className="xl:block">
-          <div className="sticky top-24">
-            <div className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden">
-              {/* Header - No duplicate API key input */}
-              <div className="px-4 py-3 md:px-5 md:py-4 bg-dark-elevated border-b border-dark-border">
-                <h2 className="font-semibold text-content-primary flex items-center gap-2 text-sm md:text-base">
-                  <svg
-                    className="w-4 h-4 md:w-5 md:h-5 text-accent"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  API Quick Reference
-                </h2>
-                <p className="text-xs md:text-sm text-content-muted mt-1">
-                  {sharedApiKey ? (
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-accent"></span>
-                      API key ready — click endpoints to test
-                    </span>
-                  ) : (
-                    <span>
-                      Enter API key in Test API panel to try endpoints
-                    </span>
-                  )}
-                </p>
-              </div>
+        {/* ── Right column: API Quick Reference ── */}
+        <div className="min-w-0">
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden">
+            {/* Panel header */}
+            <div className="px-4 py-3 md:px-5 md:py-4 bg-white/[0.04] border-b border-white/[0.06]">
+              <h2 className="font-semibold text-content-primary flex items-center gap-2 text-sm">
+                <Terminal size={15} className="text-accent" />
+                API Quick Reference
+              </h2>
+              <p className="text-xs text-content-muted mt-1">
+                {sharedApiKey ? (
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                    API key ready — click endpoints to test
+                  </span>
+                ) : (
+                  "Enter API key in Test API panel to try endpoints"
+                )}
+              </p>
+            </div>
 
-              {/* Scrollable Endpoints List */}
-              <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
-                <InteractiveEndpoints apiKey={sharedApiKey} />
-              </div>
+            {/* Endpoints */}
+            <InteractiveEndpoints apiKey={sharedApiKey} />
 
-              {/* View Full Docs Link */}
-              <div className="p-3 border-t border-dark-border">
-                <a
-                  href="/api-docs"
-                  className="flex items-center justify-center gap-2 w-full py-2 px-3 bg-accent/10 border border-accent/30 rounded-lg text-accent text-sm font-medium hover:bg-accent/20 transition-colors"
-                >
-                  View Full Documentation
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
-                </a>
-              </div>
+            {/* Footer link */}
+            <div className="p-3 border-t border-white/[0.06]">
+              <a
+                href="/dashboard/docs"
+                className="flex items-center justify-center gap-2 w-full py-2.5 px-3 bg-accent/[0.1] border border-accent/20
+                  rounded-xl text-accent text-sm font-medium hover:bg-accent/[0.15] transition-colors"
+              >
+                View Full Documentation
+                <ExternalLink size={13} />
+              </a>
             </div>
           </div>
         </div>

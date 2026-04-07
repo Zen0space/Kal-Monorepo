@@ -37,6 +37,7 @@ const config: Config = {
         "slide-up": "slideUp 0.5s ease-out",
         "panel-slide-in": "panelSlideIn 0.25s ease-out",
         "neon-pulse": "neonPulse 2s ease-in-out infinite",
+        "tooltip-in": "tooltipIn 0.15s ease-out",
       },
       keyframes: {
         fadeIn: {
@@ -60,6 +61,10 @@ const config: Config = {
             boxShadow:
               "0 0 8px rgba(16,185,129,0.6), 0 0 16px rgba(16,185,129,0.3)",
           },
+        },
+        tooltipIn: {
+          "0%": { opacity: "0", transform: "translateX(-4px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
         },
       },
     },

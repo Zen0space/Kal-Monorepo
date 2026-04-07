@@ -8,7 +8,7 @@ import {
   MessageSquare,
   Send,
   Star,
-  ThumbsUp
+  ThumbsUp,
 } from "react-feather";
 
 import { useBreakpoint } from "@/hooks/useBreakpoint";
@@ -23,7 +23,11 @@ interface FeedbackClientProps {
 
 type FeedbackType = "review" | "report" | null;
 
-export default function FeedbackClient({ logtoId, email, name }: FeedbackClientProps) {
+export default function FeedbackClient({
+  logtoId,
+  email,
+  name,
+}: FeedbackClientProps) {
   return (
     <>
       <AuthUpdater logtoId={logtoId} email={email} name={name} />
@@ -46,10 +50,10 @@ function FeedbackContent() {
 
   // Query for user's bug reports
   const utils = trpc.useUtils();
-  const { data: myBugs, isLoading: bugsLoading } = trpc.feedback.getMyBugs.useQuery(
-    undefined,
-    { enabled: selectedType === "report" }
-  );
+  const { data: myBugs, isLoading: bugsLoading } =
+    trpc.feedback.getMyBugs.useQuery(undefined, {
+      enabled: selectedType === "report",
+    });
 
   // tRPC mutations
   const submitReviewMutation = trpc.feedback.submitReview.useMutation({
@@ -58,7 +62,9 @@ function FeedbackContent() {
       setErrorMessage(null);
     },
     onError: (error) => {
-      setErrorMessage(error.message || "Failed to submit review. Please try again.");
+      setErrorMessage(
+        error.message || "Failed to submit review. Please try again."
+      );
     },
   });
 
@@ -70,11 +76,14 @@ function FeedbackContent() {
       utils.feedback.getMyBugs.invalidate();
     },
     onError: (error) => {
-      setErrorMessage(error.message || "Failed to submit bug report. Please try again.");
+      setErrorMessage(
+        error.message || "Failed to submit bug report. Please try again."
+      );
     },
   });
 
-  const isSubmitting = submitReviewMutation.isPending || submitBugMutation.isPending;
+  const isSubmitting =
+    submitReviewMutation.isPending || submitBugMutation.isPending;
 
   const handleSubmitReview = () => {
     if (rating === 0 || !feedback.trim()) return;
@@ -112,12 +121,13 @@ function FeedbackContent() {
           <div className="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 flex items-center justify-center mb-6 animate-bounce">
             <CheckCircle size={32} className="text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-content-primary mb-2">Thank You!</h2>
+          <h2 className="text-2xl font-bold text-content-primary mb-2">
+            Thank You!
+          </h2>
           <p className="text-content-secondary mb-8 max-w-md">
             {selectedType === "review"
               ? "Your feedback has been submitted. We appreciate you taking the time to share your thoughts!"
-              : "Your bug report has been submitted. Our team will investigate and get back to you if needed."
-            }
+              : "Your bug report has been submitted. Our team will investigate and get back to you if needed."}
           </p>
           <button
             onClick={handleBack}
@@ -132,7 +142,9 @@ function FeedbackContent() {
   }
 
   return (
-    <div className={`p-4 md:p-6 lg:p-8 w-full ${selectedType === "report" ? "max-w-5xl" : "max-w-3xl"}`}>
+    <div
+      className={`p-4 md:p-6 lg:p-8 w-full ${selectedType === "report" ? "max-w-5xl" : "max-w-3xl"}`}
+    >
       <div className="mb-6 md:mb-8">
         {selectedType && (
           <button
@@ -165,7 +177,7 @@ function FeedbackContent() {
           {/* Review Card */}
           <button
             onClick={() => setSelectedType("review")}
-            className="group bg-dark-surface border border-dark-border rounded-xl p-6 md:p-8 text-left hover:border-accent/50 hover:bg-dark-elevated transition-all duration-300"
+            className="group bg-white/[0.02] border border-white/[0.06] rounded-xl p-6 md:p-8 text-left hover:border-accent/20 hover:bg-white/[0.04] transition-all duration-300"
           >
             <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <ThumbsUp size={28} className="text-amber-400" />
@@ -174,11 +186,16 @@ function FeedbackContent() {
               Write a Review
             </h3>
             <p className="text-content-secondary text-sm">
-              Share your experience and help us understand what you love about Kal
+              Share your experience and help us understand what you love about
+              Kal
             </p>
             <div className="flex items-center gap-1 mt-4">
               {[1, 2, 3, 4, 5].map((star) => (
-                <Star key={star} size={16} className="text-amber-400 fill-amber-400" />
+                <Star
+                  key={star}
+                  size={16}
+                  className="text-amber-400 fill-amber-400"
+                />
               ))}
             </div>
           </button>
@@ -186,7 +203,7 @@ function FeedbackContent() {
           {/* Report Card */}
           <button
             onClick={() => setSelectedType("report")}
-            className="group bg-dark-surface border border-dark-border rounded-xl p-6 md:p-8 text-left hover:border-red-500/50 hover:bg-dark-elevated transition-all duration-300"
+            className="group bg-white/[0.02] border border-white/[0.06] rounded-xl p-6 md:p-8 text-left hover:border-red-500/20 hover:bg-white/[0.04] transition-all duration-300"
           >
             <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-red-500/20 to-rose-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <AlertCircle size={28} className="text-red-400" />
@@ -205,7 +222,7 @@ function FeedbackContent() {
         </div>
       ) : selectedType === "review" ? (
         // Review Form
-        <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
+        <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 md:p-6">
           {/* Star Rating */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-content-muted mb-3">
@@ -222,10 +239,11 @@ function FeedbackContent() {
                 >
                   <Star
                     size={isMobile ? 28 : 32}
-                    className={`transition-colors ${star <= (hoveredRating || rating)
+                    className={`transition-colors ${
+                      star <= (hoveredRating || rating)
                         ? "text-amber-400 fill-amber-400"
-                        : "text-dark-border"
-                      }`}
+                        : "text-white/[0.06]"
+                    }`}
                   />
                 </button>
               ))}
@@ -250,7 +268,7 @@ function FeedbackContent() {
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
               placeholder="What do you like? What could be better? Any suggestions?"
-              className="w-full h-32 md:h-40 px-4 py-3 bg-dark-elevated border border-dark-border rounded-lg text-content-primary placeholder-content-muted resize-none focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50"
+              className="w-full h-32 md:h-40 px-4 py-3 bg-white/[0.04] border border-white/[0.06] rounded-xl text-content-primary placeholder-content-muted resize-none focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/20 transition-all duration-200"
             />
           </div>
 
@@ -284,7 +302,7 @@ function FeedbackContent() {
         // Bug Report Form with sidebar
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Bug Report Form */}
-          <div className="flex-1 bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
+          <div className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 md:p-6">
             {/* Bug Title */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-content-muted mb-2">
@@ -295,7 +313,7 @@ function FeedbackContent() {
                 value={bugTitle}
                 onChange={(e) => setBugTitle(e.target.value)}
                 placeholder="Brief description of the issue"
-                className="w-full px-4 py-3 bg-dark-elevated border border-dark-border rounded-lg text-content-primary placeholder-content-muted focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50"
+                className="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.06] rounded-xl text-content-primary placeholder-content-muted focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500/20 transition-all duration-200"
               />
             </div>
 
@@ -308,27 +326,29 @@ function FeedbackContent() {
                 value={bugDescription}
                 onChange={(e) => setBugDescription(e.target.value)}
                 placeholder="What happened? What did you expect to happen?"
-                className="w-full h-24 md:h-32 px-4 py-3 bg-dark-elevated border border-dark-border rounded-lg text-content-primary placeholder-content-muted resize-none focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50"
+                className="w-full h-24 md:h-32 px-4 py-3 bg-white/[0.04] border border-white/[0.06] rounded-xl text-content-primary placeholder-content-muted resize-none focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500/20 transition-all duration-200"
               />
             </div>
 
             {/* Steps to Reproduce */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-content-muted mb-2">
-                Steps to Reproduce <span className="text-content-muted">(optional)</span>
+                Steps to Reproduce{" "}
+                <span className="text-content-muted">(optional)</span>
               </label>
               <textarea
                 value={bugSteps}
                 onChange={(e) => setBugSteps(e.target.value)}
                 placeholder="1. Go to...&#10;2. Click on...&#10;3. See error"
-                className="w-full h-24 md:h-32 px-4 py-3 bg-dark-elevated border border-dark-border rounded-lg text-content-primary placeholder-content-muted resize-none focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50"
+                className="w-full h-24 md:h-32 px-4 py-3 bg-white/[0.04] border border-white/[0.06] rounded-xl text-content-primary placeholder-content-muted resize-none focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500/20 transition-all duration-200"
               />
             </div>
 
             {/* Info Box */}
             <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
               <p className="text-sm text-blue-400">
-                <strong>Tip:</strong> Include as much detail as possible. Browser, device, and exact steps help us fix issues faster.
+                <strong>Tip:</strong> Include as much detail as possible.
+                Browser, device, and exact steps help us fix issues faster.
               </p>
             </div>
 
@@ -342,7 +362,9 @@ function FeedbackContent() {
             {/* Submit Button */}
             <button
               onClick={handleSubmitBug}
-              disabled={!bugTitle.trim() || !bugDescription.trim() || isSubmitting}
+              disabled={
+                !bugTitle.trim() || !bugDescription.trim() || isSubmitting
+              }
               className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
@@ -360,7 +382,7 @@ function FeedbackContent() {
           </div>
 
           {/* My Bugs Sidebar */}
-          <div className="lg:w-80 bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
+          <div className="lg:w-80 bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 md:p-6">
             <h3 className="text-base font-semibold text-content-primary mb-4">
               My Submitted Bugs
             </h3>
@@ -369,28 +391,30 @@ function FeedbackContent() {
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="h-4 bg-dark-elevated rounded w-3/4 mb-2" />
-                    <div className="h-3 bg-dark-elevated rounded w-1/4" />
+                    <div className="h-4 bg-white/[0.04] rounded w-3/4 mb-2" />
+                    <div className="h-3 bg-white/[0.04] rounded w-1/4" />
                   </div>
                 ))}
               </div>
             ) : myBugs && myBugs.length > 0 ? (
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {myBugs.map((bug) => {
-                  const isOpen = bug.status === "open" || bug.status === "in_progress";
+                  const isOpen =
+                    bug.status === "open" || bug.status === "in_progress";
                   return (
                     <div
                       key={bug._id}
-                      className="p-3 bg-dark-elevated rounded-lg border border-dark-border"
+                      className="p-3 bg-white/[0.04] rounded-xl border border-white/[0.06]"
                     >
                       <p className="text-sm text-content-primary font-medium truncate mb-2">
                         {bug.title}
                       </p>
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${isOpen
+                        className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${
+                          isOpen
                             ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                             : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                          }`}
+                        }`}
                       >
                         {isOpen ? "Open" : "Closed"}
                       </span>
@@ -400,7 +424,10 @@ function FeedbackContent() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <AlertCircle size={32} className="text-content-muted mx-auto mb-3" />
+                <AlertCircle
+                  size={32}
+                  className="text-content-muted mx-auto mb-3"
+                />
                 <p className="text-content-muted text-sm">
                   No bugs submitted yet
                 </p>

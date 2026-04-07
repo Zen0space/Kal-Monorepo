@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import {
   AlertCircle,
   BookOpen,
@@ -14,29 +14,197 @@ import {
   Home,
   Key,
   List,
-  LogOut,
   Menu,
   MessageSquare,
   Settings,
   X,
 } from "react-feather";
+import { useAtom } from "jotai";
 
+import { useAuth } from "@/lib/auth-context";
 import { useSidebarLayout } from "@/hooks/useBreakpoint";
+import { sidebarCollapsedAtom } from "@/atoms/sidebar";
 
-interface SidebarProps {
-  onSignOut?: () => Promise<void>;
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: typeof Home;
 }
 
-const navItems = [
-  { href: "/dashboard", label: "Home", icon: Home },
-  { href: "/dashboard/api-keys", label: "API Keys", icon: Key },
-  { href: "/dashboard/logs", label: "Request Logs", icon: List },
-  { href: "/dashboard/docs", label: "API Reference", icon: BookOpen },
-  { href: "/dashboard/setup", label: "Setup", icon: Code },
-  { href: "/dashboard/foods", label: "Food List", icon: Database },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+// ---------------------------------------------------------------------------
+// Navigation structure — grouped by section
+// ---------------------------------------------------------------------------
+const navSections: NavSection[] = [
+  {
+    label: "Overview",
+    items: [{ href: "/dashboard", label: "Home", icon: Home }],
+  },
+  {
+    label: "Developer",
+    items: [
+      { href: "/dashboard/api-keys", label: "API Keys", icon: Key },
+      { href: "/dashboard/logs", label: "Request Logs", icon: List },
+      { href: "/dashboard/docs", label: "API Reference", icon: BookOpen },
+      { href: "/dashboard/setup", label: "Setup", icon: Code },
+    ],
+  },
+  {
+    label: "Data",
+    items: [{ href: "/dashboard/foods", label: "Food List", icon: Database }],
+  },
 ];
 
+// ---------------------------------------------------------------------------
+// Tooltip — custom animated tooltip for collapsed state
+// ---------------------------------------------------------------------------
+function Tooltip({
+  children,
+  label,
+  show,
+}: {
+  children: ReactNode;
+  label: string;
+  show: boolean;
+}) {
+  const [hovered, setHovered] = useState(false);
+
+  if (!show) return <>{children}</>;
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {children}
+      {hovered && (
+        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 animate-tooltip-in pointer-events-none">
+          <div className="px-2.5 py-1.5 rounded-md bg-white/[0.06] border border-white/[0.06] text-xs font-medium text-content-primary whitespace-nowrap shadow-lg shadow-black/40">
+            {label}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// User avatar with initials
+// ---------------------------------------------------------------------------
+function UserInitials({
+  name,
+  email,
+}: {
+  name?: string | null;
+  email?: string | null;
+}) {
+  const initials = (() => {
+    if (name) {
+      const parts = name.trim().split(/\s+/);
+      if (parts.length >= 2)
+        return (parts[0]![0]! + parts[1]![0]!).toUpperCase();
+      return name.slice(0, 2).toUpperCase();
+    }
+    if (email) return email.slice(0, 2).toUpperCase();
+    return "U";
+  })();
+
+  return (
+    <div className="w-8 h-8 rounded-full bg-accent/15 border border-accent/25 flex items-center justify-center flex-shrink-0">
+      <span className="text-[11px] font-semibold text-accent leading-none">
+        {initials}
+      </span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Section label
+// ---------------------------------------------------------------------------
+function SectionLabel({
+  label,
+  collapsed,
+}: {
+  label: string;
+  collapsed: boolean;
+}) {
+  return (
+    <div className={`px-4 pt-5 pb-1.5 ${collapsed ? "sr-only" : ""}`}>
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-content-muted/70">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// NavLink — single navigation item (shared between desktop + mobile)
+// ---------------------------------------------------------------------------
+function NavLink({
+  item,
+  isActive,
+  collapsed,
+  onClick,
+}: {
+  item: NavItem;
+  isActive: boolean;
+  collapsed: boolean;
+  onClick?: () => void;
+}) {
+  const Icon = item.icon;
+
+  return (
+    <Tooltip label={item.label} show={collapsed}>
+      <Link
+        href={item.href}
+        onClick={onClick}
+        className={`
+          group relative flex items-center gap-3 mx-2 rounded-lg transition-all duration-200
+          ${collapsed ? "px-0 py-2.5 justify-center" : "px-3 py-2.5"}
+          ${
+            isActive
+              ? "bg-accent/[0.08] text-accent"
+              : "text-content-secondary hover:bg-white/[0.04] hover:text-content-primary"
+          }
+        `}
+      >
+        {/* Active indicator bar */}
+        {isActive && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-accent" />
+        )}
+
+        <Icon
+          size={19}
+          className={`flex-shrink-0 transition-transform duration-200 ${
+            !isActive ? "group-hover:translate-x-[1px]" : ""
+          }`}
+        />
+
+        {/* Text — animated via max-width + opacity for smooth collapse */}
+        <span
+          className={`font-medium text-[13.5px] whitespace-nowrap transition-all duration-300 overflow-hidden ${
+            collapsed ? "max-w-0 opacity-0" : "max-w-[180px] opacity-100"
+          }`}
+        >
+          {item.label}
+        </span>
+      </Link>
+    </Tooltip>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// API Version Banner (unchanged)
+// ---------------------------------------------------------------------------
 function ApiVersionBanner() {
   const [dismissed, setDismissed] = useState(false);
 
@@ -51,7 +219,7 @@ function ApiVersionBanner() {
             <span className="font-semibold">API v1 Migration:</span>{" "}
             <span className="text-content-secondary">
               API endpoints have moved to{" "}
-              <code className="px-1.5 py-0.5 rounded bg-dark-elevated text-accent text-xs font-mono">
+              <code className="px-1.5 py-0.5 rounded bg-white/[0.06] text-accent text-xs font-mono">
                 /api/v1/*
               </code>
               . Update your base URL to continue using the API.
@@ -78,335 +246,475 @@ function ApiVersionBanner() {
   );
 }
 
-export function Sidebar({ onSignOut }: SidebarProps) {
-  const { isMobile, shouldAutoCollapse, isMounted } = useSidebarLayout();
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+// =========================================================================
+// SIDEBAR — Desktop / Tablet
+// =========================================================================
+function DesktopSidebar() {
+  const { shouldAutoCollapse, isMounted } = useSidebarLayout();
+  const [collapsed, setCollapsed] = useAtom(sidebarCollapsedAtom);
   const pathname = usePathname();
   const hasInitialized = useRef(false);
+  const { name, email } = useAuth();
 
-  // Only set initial collapse state once on mount
   useEffect(() => {
     if (isMounted && !hasInitialized.current) {
       hasInitialized.current = true;
       setCollapsed(shouldAutoCollapse);
     }
-  }, [isMounted, shouldAutoCollapse]);
+  }, [isMounted, shouldAutoCollapse, setCollapsed]);
 
-  // Close mobile menu when route changes
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+  const displayName = name || email?.split("@")[0] || "User";
+  const displayEmail = email || "";
 
-  // Mobile: Show hamburger menu and overlay (only after hydration)
-  if (isMounted && isMobile) {
-    return (
-      <>
-        {/* Mobile Header Bar */}
-        <header className="fixed top-0 left-0 right-0 h-16 bg-dark-surface border-b border-dark-border z-50 flex items-center justify-between px-4">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-accent" />
-            <span className="text-xl font-bold text-content-primary">Kal</span>
-          </Link>
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="p-2 text-content-secondary hover:text-content-primary"
-          >
-            <Menu size={24} />
-          </button>
-        </header>
-
-        {/* Mobile Overlay */}
-        {mobileOpen && (
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-            onClick={() => setMobileOpen(false)}
-          />
-        )}
-
-        {/* Mobile Drawer */}
-        <aside
-          className={`
-            fixed top-0 left-0 h-full w-72 bg-dark-surface border-r border-dark-border z-50
-            transform transition-transform duration-300 ease-in-out
-            ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
-          `}
-        >
-          <div className="flex flex-col h-full">
-            {/* Header */}
-            <div className="h-16 flex items-center justify-between px-4 border-b border-dark-border">
-              <Link href="/dashboard" className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-accent" />
-                <span className="text-xl font-bold text-content-primary">
-                  Kal
-                </span>
-              </Link>
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="p-2 text-content-secondary hover:text-content-primary"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Navigation */}
-            <nav className="flex-1 py-4 overflow-y-auto">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                const Icon = item.icon;
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={`
-                      flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-                      ${
-                        isActive
-                          ? "bg-accent/10 text-accent border border-accent/30"
-                          : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
-                      }
-                    `}
-                  >
-                    <Icon size={20} />
-                    <span className="font-medium">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-
-            {/* Changelog */}
-            <div className="border-t border-dark-border py-4">
-              <Link
-                href="/dashboard/changelog"
-                onClick={() => setMobileOpen(false)}
-                className={`
-                  flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-                  ${
-                    pathname === "/dashboard/changelog"
-                      ? "bg-accent/10 text-accent border border-accent/30"
-                      : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
-                  }
-                `}
-              >
-                <FileText
-                  size={20}
-                  className="text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]"
-                />
-                <span className="font-medium text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]">
-                  Changelog
-                </span>
-              </Link>
-            </div>
-
-            {/* Feedback */}
-            <div className="border-t border-dark-border py-4">
-              <Link
-                href="/dashboard/feedback"
-                onClick={() => setMobileOpen(false)}
-                className={`
-                  flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-                  ${
-                    pathname === "/dashboard/feedback"
-                      ? "bg-accent/10 text-accent border border-accent/30"
-                      : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
-                  }
-                `}
-              >
-                <MessageSquare size={20} />
-                <span className="font-medium">Review & Bug</span>
-              </Link>
-            </div>
-
-            {/* Sign Out */}
-            {onSignOut && (
-              <div className="border-t border-dark-border py-4">
-                <button
-                  onClick={onSignOut}
-                  className="flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-                    text-content-secondary hover:bg-dark-elevated hover:text-red-400
-                    w-[calc(100%-1rem)]"
-                >
-                  <LogOut size={20} />
-                  <span className="font-medium">Sign Out</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </aside>
-      </>
-    );
-  }
-
-  // Desktop/Tablet: Collapsible sidebar (default for SSR and non-mobile)
   return (
     <aside
       className={`
-        fixed left-0 top-0 h-full bg-dark-surface border-r border-dark-border z-40
+        fixed left-0 top-0 h-full z-40
+        bg-gradient-to-b from-[#151515] to-[#101010]
+        border-r border-white/[0.06]
         transition-[width] duration-300 ease-in-out
         ${collapsed ? "w-16" : "w-64"}
       `}
     >
       <div className="flex flex-col h-full">
-        {/* Logo */}
-        <div className="h-16 flex items-center px-4 border-b border-dark-border">
-          <Link href="/dashboard" className="flex items-center gap-2 group">
-            <div className="w-3 h-3 rounded-full bg-accent group-hover:scale-110 transition-transform flex-shrink-0" />
-            {!collapsed && (
-              <span className="text-xl font-bold text-content-primary whitespace-nowrap">
-                Kal
-              </span>
-            )}
+        {/* ---- Logo ---- */}
+        <div className="h-14 flex items-center px-4">
+          <Link href="/dashboard" className="flex items-center gap-2.5 group">
+            <div className="relative flex-shrink-0">
+              <div className="w-3.5 h-3.5 rounded-full bg-accent group-hover:scale-110 transition-transform" />
+              <div className="absolute inset-0 w-3.5 h-3.5 rounded-full bg-accent/40 blur-[6px]" />
+            </div>
+            <span
+              className={`text-lg font-bold text-content-primary whitespace-nowrap transition-all duration-300 overflow-hidden ${
+                collapsed ? "max-w-0 opacity-0" : "max-w-[120px] opacity-100"
+              }`}
+            >
+              Kal
+            </span>
           </Link>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 py-4">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
+        {/* Subtle separator after logo */}
+        <div className="mx-3 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`
-                  flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-                  ${
-                    isActive
-                      ? "bg-accent/10 text-accent border border-accent/30"
-                      : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
-                  }
-                `}
-                title={collapsed ? item.label : undefined}
-              >
-                <Icon size={20} className="flex-shrink-0" />
-                {!collapsed && (
-                  <span className="font-medium whitespace-nowrap">
-                    {item.label}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+        {/* ---- Navigation sections ---- */}
+        <nav className="flex-1 py-2 overflow-y-auto">
+          {navSections.map((section) => (
+            <div key={section.label}>
+              <SectionLabel label={section.label} collapsed={collapsed} />
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.href}
+                  item={item}
+                  isActive={pathname === item.href}
+                  collapsed={collapsed}
+                />
+              ))}
+            </div>
+          ))}
         </nav>
 
-        {/* Changelog */}
-        <div className="border-t border-dark-border py-4">
-          <Link
-            href="/dashboard/changelog"
-            className={`
-              flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-              ${
-                pathname === "/dashboard/changelog"
-                  ? "bg-accent/10 text-accent border border-accent/30"
-                  : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
-              }
-            `}
-            title={collapsed ? "Changelog" : undefined}
-          >
-            <FileText
-              size={20}
-              className="flex-shrink-0 text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]"
-            />
-            {!collapsed && (
-              <span className="font-medium whitespace-nowrap text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]">
-                Changelog
-              </span>
-            )}
-          </Link>
-        </div>
+        {/* ---- Footer zone ---- */}
+        <div className="mt-auto">
+          {/* Subtle separator */}
+          <div className="mx-3 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
-        {/* Feedback */}
-        <div className="border-t border-dark-border py-4">
-          <Link
-            href="/dashboard/feedback"
-            className={`
-              flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-              ${
-                pathname === "/dashboard/feedback"
-                  ? "bg-accent/10 text-accent border border-accent/30"
-                  : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary"
-              }
-            `}
-            title={collapsed ? "Review & Bug" : undefined}
-          >
-            <MessageSquare size={20} className="flex-shrink-0" />
-            {!collapsed && (
-              <span className="font-medium whitespace-nowrap">
-                Review & Bug
-              </span>
-            )}
-          </Link>
-        </div>
+          {/* Changelog + Feedback */}
+          <div className="py-2">
+            <Tooltip label="Changelog" show={collapsed}>
+              <Link
+                href="/dashboard/changelog"
+                className={`
+                  group relative flex items-center gap-3 mx-2 rounded-lg transition-all duration-200
+                  ${collapsed ? "px-0 py-2.5 justify-center" : "px-3 py-2.5"}
+                  ${
+                    pathname === "/dashboard/changelog"
+                      ? "bg-accent/[0.08] text-accent"
+                      : "text-content-secondary hover:bg-white/[0.04] hover:text-content-primary"
+                  }
+                `}
+              >
+                {pathname === "/dashboard/changelog" && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-accent" />
+                )}
+                <FileText
+                  size={19}
+                  className="flex-shrink-0 text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.5)]"
+                />
+                <span
+                  className={`font-medium text-[13.5px] whitespace-nowrap text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.5)] transition-all duration-300 overflow-hidden ${
+                    collapsed
+                      ? "max-w-0 opacity-0"
+                      : "max-w-[180px] opacity-100"
+                  }`}
+                >
+                  Changelog
+                </span>
+              </Link>
+            </Tooltip>
 
-        {/* Bottom actions */}
-        <div className="border-t border-dark-border py-4">
-          {onSignOut && (
-            <button
-              onClick={onSignOut}
-              className="flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-                text-content-secondary hover:bg-dark-elevated hover:text-red-400
-                w-[calc(100%-1rem)]"
-              title={collapsed ? "Sign Out" : undefined}
-            >
-              <LogOut size={20} className="flex-shrink-0" />
-              {!collapsed && (
-                <span className="font-medium whitespace-nowrap">Sign Out</span>
-              )}
-            </button>
-          )}
+            <Tooltip label="Review & Bug" show={collapsed}>
+              <Link
+                href="/dashboard/feedback"
+                className={`
+                  group relative flex items-center gap-3 mx-2 rounded-lg transition-all duration-200
+                  ${collapsed ? "px-0 py-2.5 justify-center" : "px-3 py-2.5"}
+                  ${
+                    pathname === "/dashboard/feedback"
+                      ? "bg-accent/[0.08] text-accent"
+                      : "text-content-secondary hover:bg-white/[0.04] hover:text-content-primary"
+                  }
+                `}
+              >
+                {pathname === "/dashboard/feedback" && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-accent" />
+                )}
+                <MessageSquare
+                  size={19}
+                  className={`flex-shrink-0 transition-transform duration-200 ${
+                    pathname !== "/dashboard/feedback"
+                      ? "group-hover:translate-x-[1px]"
+                      : ""
+                  }`}
+                />
+                <span
+                  className={`font-medium text-[13.5px] whitespace-nowrap transition-all duration-300 overflow-hidden ${
+                    collapsed
+                      ? "max-w-0 opacity-0"
+                      : "max-w-[180px] opacity-100"
+                  }`}
+                >
+                  Review & Bug
+                </span>
+              </Link>
+            </Tooltip>
+          </div>
 
-          {/* Collapse toggle */}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
-              text-content-muted hover:bg-dark-elevated hover:text-content-primary
-              w-[calc(100%-1rem)]"
-            title={collapsed ? "Expand" : "Collapse"}
-          >
-            {collapsed ? (
-              <ChevronRight size={20} className="flex-shrink-0" />
-            ) : (
-              <>
-                <ChevronLeft size={20} className="flex-shrink-0" />
-                <span className="font-medium whitespace-nowrap">Collapse</span>
-              </>
-            )}
-          </button>
+          {/* Subtle separator */}
+          <div className="mx-3 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+
+          {/* User section + Settings */}
+          <div className="py-3 px-2 space-y-1">
+            {/* User identity row */}
+            <Tooltip label={displayName} show={collapsed}>
+              <Link
+                href="/dashboard/settings"
+                className={`
+                  group relative flex items-center gap-3 rounded-lg transition-all duration-200
+                  ${collapsed ? "px-0 py-2 justify-center" : "px-3 py-2"}
+                  ${
+                    pathname === "/dashboard/settings"
+                      ? "bg-accent/[0.08]"
+                      : "hover:bg-white/[0.04]"
+                  }
+                `}
+              >
+                {pathname === "/dashboard/settings" && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-accent" />
+                )}
+                <UserInitials name={name} email={email} />
+                <div
+                  className={`min-w-0 transition-all duration-300 overflow-hidden ${
+                    collapsed
+                      ? "max-w-0 opacity-0"
+                      : "max-w-[160px] opacity-100"
+                  }`}
+                >
+                  <p className="text-[13px] font-medium text-content-primary truncate leading-tight">
+                    {displayName}
+                  </p>
+                  {displayEmail && (
+                    <p className="text-[11px] text-content-muted truncate leading-tight mt-0.5">
+                      {displayEmail}
+                    </p>
+                  )}
+                </div>
+                {!collapsed && (
+                  <Settings
+                    size={15}
+                    className="ml-auto flex-shrink-0 text-content-muted group-hover:text-content-secondary transition-colors"
+                  />
+                )}
+              </Link>
+            </Tooltip>
+
+            {/* Collapse toggle */}
+            <Tooltip label={collapsed ? "Expand" : "Collapse"} show={collapsed}>
+              <button
+                onClick={() => setCollapsed(!collapsed)}
+                className={`
+                  flex items-center gap-3 rounded-lg w-full transition-all duration-200
+                  text-content-muted hover:bg-white/[0.04] hover:text-content-secondary
+                  ${collapsed ? "px-0 py-2 justify-center" : "px-3 py-2"}
+                `}
+              >
+                {collapsed ? (
+                  <ChevronRight size={18} className="flex-shrink-0" />
+                ) : (
+                  <>
+                    <ChevronLeft size={18} className="flex-shrink-0" />
+                    <span className="font-medium text-[13px] whitespace-nowrap">
+                      Collapse
+                    </span>
+                  </>
+                )}
+              </button>
+            </Tooltip>
+          </div>
         </div>
       </div>
     </aside>
   );
 }
 
-export function DashboardLayout({
-  children,
-  onSignOut,
-}: {
-  children: React.ReactNode;
-  onSignOut?: () => Promise<void>;
-}) {
+// =========================================================================
+// SIDEBAR — Mobile
+// =========================================================================
+function MobileSidebar() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+  const { name, email } = useAuth();
+
+  const displayName = name || email?.split("@")[0] || "User";
+  const displayEmail = email || "";
+
+  // Close drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  return (
+    <>
+      {/* Mobile Header Bar */}
+      <header className="fixed top-0 left-0 right-0 h-14 bg-gradient-to-b from-[#151515] to-[#101010] border-b border-white/[0.06] z-50 flex items-center justify-between px-4">
+        <Link href="/dashboard" className="flex items-center gap-2.5">
+          <div className="relative">
+            <div className="w-3.5 h-3.5 rounded-full bg-accent" />
+            <div className="absolute inset-0 w-3.5 h-3.5 rounded-full bg-accent/40 blur-[6px]" />
+          </div>
+          <span className="text-lg font-bold text-content-primary">Kal</span>
+        </Link>
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="p-2 text-content-secondary hover:text-content-primary transition-colors"
+        >
+          <Menu size={22} />
+        </button>
+      </header>
+
+      {/* Overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Drawer */}
+      <aside
+        className={`
+          fixed top-0 left-0 h-full w-72 z-50
+          bg-gradient-to-b from-[#151515] to-[#101010]
+          border-r border-white/[0.06]
+          transform transition-transform duration-300 ease-in-out
+          ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
+        `}
+      >
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="h-14 flex items-center justify-between px-4">
+            <Link
+              href="/dashboard"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-2.5"
+            >
+              <div className="relative">
+                <div className="w-3.5 h-3.5 rounded-full bg-accent" />
+                <div className="absolute inset-0 w-3.5 h-3.5 rounded-full bg-accent/40 blur-[6px]" />
+              </div>
+              <span className="text-lg font-bold text-content-primary">
+                Kal
+              </span>
+            </Link>
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="p-2 text-content-secondary hover:text-content-primary transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Subtle separator */}
+          <div className="mx-3 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+
+          {/* Navigation sections */}
+          <nav className="flex-1 py-2 overflow-y-auto">
+            {navSections.map((section) => (
+              <div key={section.label}>
+                <div className="px-4 pt-5 pb-1.5">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-content-muted/70">
+                    {section.label}
+                  </span>
+                </div>
+                {section.items.map((item) => {
+                  const isActive = pathname === item.href;
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`
+                        group relative flex items-center gap-3 px-3 py-2.5 mx-2 rounded-lg transition-all duration-200
+                        ${
+                          isActive
+                            ? "bg-accent/[0.08] text-accent"
+                            : "text-content-secondary hover:bg-white/[0.04] hover:text-content-primary"
+                        }
+                      `}
+                    >
+                      {isActive && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-accent" />
+                      )}
+                      <Icon size={19} className="flex-shrink-0" />
+                      <span className="font-medium text-[13.5px]">
+                        {item.label}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
+          </nav>
+
+          {/* Footer */}
+          <div className="mt-auto">
+            <div className="mx-3 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+
+            {/* Changelog + Feedback */}
+            <div className="py-2">
+              <Link
+                href="/dashboard/changelog"
+                onClick={() => setMobileOpen(false)}
+                className={`
+                  group relative flex items-center gap-3 px-3 py-2.5 mx-2 rounded-lg transition-all duration-200
+                  ${
+                    pathname === "/dashboard/changelog"
+                      ? "bg-accent/[0.08] text-accent"
+                      : "text-content-secondary hover:bg-white/[0.04] hover:text-content-primary"
+                  }
+                `}
+              >
+                {pathname === "/dashboard/changelog" && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-accent" />
+                )}
+                <FileText
+                  size={19}
+                  className="flex-shrink-0 text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.5)]"
+                />
+                <span className="font-medium text-[13.5px] text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.5)]">
+                  Changelog
+                </span>
+              </Link>
+
+              <Link
+                href="/dashboard/feedback"
+                onClick={() => setMobileOpen(false)}
+                className={`
+                  group relative flex items-center gap-3 px-3 py-2.5 mx-2 rounded-lg transition-all duration-200
+                  ${
+                    pathname === "/dashboard/feedback"
+                      ? "bg-accent/[0.08] text-accent"
+                      : "text-content-secondary hover:bg-white/[0.04] hover:text-content-primary"
+                  }
+                `}
+              >
+                {pathname === "/dashboard/feedback" && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-accent" />
+                )}
+                <MessageSquare size={19} className="flex-shrink-0" />
+                <span className="font-medium text-[13.5px]">Review & Bug</span>
+              </Link>
+            </div>
+
+            <div className="mx-3 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+
+            {/* User section */}
+            <div className="py-3 px-2 space-y-1">
+              <Link
+                href="/dashboard/settings"
+                onClick={() => setMobileOpen(false)}
+                className={`
+                  group relative flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
+                  ${
+                    pathname === "/dashboard/settings"
+                      ? "bg-accent/[0.08]"
+                      : "hover:bg-white/[0.04]"
+                  }
+                `}
+              >
+                {pathname === "/dashboard/settings" && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-accent" />
+                )}
+                <UserInitials name={name} email={email} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] font-medium text-content-primary truncate leading-tight">
+                    {displayName}
+                  </p>
+                  {displayEmail && (
+                    <p className="text-[11px] text-content-muted truncate leading-tight mt-0.5">
+                      {displayEmail}
+                    </p>
+                  )}
+                </div>
+                <Settings
+                  size={15}
+                  className="flex-shrink-0 text-content-muted group-hover:text-content-secondary transition-colors"
+                />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}
+
+// =========================================================================
+// SIDEBAR — Export (switches between mobile / desktop)
+// =========================================================================
+export function Sidebar() {
+  const { isMobile, isMounted } = useSidebarLayout();
+
+  if (isMounted && isMobile) {
+    return <MobileSidebar />;
+  }
+
+  return <DesktopSidebar />;
+}
+
+// =========================================================================
+// Dashboard Layout wrapper
+// =========================================================================
+export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isMobile, shouldAutoCollapse, isMounted } = useSidebarLayout();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useAtom(sidebarCollapsedAtom);
   const hasInitialized = useRef(false);
 
-  // Only set initial collapse state once on mount
   useEffect(() => {
     if (isMounted && !hasInitialized.current) {
       hasInitialized.current = true;
       setCollapsed(shouldAutoCollapse);
     }
-  }, [isMounted, shouldAutoCollapse]);
+  }, [isMounted, shouldAutoCollapse, setCollapsed]);
 
   // Determine margin - default to desktop (ml-64) for SSR
   const mainMargin =
-    isMounted && isMobile ? "ml-0 pt-16" : collapsed ? "ml-16" : "ml-64";
+    isMounted && isMobile ? "ml-0 pt-14" : collapsed ? "ml-16" : "ml-64";
 
   return (
     <div className="min-h-screen bg-dark">
-      <Sidebar onSignOut={onSignOut} />
+      <Sidebar />
       <main
         className={`transition-[margin] duration-300 ease-in-out ${mainMargin}`}
       >

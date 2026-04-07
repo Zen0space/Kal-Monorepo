@@ -3,14 +3,14 @@
 import { RATE_LIMITS } from "kal-shared";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Book, Clock, Code, Key, List, Search, Settings } from "react-feather";
+import { Calendar, Clock, Zap } from "react-feather";
 
 import { UsageChart } from "@/components/dashboard/UsageChart";
-import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { AuthUpdater, useAuth } from "@/lib/auth-context";
 import { trpc } from "@/lib/trpc";
 
 // ─── Countdown helpers ────────────────────────────────────────────────────────
+
 function getMsUntilMidnightUTC(): number {
   const now = new Date();
   const midnight = new Date(now);
@@ -62,22 +62,39 @@ function useCountdown(getMsFn: () => number, interval = 1_000): number {
   return ms;
 }
 
-function ResetBadge({
-  ms,
-  compact = false,
-}: {
-  ms: number;
-  compact?: boolean;
-}) {
-  return (
-    <span className="inline-flex items-center gap-1 text-content-muted text-xs">
-      <Clock size={10} className="text-accent/60 shrink-0" />
-      <span className="font-mono text-content-secondary">
-        {formatCountdown(ms, compact)}
-      </span>
-    </span>
-  );
+// ─── Progress bar helpers ─────────────────────────────────────────────────────
+
+function getBarColor(percentage: number): string {
+  if (percentage >= 95) return "bg-red-500";
+  if (percentage >= 80) return "bg-amber-500";
+  return "bg-accent";
 }
+
+function getAccentGradient(percentage: number): string {
+  if (percentage >= 95) return "from-red-500/[0.08]";
+  if (percentage >= 80) return "from-amber-500/[0.06]";
+  return "from-emerald-500/[0.06]";
+}
+
+function getIconColor(percentage: number): string {
+  if (percentage >= 95) return "text-red-400";
+  if (percentage >= 80) return "text-amber-400";
+  return "text-emerald-400";
+}
+
+function getIconBg(percentage: number): string {
+  if (percentage >= 95) return "bg-red-500/10";
+  if (percentage >= 80) return "bg-amber-500/10";
+  return "bg-emerald-500/[0.1]";
+}
+
+function getValueColor(percentage: number): string {
+  if (percentage >= 95) return "text-red-400";
+  if (percentage >= 80) return "text-amber-400";
+  return "text-emerald-400";
+}
+
+// ─── Entry / wrapper ──────────────────────────────────────────────────────────
 
 interface DashboardClientProps {
   logtoId?: string;
@@ -110,9 +127,18 @@ function DashboardContentWrapper({
   if (expectedLogtoId && logtoId !== expectedLogtoId) {
     return (
       <div className="p-4 md:p-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-dark-elevated rounded w-48 mb-4" />
-          <div className="h-4 bg-dark-elevated rounded w-32" />
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-white/[0.04] rounded w-48" />
+          <div className="h-4 bg-white/[0.04] rounded w-32" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-32 bg-white/[0.04] rounded-xl" />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 mt-4">
+            <div className="h-48 bg-white/[0.04] rounded-xl" />
+            <div className="h-48 bg-white/[0.04] rounded-xl" />
+          </div>
         </div>
       </div>
     );
@@ -121,8 +147,9 @@ function DashboardContentWrapper({
   return <DashboardContent nameProp={nameProp} />;
 }
 
+// ─── Main content ─────────────────────────────────────────────────────────────
+
 function DashboardContent({ nameProp }: { nameProp?: string | null }) {
-  const { isMobile } = useBreakpoint();
   const { data: userInfo, isLoading: isLoadingUser } =
     trpc.apiKeys.getMe.useQuery();
   const { data: stats } = trpc.apiKeys.getUsageStats.useQuery();
@@ -136,16 +163,13 @@ function DashboardContent({ nameProp }: { nameProp?: string | null }) {
   const tier = stats?.tier || "free";
   const limits = RATE_LIMITS[tier];
   const dailyUsed = stats?.dailyUsed || 0;
-  const dailyRemaining = Math.max(0, limits.dailyLimit - dailyUsed);
   const dailyPercentage = Math.min(100, (dailyUsed / limits.dailyLimit) * 100);
   const monthlyUsed = stats?.monthlyUsed || 0;
-  const monthlyRemaining = Math.max(0, limits.monthlyLimit - monthlyUsed);
   const monthlyPercentage = Math.min(
     100,
     (monthlyUsed / limits.monthlyLimit) * 100
   );
   const minuteUsed = stats?.minuteUsed || 0;
-  const minuteRemaining = Math.max(0, limits.minuteLimit - minuteUsed);
   const minutePercentage = Math.min(
     100,
     (minuteUsed / limits.minuteLimit) * 100
@@ -155,25 +179,58 @@ function DashboardContent({ nameProp }: { nameProp?: string | null }) {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 w-full">
-      {/* Welcome Header */}
+      {/* ── Welcome Header ── */}
       <div className="mb-6 md:mb-8">
-        <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2">
+        <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1">
           Welcome back, {isLoadingUser ? "..." : displayName}
         </h1>
         <p className="text-content-secondary text-sm md:text-base">
           Here&apos;s an overview of your API usage
         </p>
+        <div className="mt-3 h-px bg-gradient-to-r from-accent/40 via-accent/10 to-transparent" />
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid-auto-fit-md mb-6 md:mb-8">
-        <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-content-secondary text-xs md:text-sm">
-              Current Tier
+      {/* ── Usage Stats ── */}
+      <section className="mb-6 md:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+          <UsageStatCard
+            icon={<Clock size={16} />}
+            label="Today"
+            used={dailyUsed}
+            limit={limits.dailyLimit}
+            percentage={dailyPercentage}
+            resetMs={dailyResetMs}
+          />
+          <UsageStatCard
+            icon={<Calendar size={16} />}
+            label="This Month"
+            used={monthlyUsed}
+            limit={limits.monthlyLimit}
+            percentage={monthlyPercentage}
+            resetMs={monthlyResetMs}
+          />
+          <UsageStatCard
+            icon={<Zap size={16} />}
+            label="Per Minute"
+            used={minuteUsed}
+            limit={limits.minuteLimit}
+            percentage={minutePercentage}
+            resetMs={minuteResetMs}
+            compactReset
+          />
+        </div>
+      </section>
+
+      {/* ── Tier + Chart row ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 md:gap-5">
+        {/* Tier card */}
+        <div className="rounded-xl p-4 md:p-5 bg-gradient-to-br from-accent/[0.06] via-white/[0.02] to-transparent border border-accent/[0.12] transition-all duration-200 hover:border-accent/20">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-content-secondary text-xs md:text-sm font-medium">
+              Current Plan
             </span>
             <span
-              className={`px-2 py-1 rounded text-xs font-medium tier-badge tier-${tier}`}
+              className={`px-2.5 py-1 rounded-md text-[11px] font-semibold uppercase tracking-wide tier-badge tier-${tier}`}
             >
               {tier === "free"
                 ? "Free"
@@ -182,212 +239,126 @@ function DashboardContent({ nameProp }: { nameProp?: string | null }) {
                   : "Tier 2"}
             </span>
           </div>
-          <p className="text-content-muted text-xs md:text-sm">
-            {limits.minuteLimit} requests/minute
-          </p>
-          <p className="text-content-muted text-xs md:text-sm">
-            {limits.dailyLimit.toLocaleString()} requests/day
-          </p>
-          <p className="text-content-muted text-xs md:text-sm">
-            {limits.monthlyLimit.toLocaleString()} requests/month
-          </p>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-content-muted text-xs flex items-center gap-1.5">
+                <Zap size={11} className="text-accent/50" />
+                Per minute
+              </span>
+              <span className="text-content-primary text-xs font-medium">
+                {limits.minuteLimit}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-content-muted text-xs flex items-center gap-1.5">
+                <Clock size={11} className="text-accent/50" />
+                Per day
+              </span>
+              <span className="text-content-primary text-xs font-medium">
+                {limits.dailyLimit.toLocaleString()}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-content-muted text-xs flex items-center gap-1.5">
+                <Calendar size={11} className="text-accent/50" />
+                Per month
+              </span>
+              <span className="text-content-primary text-xs font-medium">
+                {limits.monthlyLimit.toLocaleString()}
+              </span>
+            </div>
+          </div>
+
+          {tier === "free" && (
+            <Link
+              href="/pricing"
+              className="mt-4 flex items-center justify-center gap-1.5 w-full py-2 rounded-lg
+                bg-accent/[0.1] border border-accent/20 text-accent text-xs font-medium
+                hover:bg-accent/[0.15] transition-colors"
+            >
+              <Zap size={12} />
+              Upgrade Plan
+            </Link>
+          )}
         </div>
 
-        <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-content-secondary text-xs md:text-sm">
-              Today&apos;s Usage
-            </span>
-            <span className="text-accent font-semibold text-sm md:text-base">
-              {dailyUsed} / {limits.dailyLimit}
-            </span>
-          </div>
-          <div className="h-2 bg-dark-elevated rounded-full overflow-hidden mb-2">
-            <div
-              className="h-full bg-accent rounded-full transition-all duration-300"
-              style={{ width: `${dailyPercentage}%` }}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <p className="text-content-muted text-xs md:text-sm">
-              {dailyRemaining} remaining
-            </p>
-            <ResetBadge ms={dailyResetMs} />
-          </div>
-        </div>
-
-        <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-content-secondary text-xs md:text-sm">
-              Monthly Usage
-            </span>
-            <span className="text-accent font-semibold text-sm md:text-base">
-              {monthlyUsed.toLocaleString()} /{" "}
-              {limits.monthlyLimit.toLocaleString()}
-            </span>
-          </div>
-          <div className="h-2 bg-dark-elevated rounded-full overflow-hidden mb-2">
-            <div
-              className="h-full bg-accent rounded-full transition-all duration-300"
-              style={{ width: `${monthlyPercentage}%` }}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <p className="text-content-muted text-xs md:text-sm">
-              {monthlyRemaining.toLocaleString()} remaining
-            </p>
-            <ResetBadge ms={monthlyResetMs} />
-          </div>
-        </div>
-
-        <div className="bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-content-secondary text-xs md:text-sm">
-              Minute Usage
-            </span>
-            <span className="text-accent font-semibold text-sm md:text-base">
-              {minuteUsed} / {limits.minuteLimit}
-            </span>
-          </div>
-          <div className="h-2 bg-dark-elevated rounded-full overflow-hidden mb-2">
-            <div
-              className="h-full bg-accent rounded-full transition-all duration-300"
-              style={{ width: `${minutePercentage}%` }}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <p className="text-content-muted text-xs md:text-sm">
-              {minuteRemaining} remaining
-            </p>
-            <ResetBadge ms={minuteResetMs} compact />
-          </div>
-        </div>
-      </div>
-
-      {/* Usage Chart */}
-      <div className="mb-6 md:mb-8">
+        {/* Chart */}
         <UsageChart
           data={chartData ?? []}
           days={30}
           isLoading={isLoadingChart}
         />
       </div>
+    </div>
+  );
+}
 
-      {/* Quick Actions */}
-      <section className="mb-6 md:mb-8">
-        <h2 className="text-base md:text-lg font-semibold text-content-primary mb-3 md:mb-4">
-          Quick Actions
-        </h2>
-        <div className="grid-auto-fit-lg">
-          <Link
-            href="/dashboard/api-keys"
-            className="flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-dark-surface border border-dark-border rounded-xl hover:border-accent/30 transition-all"
-          >
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent flex-shrink-0">
-              <Key size={isMobile ? 16 : 20} />
-            </div>
-            <div className="min-w-0">
-              <p className="font-medium text-content-primary text-sm md:text-base">
-                API Keys
-              </p>
-              <p className="text-xs md:text-sm text-content-muted truncate">
-                Generate and manage your API keys
-              </p>
-            </div>
-          </Link>
+// ─── Usage Stat Card ──────────────────────────────────────────────────────────
 
-          <Link
-            href="/dashboard/logs"
-            className="flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-dark-surface border border-dark-border rounded-xl hover:border-accent/30 transition-all"
-          >
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent flex-shrink-0">
-              <List size={isMobile ? 16 : 20} />
-            </div>
-            <div className="min-w-0">
-              <p className="font-medium text-content-primary text-sm md:text-base">
-                Request Logs
-              </p>
-              <p className="text-xs md:text-sm text-content-muted truncate">
-                View recent API calls and errors
-              </p>
-            </div>
-          </Link>
-
-          <Link
-            href="/dashboard/setup"
-            className="flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-dark-surface border border-dark-border rounded-xl hover:border-accent/30 transition-all"
-          >
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent flex-shrink-0">
-              <Code size={isMobile ? 16 : 20} />
-            </div>
-            <div className="min-w-0">
-              <p className="font-medium text-content-primary text-sm md:text-base">
-                Setup Guide
-              </p>
-              <p className="text-xs md:text-sm text-content-muted truncate">
-                Get started with Python
-              </p>
-            </div>
-          </Link>
-
-          <Link
-            href="/api-docs"
-            className="flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-dark-surface border border-dark-border rounded-xl hover:border-accent/30 transition-all"
-          >
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent flex-shrink-0">
-              <Book size={isMobile ? 16 : 20} />
-            </div>
-            <div className="min-w-0">
-              <p className="font-medium text-content-primary text-sm md:text-base">
-                API Documentation
-              </p>
-              <p className="text-xs md:text-sm text-content-muted truncate">
-                Explore all available endpoints
-              </p>
-            </div>
-          </Link>
-
-          <Link
-            href="/search"
-            className="flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-dark-surface border border-dark-border rounded-xl hover:border-accent/30 transition-all"
-          >
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent flex-shrink-0">
-              <Search size={isMobile ? 16 : 20} />
-            </div>
-            <div className="min-w-0">
-              <p className="font-medium text-content-primary text-sm md:text-base">
-                Food Search
-              </p>
-              <p className="text-xs md:text-sm text-content-muted truncate">
-                Try the API in action
-              </p>
-            </div>
-          </Link>
-        </div>
-      </section>
-
-      {/* Account Section */}
-      <section>
-        <h2 className="text-base md:text-lg font-semibold text-content-primary mb-3 md:mb-4">
-          Account
-        </h2>
-        <Link
-          href="/dashboard/settings"
-          className="flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-dark-surface border border-dark-border rounded-xl hover:border-accent/30 transition-all max-w-md"
+function UsageStatCard({
+  icon,
+  label,
+  used,
+  limit,
+  percentage,
+  resetMs,
+  compactReset = false,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  used: number;
+  limit: number;
+  percentage: number;
+  resetMs: number;
+  compactReset?: boolean;
+}) {
+  return (
+    <div
+      className={`bg-gradient-to-br ${getAccentGradient(percentage)} to-transparent
+        border border-white/[0.06] rounded-xl p-4 md:p-5
+        hover:border-white/[0.1] transition-all duration-200`}
+    >
+      {/* Icon + label */}
+      <div className="flex items-center gap-2.5 mb-3">
+        <div
+          className={`w-8 h-8 rounded-lg ${getIconBg(percentage)} flex items-center justify-center ${getIconColor(percentage)}`}
         >
-          <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-dark-elevated flex items-center justify-center text-content-secondary flex-shrink-0">
-            <Settings size={isMobile ? 16 : 20} />
-          </div>
-          <div className="min-w-0">
-            <p className="font-medium text-content-primary text-sm md:text-base">
-              Account Settings
-            </p>
-            <p className="text-xs md:text-sm text-content-muted truncate">
-              {userInfo?.email || "Manage your account"}
-            </p>
-          </div>
-        </Link>
-      </section>
+          {icon}
+        </div>
+        <span className="text-content-secondary text-xs md:text-sm font-medium">
+          {label}
+        </span>
+      </div>
+
+      {/* Value */}
+      <div className="mb-3">
+        <span
+          className={`text-2xl md:text-3xl font-bold ${getValueColor(percentage)}`}
+        >
+          {used.toLocaleString()}
+        </span>
+        <span className="text-content-muted text-sm font-normal ml-1">
+          / {limit.toLocaleString()}
+        </span>
+      </div>
+
+      {/* Thin progress bar */}
+      <div className="h-1 bg-white/[0.04] rounded-full overflow-hidden mb-2.5">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${getBarColor(percentage)}`}
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+
+      {/* Footer: resets in */}
+      <p className="text-content-muted text-[11px] flex items-center gap-1">
+        <Clock size={9} className="text-accent/40 shrink-0" />
+        Resets in{" "}
+        <span className="font-mono">
+          {formatCountdown(resetMs, compactReset)}
+        </span>
+      </p>
     </div>
   );
 }

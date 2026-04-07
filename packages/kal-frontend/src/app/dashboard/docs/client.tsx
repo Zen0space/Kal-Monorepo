@@ -53,8 +53,8 @@ const ERROR_CODES = [
   {
     code: 400,
     name: "Bad Request",
-    color: "text-yellow-400",
-    bg: "bg-yellow-500/8 border-yellow-500/20",
+    color: "text-amber-400",
+    bg: "bg-amber-500/[0.06] border-amber-500/20",
     description: "Missing or invalid query parameters.",
     solutions: [
       "Check that all required parameters are included.",
@@ -67,7 +67,7 @@ const ERROR_CODES = [
     code: 401,
     name: "Unauthorized",
     color: "text-red-400",
-    bg: "bg-red-500/8 border-red-500/20",
+    bg: "bg-red-500/[0.06] border-red-500/20",
     description: "API key is missing or invalid.",
     solutions: [
       "Send the key in the X-API-Key header, not as a query param.",
@@ -80,7 +80,7 @@ const ERROR_CODES = [
     code: 403,
     name: "Forbidden",
     color: "text-orange-400",
-    bg: "bg-orange-500/8 border-orange-500/20",
+    bg: "bg-orange-500/[0.06] border-orange-500/20",
     description: "API key has been revoked or is inactive.",
     solutions: [
       "Check the API Keys page to confirm the key is not revoked.",
@@ -93,7 +93,7 @@ const ERROR_CODES = [
     code: 429,
     name: "Too Many Requests",
     color: "text-rose-400",
-    bg: "bg-rose-500/8 border-rose-500/20",
+    bg: "bg-rose-500/[0.06] border-rose-500/20",
     description: "Rate limit exceeded — you have sent too many requests.",
     solutions: [
       "Respect the Retry-After header (seconds to wait before retrying).",
@@ -108,7 +108,7 @@ const ERROR_CODES = [
     code: 500,
     name: "Internal Server Error",
     color: "text-red-400",
-    bg: "bg-red-500/8 border-red-500/20",
+    bg: "bg-red-500/[0.06] border-red-500/20",
     description: "Unexpected server-side error.",
     solutions: [
       "Retry the request after a short delay.",
@@ -147,15 +147,16 @@ function CodeBlock({
 }) {
   return (
     <div className="relative group">
-      <pre className="bg-dark rounded-lg border border-dark-border px-4 py-3 text-xs md:text-sm font-mono text-content-secondary overflow-x-auto leading-relaxed">
-        <span className="absolute top-2 right-2 text-[10px] text-content-muted uppercase tracking-widest select-none">
+      <pre className="bg-[#0a0a0a] rounded-xl border border-white/[0.06] px-4 py-3 text-xs md:text-sm font-mono text-content-secondary overflow-x-auto leading-relaxed">
+        <span className="absolute top-2.5 right-2.5 text-[10px] text-content-muted/50 uppercase tracking-widest select-none">
           {language}
         </span>
         {code}
       </pre>
       <button
         onClick={() => onCopy(code, copyKey)}
-        className="absolute top-2 right-12 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded bg-dark-elevated hover:bg-dark-border text-content-muted hover:text-content-primary"
+        className="absolute top-2.5 right-12 opacity-0 group-hover:opacity-100 transition-all duration-200
+          p-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-content-muted hover:text-content-primary"
         title="Copy code"
       >
         {isCopied(copyKey) ? (
@@ -177,7 +178,8 @@ function SectionCard({
 }) {
   return (
     <div
-      className={`bg-dark-surface border border-dark-border rounded-xl p-4 md:p-6 ${className}`}
+      className={`bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 md:p-6
+        hover:border-white/[0.1] transition-all duration-200 ${className}`}
     >
       {children}
     </div>
@@ -207,10 +209,10 @@ function Collapsible({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-dark-border rounded-xl overflow-hidden">
+    <div className="border border-white/[0.06] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/[0.1]">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 md:px-5 py-3 md:py-4 bg-dark-surface hover:bg-dark-elevated transition-colors text-left"
+        className="w-full flex items-center justify-between px-4 md:px-5 py-3 md:py-4 bg-white/[0.02] hover:bg-white/[0.03] transition-colors text-left"
       >
         <span
           className={`font-medium text-sm md:text-base ${accent ?? "text-content-primary"}`}
@@ -224,7 +226,7 @@ function Collapsible({
         )}
       </button>
       {open && (
-        <div className="px-4 md:px-5 pb-4 md:pb-5 pt-1 bg-dark-surface border-t border-dark-border">
+        <div className="px-4 md:px-5 pb-4 md:pb-5 pt-1 bg-white/[0.02] border-t border-white/[0.06]">
           {children}
         </div>
       )}
@@ -259,7 +261,7 @@ function RateLimitsTab() {
     <div className="space-y-6">
       {/* Current plan banner */}
       {isLoading ? (
-        <div className="h-20 bg-dark-elevated rounded-xl animate-pulse" />
+        <div className="h-20 bg-white/[0.04] rounded-xl animate-pulse" />
       ) : (
         <SectionCard className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
@@ -297,9 +299,9 @@ function RateLimitsTab() {
                 {limits.minuteLimit.toLocaleString()}
               </span>
             </div>
-            <div className="h-2 bg-dark-elevated rounded-full overflow-hidden">
+            <div className="h-1 bg-white/[0.04] rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${minutePct > 80 ? "bg-red-400" : minutePct > 60 ? "bg-yellow-400" : "bg-accent"}`}
+                className={`h-full rounded-full transition-all duration-500 ${minutePct > 80 ? "bg-red-400" : minutePct > 60 ? "bg-amber-400" : "bg-accent"}`}
                 style={{ width: `${minutePct}%` }}
               />
             </div>
@@ -316,9 +318,9 @@ function RateLimitsTab() {
                 {limits.dailyLimit.toLocaleString()}
               </span>
             </div>
-            <div className="h-2 bg-dark-elevated rounded-full overflow-hidden">
+            <div className="h-1 bg-white/[0.04] rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${dailyPct > 80 ? "bg-red-400" : dailyPct > 60 ? "bg-yellow-400" : "bg-accent"}`}
+                className={`h-full rounded-full transition-all duration-500 ${dailyPct > 80 ? "bg-red-400" : dailyPct > 60 ? "bg-amber-400" : "bg-accent"}`}
                 style={{ width: `${dailyPct}%` }}
               />
             </div>
@@ -335,9 +337,9 @@ function RateLimitsTab() {
                 {limits.monthlyLimit.toLocaleString()}
               </span>
             </div>
-            <div className="h-2 bg-dark-elevated rounded-full overflow-hidden">
+            <div className="h-1 bg-white/[0.04] rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${monthlyPct > 80 ? "bg-red-400" : monthlyPct > 60 ? "bg-yellow-400" : "bg-accent"}`}
+                className={`h-full rounded-full transition-all duration-500 ${monthlyPct > 80 ? "bg-red-400" : monthlyPct > 60 ? "bg-amber-400" : "bg-accent"}`}
                 style={{ width: `${monthlyPct}%` }}
               />
             </div>
@@ -355,7 +357,7 @@ function RateLimitsTab() {
         <div className="overflow-x-auto -mx-2">
           <table className="w-full text-sm min-w-[480px]">
             <thead>
-              <tr className="text-left text-content-muted border-b border-dark-border">
+              <tr className="text-left text-content-muted border-b border-white/[0.06]">
                 <th className="px-3 py-2 font-medium">Tier</th>
                 <th className="px-3 py-2 font-medium">Per minute</th>
                 <th className="px-3 py-2 font-medium">Per day</th>
@@ -372,7 +374,7 @@ function RateLimitsTab() {
                 return (
                   <tr
                     key={t}
-                    className={`border-b border-dark-border last:border-0 ${isActive ? "bg-accent/5" : ""}`}
+                    className={`border-b border-white/[0.04] last:border-0 ${isActive ? "bg-accent/[0.04]" : ""}`}
                   >
                     <td className="px-3 py-3">
                       <span
@@ -416,7 +418,7 @@ function RateLimitsTab() {
         <div className="overflow-x-auto -mx-2">
           <table className="w-full text-sm min-w-[440px]">
             <thead>
-              <tr className="text-left text-content-muted border-b border-dark-border">
+              <tr className="text-left text-content-muted border-b border-white/[0.06]">
                 <th className="px-3 py-2 font-medium">Header</th>
                 <th className="px-3 py-2 font-medium">Description</th>
               </tr>
@@ -442,7 +444,7 @@ function RateLimitsTab() {
               ].map(([header, desc]) => (
                 <tr
                   key={header}
-                  className="border-b border-dark-border last:border-0"
+                  className="border-b border-white/[0.04] last:border-0"
                 >
                   <td className="px-3 py-2.5 font-mono text-xs text-accent whitespace-nowrap">
                     {header}
@@ -471,11 +473,11 @@ function ErrorCodesTab({
     <div className="space-y-4">
       <p className="text-content-secondary text-sm">
         All error responses follow the same JSON envelope. Check the{" "}
-        <code className="bg-dark-elevated px-1.5 py-0.5 rounded text-xs text-accent">
+        <code className="bg-white/[0.06] px-1.5 py-0.5 rounded-md text-xs text-accent">
           success
         </code>{" "}
         field first — it will be{" "}
-        <code className="bg-dark-elevated px-1.5 py-0.5 rounded text-xs text-content-secondary">
+        <code className="bg-white/[0.06] px-1.5 py-0.5 rounded-md text-xs text-content-secondary">
           false
         </code>{" "}
         on any error.
@@ -498,11 +500,11 @@ function ErrorCodesTab({
             <p className="text-content-secondary text-sm">{err.description}</p>
 
             {err.hasRetryAfter && (
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-rose-500/8 border border-rose-500/20 text-sm text-rose-300">
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-rose-500/[0.06] border border-rose-500/20 text-sm text-rose-300">
                 <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
                 <span>
                   Always read the{" "}
-                  <code className="bg-dark-elevated px-1 rounded text-xs">
+                  <code className="bg-white/[0.06] px-1 rounded-md text-xs">
                     Retry-After
                   </code>{" "}
                   response header — it tells you exactly how many seconds to
@@ -722,7 +724,7 @@ function ApiKeysTab({
         <SectionTitle>How Authentication Works</SectionTitle>
         <p className="text-content-secondary text-sm mb-4">
           Every request to the Kal API must include your key in the{" "}
-          <code className="bg-dark-elevated px-1.5 py-0.5 rounded text-xs text-accent">
+          <code className="bg-white/[0.06] px-1.5 py-0.5 rounded text-xs text-accent">
             X-API-Key
           </code>{" "}
           header. Query-string based auth is not supported.
@@ -763,7 +765,7 @@ X-API-Key: kal_your_key_here`}
             {activeKeys.map((k) => (
               <div
                 key={k._id}
-                className="flex items-center justify-between p-3 bg-dark-elevated rounded-lg"
+                className="flex items-center justify-between p-3 bg-white/[0.04] rounded-xl"
               >
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-content-primary truncate">
@@ -817,7 +819,7 @@ X-API-Key: kal_your_key_here`}
             const Icon = item.icon;
             return (
               <div key={item.title} className="flex gap-3">
-                <div className="w-7 h-7 rounded-lg bg-dark-elevated flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-7 h-7 rounded-xl bg-white/[0.06] flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Icon size={14} className={item.color} />
                 </div>
                 <div>
@@ -840,7 +842,7 @@ X-API-Key: kal_your_key_here`}
         <div className="overflow-x-auto -mx-2">
           <table className="w-full text-sm min-w-[400px]">
             <thead>
-              <tr className="text-left text-content-muted border-b border-dark-border">
+              <tr className="text-left text-content-muted border-b border-white/[0.06]">
                 <th className="px-3 py-2 font-medium">Option</th>
                 <th className="px-3 py-2 font-medium">Duration</th>
                 <th className="px-3 py-2 font-medium">Best for</th>
@@ -866,7 +868,7 @@ X-API-Key: kal_your_key_here`}
               ].map(([opt, dur, use]) => (
                 <tr
                   key={opt}
-                  className="border-b border-dark-border last:border-0"
+                  className="border-b border-white/[0.06] last:border-0"
                 >
                   <td className="px-3 py-2.5 font-medium text-content-primary">
                     {opt}
@@ -973,7 +975,7 @@ function QuickReferenceTab({
           {endpoints.map((e) => (
             <div
               key={e.path}
-              className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 py-2 border-b border-dark-border last:border-0"
+              className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 py-2 border-b border-white/[0.06] last:border-0"
             >
               <span className="inline-block text-xs font-bold bg-accent/10 text-accent px-2 py-0.5 rounded font-mono w-10 text-center flex-shrink-0">
                 {e.method}
@@ -1088,7 +1090,7 @@ function QuickReferenceTab({
         <div className="overflow-x-auto -mx-2">
           <table className="w-full text-sm min-w-[440px]">
             <thead>
-              <tr className="text-left text-content-muted border-b border-dark-border">
+              <tr className="text-left text-content-muted border-b border-white/[0.06]">
                 <th className="px-3 py-2 font-medium">Parameter</th>
                 <th className="px-3 py-2 font-medium">Type</th>
                 <th className="px-3 py-2 font-medium">Default</th>
@@ -1121,7 +1123,7 @@ function QuickReferenceTab({
               ].map(([param, type, def, desc]) => (
                 <tr
                   key={param}
-                  className="border-b border-dark-border last:border-0"
+                  className="border-b border-white/[0.06] last:border-0"
                 >
                   <td className="px-3 py-2.5 font-mono text-xs text-accent">
                     {param}
@@ -1161,8 +1163,15 @@ function DocsContentWrapper({ expectedLogtoId }: { expectedLogtoId?: string }) {
     return (
       <div className="p-4 md:p-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-dark-elevated rounded w-48" />
-          <div className="h-4 bg-dark-elevated rounded w-64" />
+          <div className="h-8 bg-white/[0.04] rounded w-48" />
+          <div className="h-4 bg-white/[0.04] rounded w-64" />
+          <div className="flex gap-2 mt-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-9 bg-white/[0.04] rounded-xl w-24" />
+            ))}
+          </div>
+          <div className="h-32 bg-white/[0.04] rounded-xl mt-4" />
+          <div className="h-48 bg-white/[0.04] rounded-xl" />
         </div>
       </div>
     );
@@ -1177,7 +1186,7 @@ function DocsContent() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 w-full">
-      {/* Header */}
+      {/* ── Header ── */}
       <div className="mb-6 md:mb-8">
         <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2">
           API Reference
@@ -1186,10 +1195,11 @@ function DocsContent() {
           Rate limits, error codes, best practices, and quick reference for the
           Kal API.
         </p>
+        <div className="mt-3 h-px bg-gradient-to-r from-accent/40 via-accent/10 to-transparent" />
       </div>
 
-      {/* Tab bar — horizontal scroll on mobile */}
-      <div className="flex gap-1 mb-6 overflow-x-auto pb-1 -mx-1 px-1">
+      {/* ── Tab bar ── */}
+      <div className="flex gap-1.5 mb-6 md:mb-8 overflow-x-auto pb-1 -mx-1 px-1">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = tab.id === activeTab;
@@ -1197,15 +1207,14 @@ function DocsContent() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+              className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
                 isActive
-                  ? "bg-accent/10 text-accent border border-accent/30"
-                  : "text-content-secondary hover:bg-dark-elevated hover:text-content-primary border border-transparent"
+                  ? "bg-accent/[0.1] text-accent border border-accent/20 shadow-[0_0_12px_rgba(16,185,129,0.1)]"
+                  : "text-content-secondary hover:bg-white/[0.04] hover:text-content-primary border border-transparent"
               }`}
             >
               <Icon size={14} className="flex-shrink-0" />
               <span className="hidden sm:inline">{tab.label}</span>
-              {/* Short labels on mobile */}
               <span className="sm:hidden">
                 {tab.id === "rate-limits"
                   ? "Limits"

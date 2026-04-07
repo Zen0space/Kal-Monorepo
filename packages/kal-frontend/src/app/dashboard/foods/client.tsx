@@ -105,8 +105,8 @@ function FoodsContentWrapper({
     return (
       <div className="p-4 md:p-8">
         <div className="animate-pulse">
-          <div className="h-8 bg-dark-elevated rounded w-48 mb-4" />
-          <div className="h-4 bg-dark-elevated rounded w-32" />
+          <div className="h-8 bg-white/[0.04] rounded-xl w-48 mb-4" />
+          <div className="h-4 bg-white/[0.04] rounded w-32" />
         </div>
       </div>
     );
@@ -218,7 +218,7 @@ function FoodsContent() {
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search foods..."
-            className="w-full pl-9 pr-8 py-2 bg-dark-surface border border-dark-border rounded-lg text-content-primary placeholder-content-muted text-sm focus:ring-2 focus:ring-accent/50 focus:border-accent/50"
+            className="w-full pl-9 pr-8 py-2 bg-white/[0.02] border border-white/[0.06] rounded-xl text-content-primary placeholder-content-muted text-sm focus:ring-2 focus:ring-accent/30 focus:border-accent/20 transition-all duration-200"
           />
           {search && (
             <button
@@ -234,7 +234,7 @@ function FoodsContent() {
         <select
           value={selectedGroup ?? "all"}
           onChange={(e) => handleGroupChange(e.target.value)}
-          className="px-3 py-2 bg-dark-surface border border-dark-border rounded-lg text-content-primary text-sm focus:ring-2 focus:ring-accent/50 focus:border-accent/50"
+          className="px-3 py-2 bg-white/[0.02] border border-white/[0.06] rounded-xl text-content-primary text-sm focus:ring-2 focus:ring-accent/30 focus:border-accent/20 transition-all duration-200"
         >
           <option value="all">All types</option>
           {Object.keys(CATEGORY_GROUPS).map((group) => (
@@ -253,9 +253,9 @@ function FoodsContent() {
       </div>
 
       {/* Table */}
-      <div className="bg-dark-surface border border-dark-border rounded-xl overflow-hidden mb-4">
+      <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden mb-4">
         {/* Desktop header */}
-        <div className="hidden md:grid grid-cols-[minmax(0,2fr)_minmax(0,2fr)_80px_80px_80px_80px_minmax(0,1fr)_72px] gap-4 px-6 py-3 bg-dark-elevated text-xs font-medium text-content-muted uppercase tracking-wider">
+        <div className="hidden md:grid grid-cols-[minmax(0,2fr)_minmax(0,2fr)_80px_80px_80px_80px_minmax(0,1fr)_72px] gap-4 px-6 py-3 bg-white/[0.04] text-xs font-medium text-content-muted uppercase tracking-wider">
           <span>Name</span>
           <span>ID</span>
           <span>Calories</span>
@@ -270,7 +270,7 @@ function FoodsContent() {
           <div className="p-8 md:p-12">
             <div className="animate-pulse space-y-3">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-10 bg-dark-elevated rounded" />
+                <div key={i} className="h-10 bg-white/[0.04] rounded" />
               ))}
             </div>
           </div>
@@ -282,7 +282,7 @@ function FoodsContent() {
           data?.items.map((food) => (
             <div key={food._id}>
               {/* Desktop row */}
-              <div className="hidden md:grid grid-cols-[minmax(0,2fr)_minmax(0,2fr)_80px_80px_80px_80px_minmax(0,1fr)_72px] gap-4 px-6 py-3 border-t border-dark-border items-center hover:bg-dark-elevated/40 transition-colors">
+              <div className="hidden md:grid grid-cols-[minmax(0,2fr)_minmax(0,2fr)_80px_80px_80px_80px_minmax(0,1fr)_72px] gap-4 px-6 py-3 border-t border-white/[0.06] items-center hover:bg-white/[0.03] transition-colors">
                 <span
                   className="font-medium text-content-primary truncate"
                   title={food.name}
@@ -290,7 +290,7 @@ function FoodsContent() {
                   {food.name}
                 </span>
                 <div className="flex items-center min-w-0">
-                  <code className="text-content-muted text-xs bg-dark-elevated px-2 py-1 rounded font-mono truncate">
+                  <code className="text-content-muted text-xs bg-white/[0.06] px-2 py-1 rounded font-mono truncate">
                     {food._id}
                   </code>
                   <CopyButton text={food._id} />
@@ -323,7 +323,7 @@ function FoodsContent() {
               </div>
 
               {/* Mobile card */}
-              <div className="md:hidden p-4 border-t border-dark-border">
+              <div className="md:hidden p-4 border-t border-white/[0.06]">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <span className="font-medium text-content-primary text-sm leading-snug">
                     {food.name}
@@ -335,14 +335,14 @@ function FoodsContent() {
                       </span>
                     )}
                     {food.category && (
-                      <span className="text-[10px] text-content-muted bg-dark-elevated px-2 py-0.5 rounded-full whitespace-nowrap">
+                      <span className="text-[10px] text-content-muted bg-white/[0.06] px-2 py-0.5 rounded-full whitespace-nowrap">
                         {food.category}
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center gap-1 mb-2">
-                  <code className="text-content-muted text-[10px] bg-dark-elevated px-2 py-1 rounded font-mono truncate min-w-0">
+                  <code className="text-content-muted text-[10px] bg-white/[0.06] px-2 py-1 rounded font-mono truncate min-w-0">
                     {food._id}
                   </code>
                   <CopyButton text={food._id} />
@@ -386,7 +386,7 @@ function FoodsContent() {
           <button
             onClick={handlePrev}
             disabled={cursor === 0}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-dark-surface border border-dark-border text-content-secondary hover:text-content-primary hover:border-accent/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white/[0.02] border border-white/[0.06] text-content-secondary hover:text-content-primary hover:border-white/[0.1] disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm"
           >
             <ChevronLeft size={16} />
             <span className="hidden sm:inline">Previous</span>
@@ -405,10 +405,10 @@ function FoodsContent() {
               <button
                 key={page}
                 onClick={() => setCursor(((page as number) - 1) * PAGE_SIZE)}
-                className={`min-w-[36px] px-2.5 py-1.5 rounded-lg border text-sm font-medium transition-all ${
+                className={`min-w-[36px] px-2.5 py-1.5 rounded-xl border text-sm font-medium transition-all ${
                   page === currentPage
                     ? "bg-accent/15 border-accent/40 text-accent"
-                    : "bg-dark-surface border-dark-border text-content-secondary hover:text-content-primary hover:border-accent/30"
+                    : "bg-white/[0.02] border-white/[0.06] text-content-secondary hover:text-content-primary hover:border-white/[0.1]"
                 }`}
               >
                 {page}
@@ -420,7 +420,7 @@ function FoodsContent() {
           <button
             onClick={handleNext}
             disabled={data.nextCursor === null || data.nextCursor === undefined}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-dark-surface border border-dark-border text-content-secondary hover:text-content-primary hover:border-accent/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white/[0.02] border border-white/[0.06] text-content-secondary hover:text-content-primary hover:border-white/[0.1] disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm"
           >
             <span className="hidden sm:inline">Next</span>
             <ChevronRight size={16} />
