@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Container } from "@/components/ui/Container";
+import { SITE_URL, SITE_DOMAIN, SUPPORT_EMAIL } from "@/lib/site-config";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -72,11 +73,8 @@ export default function TermsOfServicePage() {
                     &quot;Platform&quot;, &quot;we&quot;, &quot;us&quot;, or
                     &quot;our&quot;). These Terms of Service (&quot;Terms&quot;)
                     govern your access to and use of our website at{" "}
-                    <a
-                      href="https://kalori-api.my"
-                      className="text-accent hover:underline"
-                    >
-                      kalori-api.my
+                    <a href={SITE_URL} className="text-accent hover:underline">
+                      {SITE_DOMAIN}
                     </a>{" "}
                     and our Application Programming Interface (API) services.
                   </p>
@@ -198,7 +196,9 @@ export default function TermsOfServicePage() {
                   </h3>
                   <ul className="list-disc list-inside ml-4 space-y-2">
                     <li>Keep your API keys confidential and secure</li>
-                    <li>Do not share API keys publicly or in client-side code</li>
+                    <li>
+                      Do not share API keys publicly or in client-side code
+                    </li>
                     <li>
                       Regenerate keys immediately if you suspect unauthorized
                       access
@@ -252,8 +252,9 @@ export default function TermsOfServicePage() {
                       or entity
                     </li>
                     <li>
-                      Violate any third-party platform terms (including X/Twitter
-                      Developer Agreement) when integrating with our Service
+                      Violate any third-party platform terms (including
+                      X/Twitter Developer Agreement) when integrating with our
+                      Service
                     </li>
                   </ul>
                 </div>
@@ -291,9 +292,7 @@ export default function TermsOfServicePage() {
                     third-party services, including:
                   </p>
                   <ul className="list-disc list-inside ml-4 space-y-2">
-                    <li>
-                      Authentication providers (Google, Apple, X/Twitter)
-                    </li>
+                    <li>Authentication providers (Google, Apple, X/Twitter)</li>
                     <li>Analytics services</li>
                     <li>Payment processors</li>
                   </ul>
@@ -372,7 +371,9 @@ export default function TermsOfServicePage() {
                     <li>Your use of the Service</li>
                     <li>Your violation of these Terms</li>
                     <li>Your violation of any third-party rights</li>
-                    <li>Any applications or content you create using our API</li>
+                    <li>
+                      Any applications or content you create using our API
+                    </li>
                   </ul>
                 </div>
               </section>
@@ -473,8 +474,8 @@ export default function TermsOfServicePage() {
                     <p className="font-semibold text-content-primary">
                       Kalori API
                     </p>
-                    <p>Email: support@kalori-api.my</p>
-                    <p>Website: https://kalori-api.my</p>
+                    <p>Email: {SUPPORT_EMAIL}</p>
+                    <p>Website: {SITE_URL}</p>
                   </div>
                 </div>
               </section>
@@ -504,7 +505,10 @@ export default function TermsOfServicePage() {
               </span>
             </Link>
             <div className="flex gap-6 text-sm text-content-muted">
-              <Link href="/privacy" className="hover:text-accent transition-colors">
+              <Link
+                href="/privacy"
+                className="hover:text-accent transition-colors"
+              >
                 Privacy Policy
               </Link>
               <Link href="/terms" className="text-accent">

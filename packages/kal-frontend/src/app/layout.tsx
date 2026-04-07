@@ -10,8 +10,10 @@ import { TRPCProvider } from "@/lib/trpc-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://kalori-api.my"),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Kalori API - Malaysian Food Nutrition Database & API",
     template: "%s | Kalori API",
@@ -36,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_MY",
-    url: "https://kalori-api.my",
+    url: siteUrl,
     siteName: "Kalori API",
     title: "Kalori API - Malaysian Food Nutrition Database",
     description:
