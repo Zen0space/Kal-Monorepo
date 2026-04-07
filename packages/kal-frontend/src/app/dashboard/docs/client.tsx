@@ -20,6 +20,7 @@ import {
 } from "react-feather";
 
 import { AuthUpdater, useAuth } from "@/lib/auth-context";
+import { API_URL_DISPLAY } from "@/lib/site-config";
 import { trpc } from "@/lib/trpc";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -572,7 +573,7 @@ async function getFoodCached(query) {
   const hit = cache.get(key);
   if (hit && Date.now() - hit.ts < 5 * 60 * 1000) return hit.data;
 
-  const res = await fetch(\`https://api.kalori-api.my/api/v1/foods/search?q=\${encodeURIComponent(query)}\`,
+  const res = await fetch(\`${API_URL_DISPLAY}/api/v1/foods/search?q=\${encodeURIComponent(query)}\`,
     { headers: { 'X-API-Key': process.env.KAL_API_KEY } });
   const data = await res.json();
   cache.set(key, { data, ts: Date.now() });
@@ -616,7 +617,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const q = searchParams.get('q') ?? '';
   const res = await fetch(
-    \`https://api.kalori-api.my/api/v1/foods/search?q=\${encodeURIComponent(q)}\`,
+    \`${API_URL_DISPLAY}/api/v1/foods/search?q=\${encodeURIComponent(q)}\`,
     { headers: { 'X-API-Key': process.env.KAL_API_KEY! } }
   );
   return Response.json(await res.json());
@@ -663,7 +664,7 @@ data.data.forEach(food => console.log(food.name));`,
 }
 
 // Usage
-for await (const page of paginate('https://api.kalori-api.my/api/v1/foods', key)) {
+for await (const page of paginate('${API_URL_DISPLAY}/api/v1/foods', key)) {
   console.log(\`Got \${page.length} foods\`);
 }`,
       lang: "javascript",
@@ -727,7 +728,7 @@ function ApiKeysTab({
           header. Query-string based auth is not supported.
         </p>
         <CodeBlock
-          code={`GET https://api.kalori-api.my/api/v1/foods/search?q=nasi+lemak
+          code={`GET ${API_URL_DISPLAY}/api/v1/foods/search?q=nasi+lemak
 X-API-Key: kal_your_key_here`}
           language="http"
           copyKey="auth-header"
@@ -944,7 +945,7 @@ function QuickReferenceTab({
             Base URL
           </p>
           <CodeBlock
-            code="https://api.kalori-api.my"
+            code={API_URL_DISPLAY}
             language="url"
             copyKey="base-url"
             onCopy={copy}

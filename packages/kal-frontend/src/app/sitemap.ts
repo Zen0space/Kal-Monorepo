@@ -7,7 +7,7 @@ import type { MetadataRoute } from "next";
  * @see https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://kalori-api.my";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const currentDate = new Date();
 
   // Main pages with their priorities and change frequencies

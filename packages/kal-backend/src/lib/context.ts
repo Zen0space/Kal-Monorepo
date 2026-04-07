@@ -32,7 +32,8 @@ async function syncUserFromLogto(
     { logtoId: claims.sub },
     {
       $set: {
-        email: claims.email || null,
+        // Only set email when we actually have one (avoids null duplicate key issues)
+        ...(claims.email ? { email: claims.email } : {}),
         // Only update name if we have a value (don't overwrite with empty)
         ...(displayName ? { name: displayName } : {}),
         updatedAt: now,

@@ -10,6 +10,7 @@ import { Container } from "@/components/ui/Container";
 const navLinks = [
   { label: "Features", href: "#features" },
   { label: "How It Works", href: "#how-it-works" },
+  { label: "Pricing", href: "/pricing" },
   { label: "FAQ", href: "#faq" },
   { label: "API", href: "/api-docs" },
 ];
@@ -33,15 +34,25 @@ export function Navbar({ onSignIn }: NavbarProps) {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="text-content-secondary hover:text-content-primary transition-colors text-sm"
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link) =>
+              link.href.startsWith("/") ? (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-content-secondary hover:text-content-primary transition-colors text-sm"
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="text-content-secondary hover:text-content-primary transition-colors text-sm"
+                >
+                  {link.label}
+                </a>
+              )
+            )}
           </div>
 
           {/* CTA Button */}
@@ -67,16 +78,27 @@ export function Navbar({ onSignIn }: NavbarProps) {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-dark-border">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block py-2 text-content-secondary hover:text-content-primary transition-colors"
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link) =>
+              link.href.startsWith("/") ? (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-content-secondary hover:text-content-primary transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-content-secondary hover:text-content-primary transition-colors"
+                >
+                  {link.label}
+                </a>
+              )
+            )}
             <div className="mt-4">
               <Button
                 onClick={() => onSignIn?.()}

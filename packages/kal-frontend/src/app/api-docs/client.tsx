@@ -6,6 +6,7 @@ import { Check, FileText, Heart, Lock, Menu, Star, X } from "react-feather";
 
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { API_URL_DISPLAY } from "@/lib/site-config";
 import { trpc } from "@/lib/trpc";
 
 // Get the API base URL from environment
@@ -563,7 +564,7 @@ export default function APIDocsClient({
         <section className="mb-12">
           <h3 className="text-xl font-semibold mb-3">Base URL</h3>
           <code className="block bg-[#1a1a1a] border border-[#262626] rounded-lg px-4 py-3 text-[#10b981] font-mono">
-            https://api.kalori-api.my
+            {API_URL_DISPLAY}
           </code>
         </section>
 

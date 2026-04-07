@@ -28,11 +28,47 @@ import {
 } from "./middleware/timeout.js";
 import { apiRouter } from "./routers/api.js";
 import { chatStreamRouter } from "./routes/chat-stream.js";
+import { stripeWebhookRouter } from "./routes/stripe-webhook.js";
 import { appRouter } from "./routers/index.js";
 
 const PORT = process.env.BACKEND_PORT || 3000;
+const isProduction = process.env.NODE_ENV === "production";
+
+/**
+ * Validate that critical environment variables are set in production.
+ * Prevents silent fallback to localhost URLs that would break the app.
+ */
+function validateProductionEnv() {
+  if (!isProduction) return;
+
+  const required: Record<string, string | undefined> = {
+    FRONTEND_URL: process.env.FRONTEND_URL,
+    LOGTO_ENDPOINT: process.env.LOGTO_ENDPOINT,
+    BACKEND_BASE_URL: process.env.BACKEND_BASE_URL,
+    LOGTO_APP_ID: process.env.LOGTO_APP_ID,
+    LOGTO_APP_SECRET: process.env.LOGTO_APP_SECRET,
+    SESSION_SECRET: process.env.SESSION_SECRET,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+  };
+
+  const missing = Object.entries(required)
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+
+  if (missing.length > 0) {
+    console.error(
+      `\n❌ FATAL: Missing required environment variables in production:\n` +
+        missing.map((k) => `   - ${k}`).join("\n") +
+        `\n\nSet these in your .env or deployment environment.\n`
+    );
+    process.exit(1);
+  }
+}
 
 async function main() {
+  // Validate production environment before anything else
+  validateProductionEnv();
   // Connect to MongoDB
   await connectDB();
   console.log("✅ Connected to MongoDB");
@@ -78,9 +114,14 @@ async function main() {
   // Private CORS: Strict whitelist for your own apps (tRPC, auth, sessions)
   const privateCorsOptions = {
     origin: [
-      "http://localhost:3000",
-      "http://localhost:3003", // Chat frontend
-      "http://localhost:3005", // Admin frontend
+      // Only include localhost origins in development
+      ...(isProduction
+        ? []
+        : [
+            "http://localhost:3000",
+            "http://localhost:3003", // Chat frontend
+            "http://localhost:3005", // Admin frontend
+          ]),
       process.env.NEXT_PUBLIC_APP_URL,
       process.env.FRONTEND_URL,
       process.env.CHAT_FRONTEND_URL,
@@ -95,6 +136,10 @@ async function main() {
     allowedHeaders: ["Content-Type", "X-API-Key"],
     credentials: false, // No cookies for public API
   };
+
+  // Stripe webhook route — MUST be before express.json() because
+  // Stripe needs the raw request body for signature verification
+  app.use("/stripe/webhook", stripeWebhookRouter);
 
   // Core middleware
   app.use(express.json());

@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Container } from "@/components/ui/Container";
+import {
+  SITE_URL,
+  SITE_DOMAIN,
+  SUPPORT_EMAIL,
+  PRIVACY_EMAIL,
+} from "@/lib/site-config";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -89,11 +95,8 @@ export default function PrivacyPolicyPage() {
                     personal data. This Privacy Policy explains how we collect,
                     use, disclose, and safeguard your information when you use
                     our website at{" "}
-                    <a
-                      href="https://kalori-api.my"
-                      className="text-accent hover:underline"
-                    >
-                      kalori-api.my
+                    <a href={SITE_URL} className="text-accent hover:underline">
+                      {SITE_DOMAIN}
                     </a>{" "}
                     and our API services (collectively, the
                     &quot;Service&quot;).
@@ -120,8 +123,8 @@ export default function PrivacyPolicyPage() {
                       Data Controller
                     </p>
                     <p>Kalori API</p>
-                    <p>Email: privacy@kalori-api.my</p>
-                    <p>Website: https://kalori-api.my</p>
+                    <p>Email: {PRIVACY_EMAIL}</p>
+                    <p>Website: {SITE_URL}</p>
                   </div>
                 </div>
               </section>
@@ -160,7 +163,9 @@ export default function PrivacyPolicyPage() {
                     <h3 className="text-lg font-medium text-content-primary mb-3">
                       3.2 Information Collected Automatically
                     </h3>
-                    <p>When you access our Service, we automatically collect:</p>
+                    <p>
+                      When you access our Service, we automatically collect:
+                    </p>
                     <ul className="list-disc list-inside ml-4 space-y-2 mt-2">
                       <li>
                         <strong>Usage Data:</strong> API call logs, endpoints
@@ -346,7 +351,9 @@ export default function PrivacyPolicyPage() {
                       Adequate safeguards are in place (e.g., Standard
                       Contractual Clauses for EU transfers)
                     </li>
-                    <li>Compliance with PDPA cross-border transfer requirements</li>
+                    <li>
+                      Compliance with PDPA cross-border transfer requirements
+                    </li>
                     <li>
                       Data protection standards equivalent to those in Malaysia
                     </li>
@@ -450,10 +457,10 @@ export default function PrivacyPolicyPage() {
                   <p className="mt-4">
                     To exercise these rights, contact us at{" "}
                     <a
-                      href="mailto:privacy@kalori-api.my"
+                      href={`mailto:${PRIVACY_EMAIL}`}
                       className="text-accent hover:underline"
                     >
-                      privacy@kalori-api.my
+                      {PRIVACY_EMAIL}
                     </a>
                     . We will respond within 21 days (PDPA) or 30 days (GDPR).
                   </p>
@@ -530,7 +537,9 @@ export default function PrivacyPolicyPage() {
                   11. Third-Party Services
                 </h2>
                 <div className="space-y-4 text-content-secondary leading-relaxed">
-                  <p>Our Service integrates with the following third parties:</p>
+                  <p>
+                    Our Service integrates with the following third parties:
+                  </p>
                   <ul className="list-disc list-inside ml-4 space-y-2">
                     <li>
                       <strong>Logto:</strong> Authentication service
@@ -569,10 +578,10 @@ export default function PrivacyPolicyPage() {
                     If you believe we have collected data from a child, please
                     contact us immediately at{" "}
                     <a
-                      href="mailto:privacy@kalori-api.my"
+                      href={`mailto:${PRIVACY_EMAIL}`}
                       className="text-accent hover:underline"
                     >
-                      privacy@kalori-api.my
+                      {PRIVACY_EMAIL}
                     </a>
                     , and we will take steps to delete such information.
                   </p>
@@ -649,9 +658,9 @@ export default function PrivacyPolicyPage() {
                     <p className="font-semibold text-content-primary">
                       Kalori API - Privacy Team
                     </p>
-                    <p>Email: privacy@kalori-api.my</p>
-                    <p>General Inquiries: support@kalori-api.my</p>
-                    <p>Website: https://kalori-api.my</p>
+                    <p>Email: {PRIVACY_EMAIL}</p>
+                    <p>General Inquiries: {SUPPORT_EMAIL}</p>
+                    <p>Website: {SITE_URL}</p>
                   </div>
                 </div>
               </section>
@@ -686,7 +695,10 @@ export default function PrivacyPolicyPage() {
               <Link href="/privacy" className="text-accent">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="hover:text-accent transition-colors">
+              <Link
+                href="/terms"
+                className="hover:text-accent transition-colors"
+              >
                 Terms of Service
               </Link>
             </div>

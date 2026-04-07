@@ -147,9 +147,9 @@ function VersionCard({
   );
 }
 
-/** Renders inline `code` segments with accent styling */
+/** Renders inline `code` and **bold** segments with styling */
 function HighlightCode({ text }: { text: string }) {
-  const parts = text.split(/(`[^`]+`)/g);
+  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
   return (
     <>
       {parts.map((part, i) =>
@@ -160,6 +160,10 @@ function HighlightCode({ text }: { text: string }) {
           >
             {part.slice(1, -1)}
           </code>
+        ) : part.startsWith("**") && part.endsWith("**") ? (
+          <strong key={i} className="text-content-primary font-semibold">
+            {part.slice(2, -2)}
+          </strong>
         ) : (
           <span key={i}>{part}</span>
         )
