@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 
 import "./globals.css";
 import { ChatWidget } from "@/components/chat/ChatWidget";
+import { ScrollProvider } from "@/components/ScrollProvider";
 import { ToastContainer } from "@/components/ui/Toast";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { AuthProvider } from "@/lib/auth-context";
@@ -88,7 +89,7 @@ export default function RootLayout({
             <TRPCProvider>
               <div className="flex h-screen overflow-hidden">
                 {/* Main content — scrollable, takes remaining space */}
-                <div className="flex-1 min-w-0 overflow-y-auto">{children}</div>
+                <ScrollProvider>{children}</ScrollProvider>
                 {/* Right side: activity bar + chat panel (auth-gated internally) */}
                 <ChatWidget />
               </div>
