@@ -18,6 +18,7 @@ import {
   MessageSquare,
   Settings,
   X,
+  Zap,
 } from "react-feather";
 import { useAtom } from "jotai";
 
@@ -203,43 +204,157 @@ function NavLink({
 }
 
 // ---------------------------------------------------------------------------
-// API Version Banner (unchanged)
+// Announcement Carousel - Auto-rotating announcements banner with slide animation
 // ---------------------------------------------------------------------------
-function ApiVersionBanner() {
+
+interface Announcement {
+  id: string;
+  icon: typeof AlertCircle;
+  iconColor: string;
+  bgGradient: string;
+  title: string;
+  message: string | React.ReactNode;
+  linkText: string;
+  linkHref: string;
+}
+
+const ANNOUNCEMENTS: Announcement[] = [
+  {
+    id: "pricing-launch",
+    icon: Zap,
+    iconColor: "text-yellow-400",
+    bgGradient: "from-yellow-500/10 to-amber-500/10",
+    title: "Need More Requests?",
+    message: "Upgrade your plan for higher daily limits and premium features.",
+    linkText: "View Plans",
+    linkHref: "/pricing",
+  },
+  {
+    id: "api-v1-migration",
+    icon: AlertCircle,
+    iconColor: "text-accent",
+    bgGradient: "from-accent/10 to-emerald-500/10",
+    title: "API v1 Migration:",
+    message: (
+      <>
+        API endpoints have moved to{" "}
+        <code className="px-1.5 py-0.5 rounded bg-white/[0.06] text-accent text-xs font-mono">
+          /api/v1/*
+        </code>
+        . Update your base URL.
+      </>
+    ),
+    linkText: "View Guide",
+    linkHref: "/dashboard/setup",
+  },
+];
+
+const ROTATE_INTERVAL = 5000; // 5 seconds
+
+function AnnouncementCarousel() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [prevIndex, setPrevIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Handle slide transition
+  const goToSlide = (newIndex: number) => {
+    if (isAnimating || newIndex === currentIndex) return;
+    setPrevIndex(currentIndex);
+    setIsAnimating(true);
+    setCurrentIndex(newIndex);
+    setTimeout(() => setIsAnimating(false), 400); // Match animation duration
+  };
+
+  // Auto-rotate effect
+  useEffect(() => {
+    if (dismissed || isPaused || ANNOUNCEMENTS.length <= 1) return;
+
+    const interval = setInterval(() => {
+      goToSlide((currentIndex + 1) % ANNOUNCEMENTS.length);
+    }, ROTATE_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [dismissed, isPaused, currentIndex, isAnimating]);
 
   if (dismissed) return null;
 
+  const current = ANNOUNCEMENTS[currentIndex];
+
   return (
-    <div className="bg-gradient-to-r from-accent/10 to-emerald-500/10 border-b border-accent/20">
-      <div className="px-4 py-3 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <AlertCircle size={18} className="text-accent flex-shrink-0" />
-          <p className="text-sm text-content-primary">
-            <span className="font-semibold">API v1 Migration:</span>{" "}
-            <span className="text-content-secondary">
-              API endpoints have moved to{" "}
-              <code className="px-1.5 py-0.5 rounded bg-white/[0.06] text-accent text-xs font-mono">
-                /api/v1/*
-              </code>
-              . Update your base URL to continue using the API.
-            </span>
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <Link
-            href="/dashboard/setup"
-            className="text-xs font-medium text-accent hover:text-accent/80 transition-colors"
-          >
-            View Guide
-          </Link>
-          <button
-            onClick={() => setDismissed(true)}
-            className="p-1 text-content-muted hover:text-content-primary transition-colors"
-            aria-label="Dismiss"
-          >
-            <X size={16} />
-          </button>
+    <div
+      className="border-b border-accent/20 overflow-hidden"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <div className="relative">
+        {/* Slides container */}
+        <div
+          className="flex transition-transform duration-400 ease-in-out"
+          style={{
+            transform: `translateX(-${currentIndex * 100}%)`,
+            transitionDuration: "400ms",
+          }}
+        >
+          {ANNOUNCEMENTS.map((announcement) => {
+            const Icon = announcement.icon;
+            return (
+              <div
+                key={announcement.id}
+                className={`w-full flex-shrink-0 bg-gradient-to-r ${announcement.bgGradient}`}
+              >
+                <div className="px-4 py-3 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Icon
+                      size={18}
+                      className={`${announcement.iconColor} flex-shrink-0`}
+                    />
+                    <p className="text-sm text-content-primary truncate">
+                      <span className="font-semibold">
+                        {announcement.title}
+                      </span>{" "}
+                      <span className="text-content-secondary">
+                        {announcement.message}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {/* Dot indicators */}
+                    {ANNOUNCEMENTS.length > 1 && (
+                      <div className="flex items-center gap-1.5">
+                        {ANNOUNCEMENTS.map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => goToSlide(idx)}
+                            className={`h-1.5 rounded-full transition-all duration-200 ${
+                              idx === currentIndex
+                                ? "bg-accent w-3"
+                                : "bg-white/20 hover:bg-white/40 w-1.5"
+                            }`}
+                            aria-label={`Go to announcement ${idx + 1}`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    <Link
+                      href={announcement.linkHref}
+                      className="text-xs font-medium text-accent hover:text-accent/80 transition-colors whitespace-nowrap"
+                    >
+                      {announcement.linkText}
+                    </Link>
+                    <button
+                      onClick={() => setDismissed(true)}
+                      className="p-1 text-content-muted hover:text-content-primary transition-colors"
+                      aria-label="Dismiss all announcements"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -718,7 +833,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <main
         className={`transition-[margin] duration-300 ease-in-out ${mainMargin}`}
       >
-        <ApiVersionBanner />
+        <AnnouncementCarousel />
         {children}
       </main>
     </div>

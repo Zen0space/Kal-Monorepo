@@ -421,69 +421,68 @@ function KeyCard({
       }`}
     >
       <div className="p-4 md:px-5 md:py-4">
-        {/* Top row: name + status + revoke */}
-        <div className="flex items-center justify-between gap-3 mb-3">
-          <div className="flex items-center gap-3 min-w-0">
-            {/* Key icon */}
-            <div
-              className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                isInactive
-                  ? "bg-white/[0.04] text-content-muted"
-                  : "bg-accent/[0.08] text-accent"
-              }`}
-            >
-              <Key size={16} />
-            </div>
-
-            {/* Name + created */}
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-content-primary truncate">
-                {apiKey.name}
-              </p>
-              <p className="text-[11px] text-content-muted">
-                Created {relativeTime(apiKey.createdAt)}
-              </p>
-            </div>
+        {/* Single row: icon + name/created + key prefix + badges + status + revoke */}
+        <div className="flex items-center gap-3">
+          {/* Key icon */}
+          <div
+            className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+              isInactive
+                ? "bg-white/[0.04] text-content-muted"
+                : "bg-accent/[0.08] text-accent"
+            }`}
+          >
+            <Key size={16} />
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
-            {/* Status badge */}
-            <span
-              className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold ${config.badgeClass}`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${config.dotClass}`} />
-              {config.label}
-            </span>
-
-            {/* Revoke button */}
-            {!isInactive && (
-              <button
-                className="p-1.5 rounded-lg text-content-muted hover:text-red-400 hover:bg-red-500/10
-                  opacity-0 group-hover:opacity-100 transition-all duration-150"
-                onClick={() => onRevoke(apiKey._id, apiKey.name)}
-                disabled={isRevoking}
-                title="Revoke key"
-              >
-                <Trash2 size={14} />
-              </button>
-            )}
+          {/* Name + created */}
+          <div className="min-w-0 shrink-0">
+            <p className="text-sm font-semibold text-content-primary truncate">
+              {apiKey.name}
+            </p>
+            <p className="text-[11px] text-content-muted">
+              Created {relativeTime(apiKey.createdAt)}
+            </p>
           </div>
-        </div>
 
-        {/* Bottom row: key prefix + meta */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pl-12">
-          <code className="text-xs text-content-secondary bg-white/[0.04] px-2.5 py-1 rounded-md font-mono">
+          {/* Key prefix */}
+          <code className="hidden sm:block text-xs text-content-secondary bg-white/[0.04] px-2.5 py-1 rounded-md font-mono shrink-0">
             {apiKey.keyPrefix}
           </code>
 
-          <div className="flex items-center gap-3 text-[11px] text-content-muted">
-            <span className="flex items-center gap-1">
-              <Clock size={10} className="text-accent/40" />
-              {formatExpiry(apiKey.expiresAt)}
-            </span>
-            <span className="w-px h-3 bg-white/[0.06]" />
-            <span>Last used {relativeTime(apiKey.lastUsedAt)}</span>
-          </div>
+          {/* Spacer to push badges to the right */}
+          <div className="flex-1" />
+
+          {/* Expires badge */}
+          <span className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium bg-white/[0.04] text-content-muted border border-white/[0.06] shrink-0">
+            <Clock size={10} className="text-accent/60" />
+            {formatExpiry(apiKey.expiresAt)}
+          </span>
+
+          {/* Last used badge */}
+          <span className="hidden lg:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium bg-white/[0.04] text-content-muted border border-white/[0.06] shrink-0">
+            Used {relativeTime(apiKey.lastUsedAt)}
+          </span>
+
+          {/* Status badge */}
+          <span
+            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold shrink-0 ${config.badgeClass}`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${config.dotClass}`} />
+            {config.label}
+          </span>
+
+          {/* Revoke button */}
+          {!isInactive && (
+            <button
+              className="p-1.5 rounded-lg text-content-muted hover:text-red-400 hover:bg-red-500/10
+                opacity-0 group-hover:opacity-100 transition-all duration-150 shrink-0"
+              onClick={() => onRevoke(apiKey._id, apiKey.name)}
+              disabled={isRevoking}
+              title="Revoke key"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
         </div>
       </div>
     </div>
