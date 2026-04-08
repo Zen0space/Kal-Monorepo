@@ -19,9 +19,14 @@ export const up = async (db, client) => {
   );
 
   // Create index on stripeCustomerId for webhook lookups
-  await db
-    .collection("users")
-    .createIndex({ stripeCustomerId: 1 }, { sparse: true, unique: true });
+  // Use partialFilterExpression so null values are excluded from uniqueness
+  await db.collection("users").createIndex(
+    { stripeCustomerId: 1 },
+    {
+      unique: true,
+      partialFilterExpression: { stripeCustomerId: { $type: "string" } },
+    }
+  );
 };
 
 export const down = async (db, client) => {
