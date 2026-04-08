@@ -115,7 +115,8 @@ export function Hero() {
                   <span className="text-content-secondary">$</span>{" "}
                   <span className="text-accent">curl</span>{" "}
                   <span className="text-content-secondary">
-                    https://api.kal.my/api/v1/foods/search
+                    {process.env.NEXT_PUBLIC_API_URL || ""}
+                    /api/v1/foods/search
                   </span>{" "}
                   \
                 </div>
