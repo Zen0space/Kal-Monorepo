@@ -1091,3 +1091,117 @@ html {
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   }
 }
+
+/* ============================================
+   Landing Page — Premium Effects
+   ============================================ */
+
+/* Dot grid background overlay */
+.dot-grid {
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.04) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.5) 50%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.5) 50%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+/* Code block window chrome */
+.code-window {
+  position: relative;
+}
+
+.code-window::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(16, 185, 129, 0.2),
+    transparent
+  );
+}
+
+/* Animated gradient border for feature cards */
+.gradient-border-card {
+  position: relative;
+  z-index: 1;
+}
+
+.gradient-border-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--gradient-angle, 0deg),
+    transparent 60%,
+    rgba(16, 185, 129, 0.3) 80%,
+    rgba(16, 185, 129, 0.5) 90%,
+    transparent 100%
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.gradient-border-card:hover::before {
+  opacity: 1;
+  animation: rotateBorder 3s linear infinite;
+}
+
+@keyframes rotateBorder {
+  to {
+    --gradient-angle: 360deg;
+  }
+}
+
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* Glow effect utility */
+.glow-green-sm {
+  box-shadow:
+    0 0 20px rgba(16, 185, 129, 0.06),
+    0 0 40px rgba(16, 185, 129, 0.03);
+}
+
+.glow-green-md {
+  box-shadow:
+    0 0 30px rgba(16, 185, 129, 0.08),
+    0 0 60px rgba(16, 185, 129, 0.04);
+}
+
+.glow-green-lg {
+  box-shadow:
+    0 0 40px rgba(16, 185, 129, 0.1),
+    0 0 80px rgba(16, 185, 129, 0.05);
+}

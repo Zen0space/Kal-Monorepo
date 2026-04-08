@@ -23,8 +23,13 @@ export default async function LandingPage() {
     <main className="min-h-screen bg-dark relative overflow-hidden">
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 transform -translate-x-1/2 left-1/2 w-[1000px] h-[500px] bg-accent/5 blur-[120px] rounded-full" />
-        <div className="absolute bottom-0 transform translate-x-1/2 right-1/2 w-[800px] h-[600px] bg-accent/5 blur-[120px] rounded-full" />
+        {/* Animated gradient blobs */}
+        <div className="absolute top-0 transform -translate-x-1/2 left-1/2 w-[1000px] h-[500px] bg-accent/5 blur-[120px] rounded-full animate-float-slow" />
+        <div className="absolute bottom-0 transform translate-x-1/2 right-1/2 w-[800px] h-[600px] bg-accent/5 blur-[120px] rounded-full animate-float-slower" />
+        {/* Dot grid overlay */}
+        <div className="absolute inset-0 dot-grid" />
+        {/* Center gradient line */}
+        <div className="absolute top-0 bottom-0 left-1/2 w-px bg-gradient-to-b from-transparent via-accent/[0.07] to-transparent" />
       </div>
 
       <Navbar onSignIn={onSignIn} />

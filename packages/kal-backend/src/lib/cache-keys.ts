@@ -73,6 +73,11 @@ export const CacheKeys = {
 
   trpcFoodStats: (): string => `${PREFIX}:trpc:food:stats`,
 
+  // ============================================
+  // tRPC - Request Logs (public)
+  // ============================================
+  trpcPublicMonthlyStats: (): string => `${PREFIX}:trpc:logs:public-monthly`,
+
   trpcFoodAllPaginated: (
     cursor: number,
     limit: number,
