@@ -31,6 +31,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "Fira Code", "monospace"],
       },
       animation: {
         "fade-in": "fadeIn 0.5s ease-out",
@@ -38,6 +39,9 @@ const config: Config = {
         "panel-slide-in": "panelSlideIn 0.25s ease-out",
         "neon-pulse": "neonPulse 2s ease-in-out infinite",
         "tooltip-in": "tooltipIn 0.15s ease-out",
+        "float-slow": "floatSlow 20s ease-in-out infinite",
+        "float-slower": "floatSlower 25s ease-in-out infinite",
+        "gradient-border": "gradientBorder 3s linear infinite",
       },
       keyframes: {
         fadeIn: {
@@ -65,6 +69,21 @@ const config: Config = {
         tooltipIn: {
           "0%": { opacity: "0", transform: "translateX(-4px)" },
           "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+        floatSlow: {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)" },
+          "33%": { transform: "translate(30px, -20px) scale(1.05)" },
+          "66%": { transform: "translate(-20px, 15px) scale(0.95)" },
+        },
+        floatSlower: {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)" },
+          "33%": { transform: "translate(-25px, 20px) scale(1.03)" },
+          "66%": { transform: "translate(20px, -15px) scale(0.97)" },
+        },
+        gradientBorder: {
+          "0%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" },
         },
       },
     },

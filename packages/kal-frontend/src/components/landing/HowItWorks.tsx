@@ -2,6 +2,11 @@
 
 import { Code, Key, Zap } from "react-feather";
 
+import {
+  AnimateIn,
+  StaggerContainer,
+  StaggerChild,
+} from "@/components/ui/AnimateIn";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 
@@ -10,7 +15,7 @@ const steps = [
     number: "1",
     icon: <Key className="w-8 h-8" />,
     title: "Get Your API Key",
-    description: "Sign in to your dashboard and generate a free API key",
+    description: "Sign in to your dashboard and generate your API key",
   },
   {
     number: "2",
@@ -30,39 +35,44 @@ export function HowItWorks() {
   return (
     <section id="how-it-works" className="py-20">
       <Container>
-        <SectionHeading
-          title="How it works"
-          subtitle="Integrate our API in three simple steps"
-        />
+        <AnimateIn>
+          <SectionHeading
+            title="How it works"
+            subtitle="Integrate our API in three simple steps"
+          />
+        </AnimateIn>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+        <StaggerContainer
+          className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto"
+          staggerDelay={0.15}
+        >
           {steps.map((step, index) => (
-            <div key={index} className="text-center">
-              {/* Step number */}
-              <div className="relative inline-flex items-center justify-center mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-dark-surface border border-dark-border flex items-center justify-center text-accent">
-                  {step.icon}
+            <StaggerChild key={index}>
+              <div className="text-center relative">
+                {/* Step icon */}
+                <div className="relative inline-flex items-center justify-center mb-6">
+                  <div className="w-16 h-16 rounded-2xl bg-dark-surface border border-dark-border flex items-center justify-center text-accent">
+                    {step.icon}
+                  </div>
+                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-accent text-dark text-sm font-bold flex items-center justify-center">
+                    {step.number}
+                  </span>
                 </div>
-                <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-accent text-dark text-sm font-bold flex items-center justify-center">
-                  {step.number}
-                </span>
+
+                {/* Content */}
+                <h3 className="text-xl font-semibold text-content-primary mb-2">
+                  {step.title}
+                </h3>
+                <p className="text-content-secondary">{step.description}</p>
+
+                {/* Connector line (not on last) */}
+                {index < steps.length - 1 && (
+                  <div className="hidden md:block absolute top-8 left-[calc(50%+40px)] w-[calc(100%-80px)] h-px bg-gradient-to-r from-dark-border via-accent/20 to-dark-border" />
+                )}
               </div>
-
-              {/* Content */}
-              <h3 className="text-xl font-semibold text-content-primary mb-2">
-                {step.title}
-              </h3>
-              <p className="text-content-secondary">
-                {step.description}
-              </p>
-
-              {/* Connector line (not on last) */}
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-8 left-full w-full h-px bg-dark-border -translate-y-1/2" />
-              )}
-            </div>
+            </StaggerChild>
           ))}
-        </div>
+        </StaggerContainer>
       </Container>
     </section>
   );
