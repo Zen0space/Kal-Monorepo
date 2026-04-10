@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   AlertCircle,
@@ -9,6 +10,7 @@ import {
   ChevronUp,
   Code,
   Copy,
+  Database,
   ExternalLink,
   Play,
   Terminal,
@@ -1346,8 +1348,32 @@ export async function GET(request: NextRequest) {
         </p>
       </div>
 
+      {/* Mobile-only: Quick Actions for pages not in bottom nav */}
+      <div className="grid grid-cols-2 gap-3 mb-6 md:hidden">
+        <Link
+          href="/dashboard/docs"
+          className="flex items-center gap-2.5 px-4 py-3 bg-white/[0.02] border border-white/[0.06] rounded-xl
+            hover:border-white/[0.1] hover:bg-white/[0.04] transition-all duration-200"
+        >
+          <Book size={16} className="text-accent flex-shrink-0" />
+          <span className="text-sm font-medium text-content-primary">
+            API Reference
+          </span>
+        </Link>
+        <Link
+          href="/dashboard/foods"
+          className="flex items-center gap-2.5 px-4 py-3 bg-white/[0.02] border border-white/[0.06] rounded-xl
+            hover:border-white/[0.1] hover:bg-white/[0.04] transition-all duration-200"
+        >
+          <Database size={16} className="text-accent flex-shrink-0" />
+          <span className="text-sm font-medium text-content-primary">
+            Food List
+          </span>
+        </Link>
+      </div>
+
       {/* Grouped tab bar */}
-      <div className="flex flex-wrap items-center gap-1.5 mb-6 md:mb-8">
+      <div className="flex md:flex-wrap items-center gap-1.5 mb-6 md:mb-8 overflow-x-auto pb-2 md:pb-0 -mx-1 px-1 scrollbar-hide">
         {/* Getting Started group */}
         <span className="text-[10px] font-semibold text-content-muted uppercase tracking-widest mr-1 hidden sm:inline">
           Start

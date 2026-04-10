@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   AlertCircle,
   AlertTriangle,
+  ArrowLeft,
   BookOpen,
   Check,
   CheckCircle,
@@ -147,7 +148,7 @@ function CodeBlock({
 }) {
   return (
     <div className="relative group">
-      <pre className="bg-[#0a0a0a] rounded-xl border border-white/[0.06] px-4 py-3 text-xs md:text-sm font-mono text-content-secondary overflow-x-auto leading-relaxed">
+      <pre className="bg-[#0a0a0a] rounded-xl border border-white/[0.06] px-4 py-3 text-xs md:text-sm font-mono text-content-secondary overflow-x-auto scrollbar-hide leading-relaxed">
         <span className="absolute top-2.5 right-2.5 text-[10px] text-content-muted/50 uppercase tracking-widest select-none">
           {language}
         </span>
@@ -354,7 +355,7 @@ function RateLimitsTab() {
       {/* Tier comparison table */}
       <SectionCard>
         <SectionTitle>All Tiers</SectionTitle>
-        <div className="overflow-x-auto -mx-2">
+        <div className="overflow-x-auto scrollbar-hide -mx-2">
           <table className="w-full text-sm min-w-[480px]">
             <thead>
               <tr className="text-left text-content-muted border-b border-white/[0.06]">
@@ -415,7 +416,7 @@ function RateLimitsTab() {
           Every API response includes these headers so you can track usage
           programmatically.
         </p>
-        <div className="overflow-x-auto -mx-2">
+        <div className="overflow-x-auto scrollbar-hide -mx-2">
           <table className="w-full text-sm min-w-[440px]">
             <thead>
               <tr className="text-left text-content-muted border-b border-white/[0.06]">
@@ -839,7 +840,7 @@ X-API-Key: kal_your_key_here`}
       {/* Expiration matrix */}
       <SectionCard>
         <SectionTitle>Expiration Options</SectionTitle>
-        <div className="overflow-x-auto -mx-2">
+        <div className="overflow-x-auto scrollbar-hide -mx-2">
           <table className="w-full text-sm min-w-[400px]">
             <thead>
               <tr className="text-left text-content-muted border-b border-white/[0.06]">
@@ -1087,7 +1088,7 @@ function QuickReferenceTab({
       {/* Query parameters */}
       <SectionCard>
         <SectionTitle>Common Query Parameters</SectionTitle>
-        <div className="overflow-x-auto -mx-2">
+        <div className="overflow-x-auto scrollbar-hide -mx-2">
           <table className="w-full text-sm min-w-[440px]">
             <thead>
               <tr className="text-left text-content-muted border-b border-white/[0.06]">
@@ -1186,6 +1187,15 @@ function DocsContent() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 w-full">
+      {/* ── Mobile back button ── */}
+      <Link
+        href="/dashboard/setup"
+        className="inline-flex items-center gap-1.5 text-sm text-content-secondary hover:text-content-primary transition-colors mb-4 md:hidden"
+      >
+        <ArrowLeft size={16} />
+        <span>Setup</span>
+      </Link>
+
       {/* ── Header ── */}
       <div className="mb-6 md:mb-8">
         <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2">
@@ -1199,7 +1209,7 @@ function DocsContent() {
       </div>
 
       {/* ── Tab bar ── */}
-      <div className="flex gap-1.5 mb-6 md:mb-8 overflow-x-auto pb-1 -mx-1 px-1">
+      <div className="flex gap-1.5 mb-6 md:mb-8 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = tab.id === activeTab;
