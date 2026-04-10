@@ -2,7 +2,6 @@
 
 import { useAtom } from "jotai";
 import { useCallback } from "react";
-import { MessageCircle, X } from "react-feather";
 
 import { ChatActivityBar } from "./ChatActivityBar";
 import { ChatPanel } from "./ChatPanel";
@@ -20,13 +19,12 @@ import { useAuth } from "@/lib/auth-context";
  * animation that used to play on every panel open.
  *
  * Desktop (sm+): Activity bar (always visible) + push panel (width transition).
- * Mobile (<sm): FAB + fullscreen overlay (translate-y transition).
+ * Mobile (<sm): Triggered from MobileTopBar chat icon + fullscreen overlay (translate-y transition).
  */
 export function ChatWidget() {
   const { logtoId } = useAuth();
   const [isOpen, setIsOpen] = useAtom(chatPanelOpenAtom);
 
-  const toggle = useCallback(() => setIsOpen((prev) => !prev), [setIsOpen]);
   const close = useCallback(() => setIsOpen(false), [setIsOpen]);
 
   // Only show for authenticated users
@@ -72,26 +70,6 @@ export function ChatWidget() {
           <ChatPanel onClose={close} />
         </div>
       </div>
-
-      {/* ── Mobile FAB ── */}
-      <button
-        onClick={toggle}
-        className={[
-          "fixed bottom-6 right-6 z-[62]",
-          "w-14 h-14 rounded-full",
-          "flex items-center justify-center",
-          "shadow-lg shadow-black/30",
-          "transition-all duration-200",
-          "sm:hidden",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-dark",
-          isOpen
-            ? "bg-dark-elevated border border-dark-border text-content-secondary hover:text-content-primary"
-            : "bg-accent text-dark hover:bg-accent-hover hover:scale-105 active:scale-95",
-        ].join(" ")}
-        aria-label={isOpen ? "Close chat" : "Open chat"}
-      >
-        {isOpen ? <X size={22} /> : <MessageCircle size={22} />}
-      </button>
     </>
   );
 }

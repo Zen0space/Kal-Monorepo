@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useCallback, useRef } from "react";
 import {
+  ArrowLeft,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -195,6 +197,15 @@ function FoodsContent() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 w-full">
+      {/* Mobile back button */}
+      <Link
+        href="/dashboard/setup"
+        className="inline-flex items-center gap-1.5 text-sm text-content-secondary hover:text-content-primary transition-colors mb-4 md:hidden"
+      >
+        <ArrowLeft size={16} />
+        <span>Setup</span>
+      </Link>
+
       {/* Header */}
       <div className="mb-6 md:mb-8">
         <h1 className="text-xl md:text-2xl font-bold text-content-primary mb-1 md:mb-2">

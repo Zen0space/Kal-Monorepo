@@ -21,13 +21,14 @@ import {
   Home,
   Key,
   List,
-  Menu,
+  MessageCircle,
   MessageSquare,
   Settings,
   X,
   Zap,
 } from "react-feather";
 
+import { chatPanelOpenAtom } from "@/atoms/chat";
 import { sidebarCollapsedAtom } from "@/atoms/sidebar";
 import { Logo } from "@/components/ui/Logo";
 import { useSidebarLayout } from "@/hooks/useBreakpoint";
@@ -595,209 +596,81 @@ function DesktopSidebar() {
 }
 
 // =========================================================================
-// SIDEBAR — Mobile
+// MOBILE — Top Bar (Logo + Chat icon)
 // =========================================================================
-function MobileSidebar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const pathname = usePathname();
-  const { name, email } = useAuth();
-
-  const displayName = name || email?.split("@")[0] || "User";
-  const displayEmail = email || "";
-
-  // Close drawer on route change
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+function MobileTopBar() {
+  const [, setIsOpen] = useAtom(chatPanelOpenAtom);
 
   return (
-    <>
-      {/* Mobile Header Bar */}
-      <header className="fixed top-0 left-0 right-0 h-14 bg-gradient-to-b from-[#151515] to-[#101010] border-b border-white/[0.06] z-50 flex items-center justify-between px-4">
-        <Link href="/dashboard" className="flex items-center gap-2.5">
-          <Logo size={24} />
-          <span className="text-lg font-bold text-content-primary">Kal</span>
-        </Link>
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="p-2 text-content-secondary hover:text-content-primary transition-colors"
-        >
-          <Menu size={22} />
-        </button>
-      </header>
-
-      {/* Overlay */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      {/* Drawer */}
-      <aside
-        className={`
-          fixed top-0 left-0 h-full w-72 z-50
-          bg-gradient-to-b from-[#151515] to-[#101010]
-          border-r border-white/[0.06]
-          transform transition-transform duration-300 ease-in-out
-          ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
-        `}
+    <header className="fixed top-0 left-0 right-0 h-14 bg-gradient-to-b from-[#151515] to-[#101010] border-b border-white/[0.06] z-50 flex items-center justify-between px-4">
+      <Link href="/dashboard" className="flex items-center gap-2.5">
+        <Logo size={24} />
+        <span className="text-lg font-bold text-content-primary">Kal</span>
+      </Link>
+      <button
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="p-2 text-content-secondary hover:text-content-primary transition-colors"
+        aria-label="Toggle chat"
       >
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="h-14 flex items-center justify-between px-4">
+        <MessageCircle size={22} />
+      </button>
+    </header>
+  );
+}
+
+// =========================================================================
+// MOBILE — Bottom Navigation Bar
+// =========================================================================
+
+interface BottomNavItem {
+  href: string;
+  icon: typeof Home;
+  /** Used for exact vs prefix matching */
+  exact?: boolean;
+}
+
+const bottomNavItems: BottomNavItem[] = [
+  { href: "/dashboard", icon: Home, exact: true },
+  { href: "/dashboard/api-keys", icon: Key },
+  { href: "/dashboard/logs", icon: List },
+  { href: "/dashboard/setup", icon: Code },
+  { href: "/dashboard/settings", icon: Settings },
+];
+
+function MobileBottomNav() {
+  const pathname = usePathname();
+
+  return (
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-[#101010] to-[#151515] border-t border-white/[0.06]"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+    >
+      <div className="flex items-center justify-around h-14">
+        {bottomNavItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = item.exact
+            ? pathname === item.href
+            : pathname.startsWith(item.href);
+
+          return (
             <Link
-              href="/dashboard"
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-2.5"
+              key={item.href}
+              href={item.href}
+              className={`
+                flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200
+                ${
+                  isActive
+                    ? "text-accent"
+                    : "text-content-muted hover:text-content-secondary"
+                }
+              `}
             >
-              <Logo size={24} />
-              <span className="text-lg font-bold text-content-primary">
-                Kal
-              </span>
+              <Icon size={22} strokeWidth={isActive ? 2.2 : 1.8} />
             </Link>
-            <button
-              onClick={() => setMobileOpen(false)}
-              className="p-2 text-content-secondary hover:text-content-primary transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          {/* Subtle separator */}
-          <div className="mx-3 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-
-          {/* Navigation sections */}
-          <nav className="flex-1 py-2 overflow-y-auto">
-            {navSections.map((section) => (
-              <div key={section.label}>
-                <div className="px-4 pt-5 pb-1.5">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-content-muted/70">
-                    {section.label}
-                  </span>
-                </div>
-                {section.items.map((item) => {
-                  const isActive = pathname === item.href;
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className={`
-                        group relative flex items-center gap-3 px-3 py-2.5 mx-2 rounded-lg transition-all duration-200
-                        ${
-                          isActive
-                            ? "bg-accent/[0.08] text-accent"
-                            : "text-content-secondary hover:bg-white/[0.04] hover:text-content-primary"
-                        }
-                      `}
-                    >
-                      {isActive && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-accent" />
-                      )}
-                      <Icon size={19} className="flex-shrink-0" />
-                      <span className="font-medium text-[13.5px]">
-                        {item.label}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            ))}
-          </nav>
-
-          {/* Footer */}
-          <div className="mt-auto">
-            <div className="mx-3 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-
-            {/* Changelog + Feedback */}
-            <div className="py-2">
-              <Link
-                href="/dashboard/changelog"
-                onClick={() => setMobileOpen(false)}
-                className={`
-                  group relative flex items-center gap-3 px-3 py-2.5 mx-2 rounded-lg transition-all duration-200
-                  ${
-                    pathname === "/dashboard/changelog"
-                      ? "bg-accent/[0.08] text-accent"
-                      : "text-content-secondary hover:bg-white/[0.04] hover:text-content-primary"
-                  }
-                `}
-              >
-                {pathname === "/dashboard/changelog" && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-accent" />
-                )}
-                <FileText
-                  size={19}
-                  className="flex-shrink-0 text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.5)]"
-                />
-                <span className="font-medium text-[13.5px] text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.5)]">
-                  Changelog
-                </span>
-              </Link>
-
-              <Link
-                href="/dashboard/feedback"
-                onClick={() => setMobileOpen(false)}
-                className={`
-                  group relative flex items-center gap-3 px-3 py-2.5 mx-2 rounded-lg transition-all duration-200
-                  ${
-                    pathname === "/dashboard/feedback"
-                      ? "bg-accent/[0.08] text-accent"
-                      : "text-content-secondary hover:bg-white/[0.04] hover:text-content-primary"
-                  }
-                `}
-              >
-                {pathname === "/dashboard/feedback" && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-accent" />
-                )}
-                <MessageSquare size={19} className="flex-shrink-0" />
-                <span className="font-medium text-[13.5px]">Review & Bug</span>
-              </Link>
-            </div>
-
-            <div className="mx-3 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-
-            {/* User section */}
-            <div className="py-3 px-2 space-y-1">
-              <Link
-                href="/dashboard/settings"
-                onClick={() => setMobileOpen(false)}
-                className={`
-                  group relative flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
-                  ${
-                    pathname === "/dashboard/settings"
-                      ? "bg-accent/[0.08]"
-                      : "hover:bg-white/[0.04]"
-                  }
-                `}
-              >
-                {pathname === "/dashboard/settings" && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-accent" />
-                )}
-                <UserInitials name={name} email={email} />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[13px] font-medium text-content-primary truncate leading-tight">
-                    {displayName}
-                  </p>
-                  {displayEmail && (
-                    <p className="text-[11px] text-content-muted truncate leading-tight mt-0.5">
-                      {displayEmail}
-                    </p>
-                  )}
-                </div>
-                <Settings
-                  size={15}
-                  className="flex-shrink-0 text-content-muted group-hover:text-content-secondary transition-colors"
-                />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </aside>
-    </>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
 
@@ -808,7 +681,12 @@ export function Sidebar() {
   const { isMobile, isMounted } = useSidebarLayout();
 
   if (isMounted && isMobile) {
-    return <MobileSidebar />;
+    return (
+      <>
+        <MobileTopBar />
+        <MobileBottomNav />
+      </>
+    );
   }
 
   return <DesktopSidebar />;
@@ -817,10 +695,18 @@ export function Sidebar() {
 // =========================================================================
 // Dashboard Layout wrapper
 // =========================================================================
+/** Pages where the announcement carousel is hidden on mobile (too content-heavy). */
+const HIDE_CAROUSEL_MOBILE = [
+  "/dashboard/setup",
+  "/dashboard/docs",
+  "/dashboard/foods",
+];
+
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isMobile, shouldAutoCollapse, isMounted } = useSidebarLayout();
   const [collapsed, setCollapsed] = useAtom(sidebarCollapsedAtom);
   const hasInitialized = useRef(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (isMounted && !hasInitialized.current) {
@@ -831,7 +717,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   // Determine margin - default to desktop (ml-64) for SSR
   const mainMargin =
-    isMounted && isMobile ? "ml-0 pt-14" : collapsed ? "ml-16" : "ml-64";
+    isMounted && isMobile ? "ml-0 pt-14 pb-16" : collapsed ? "ml-16" : "ml-64";
+
+  // Show carousel everywhere on desktop; on mobile, hide on content-heavy pages
+  const hideCarousel =
+    isMounted && isMobile && HIDE_CAROUSEL_MOBILE.includes(pathname);
 
   return (
     <div className="min-h-screen bg-dark">
@@ -839,7 +729,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <main
         className={`transition-[margin] duration-300 ease-in-out ${mainMargin}`}
       >
-        <AnnouncementCarousel />
+        {!hideCarousel && <AnnouncementCarousel />}
         {children}
       </main>
     </div>

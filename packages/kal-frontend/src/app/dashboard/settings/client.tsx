@@ -9,8 +9,10 @@ import {
   Clock,
   CreditCard,
   ExternalLink,
+  FileText,
   LogOut,
   Mail,
+  MessageSquare,
   Monitor,
   Shield,
   User,
@@ -516,6 +518,47 @@ function SettingsContent({
             >
               Delete Account
             </button>
+          </div>
+        </div>
+
+        {/* ─── MOBILE ONLY: Resources Card (Changelog + Feedback) ─── */}
+        <div className="md:hidden md:col-span-2 bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 hover:border-white/[0.1] transition-all duration-200">
+          {/* Card header */}
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-lg bg-accent/[0.08] flex items-center justify-center">
+              <ExternalLink size={14} className="text-accent/70" />
+            </div>
+            <h2 className="text-xs font-semibold text-content-muted uppercase tracking-wider">
+              Resources
+            </h2>
+          </div>
+
+          <div className="space-y-1">
+            <Link
+              href="/dashboard/changelog"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-all duration-200 group"
+            >
+              <FileText
+                size={18}
+                className="flex-shrink-0 text-accent drop-shadow-[0_0_6px_rgba(16,185,129,0.5)]"
+              />
+              <span className="text-sm font-medium text-content-primary group-hover:text-accent transition-colors">
+                Changelog
+              </span>
+            </Link>
+
+            <Link
+              href="/dashboard/feedback"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-all duration-200 group"
+            >
+              <MessageSquare
+                size={18}
+                className="flex-shrink-0 text-content-secondary"
+              />
+              <span className="text-sm font-medium text-content-primary group-hover:text-accent transition-colors">
+                Review & Bug
+              </span>
+            </Link>
           </div>
         </div>
       </div>
