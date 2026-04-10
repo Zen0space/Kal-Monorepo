@@ -1,8 +1,15 @@
 "use client";
 
+import { useAtom } from "jotai";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  type ReactNode,
+} from "react";
 import {
   AlertCircle,
   BookOpen,
@@ -20,11 +27,11 @@ import {
   X,
   Zap,
 } from "react-feather";
-import { useAtom } from "jotai";
 
-import { useAuth } from "@/lib/auth-context";
-import { useSidebarLayout } from "@/hooks/useBreakpoint";
 import { sidebarCollapsedAtom } from "@/atoms/sidebar";
+import { Logo } from "@/components/ui/Logo";
+import { useSidebarLayout } from "@/hooks/useBreakpoint";
+import { useAuth } from "@/lib/auth-context";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -253,19 +260,22 @@ const ROTATE_INTERVAL = 5000; // 5 seconds
 
 function AnnouncementCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [prevIndex, setPrevIndex] = useState(0);
+  const [_prevIndex, setPrevIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
   // Handle slide transition
-  const goToSlide = (newIndex: number) => {
-    if (isAnimating || newIndex === currentIndex) return;
-    setPrevIndex(currentIndex);
-    setIsAnimating(true);
-    setCurrentIndex(newIndex);
-    setTimeout(() => setIsAnimating(false), 400); // Match animation duration
-  };
+  const goToSlide = useCallback(
+    (newIndex: number) => {
+      if (isAnimating || newIndex === currentIndex) return;
+      setPrevIndex(currentIndex);
+      setIsAnimating(true);
+      setCurrentIndex(newIndex);
+      setTimeout(() => setIsAnimating(false), 400); // Match animation duration
+    },
+    [isAnimating, currentIndex]
+  );
 
   // Auto-rotate effect
   useEffect(() => {
@@ -276,11 +286,11 @@ function AnnouncementCarousel() {
     }, ROTATE_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [dismissed, isPaused, currentIndex, isAnimating]);
+  }, [dismissed, isPaused, currentIndex, isAnimating, goToSlide]);
 
   if (dismissed) return null;
 
-  const current = ANNOUNCEMENTS[currentIndex];
+  const _current = ANNOUNCEMENTS[currentIndex];
 
   return (
     <div
@@ -396,8 +406,10 @@ function DesktopSidebar() {
         <div className="h-14 flex items-center px-4">
           <Link href="/dashboard" className="flex items-center gap-2.5 group">
             <div className="relative flex-shrink-0">
-              <div className="w-3.5 h-3.5 rounded-full bg-accent group-hover:scale-110 transition-transform" />
-              <div className="absolute inset-0 w-3.5 h-3.5 rounded-full bg-accent/40 blur-[6px]" />
+              <Logo
+                size={24}
+                className="group-hover:scale-110 transition-transform"
+              />
             </div>
             <span
               className={`text-lg font-bold text-content-primary whitespace-nowrap transition-all duration-300 overflow-hidden ${
@@ -603,10 +615,7 @@ function MobileSidebar() {
       {/* Mobile Header Bar */}
       <header className="fixed top-0 left-0 right-0 h-14 bg-gradient-to-b from-[#151515] to-[#101010] border-b border-white/[0.06] z-50 flex items-center justify-between px-4">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <div className="relative">
-            <div className="w-3.5 h-3.5 rounded-full bg-accent" />
-            <div className="absolute inset-0 w-3.5 h-3.5 rounded-full bg-accent/40 blur-[6px]" />
-          </div>
+          <Logo size={24} />
           <span className="text-lg font-bold text-content-primary">Kal</span>
         </Link>
         <button
@@ -643,10 +652,7 @@ function MobileSidebar() {
               onClick={() => setMobileOpen(false)}
               className="flex items-center gap-2.5"
             >
-              <div className="relative">
-                <div className="w-3.5 h-3.5 rounded-full bg-accent" />
-                <div className="absolute inset-0 w-3.5 h-3.5 rounded-full bg-accent/40 blur-[6px]" />
-              </div>
+              <Logo size={24} />
               <span className="text-lg font-bold text-content-primary">
                 Kal
               </span>

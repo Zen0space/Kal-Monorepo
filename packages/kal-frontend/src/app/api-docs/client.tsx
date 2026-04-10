@@ -6,6 +6,7 @@ import { Check, FileText, Heart, Lock, Menu, Star, X } from "react-feather";
 
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { Logo } from "@/components/ui/Logo";
 import { API_URL_DISPLAY } from "@/lib/site-config";
 import { trpc } from "@/lib/trpc";
 
@@ -435,10 +436,10 @@ export default function APIDocsClient({
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-3 h-3 rounded-full bg-accent group-hover:scale-110 transition-transform" />
-              <span className="text-xl font-bold text-content-primary">
-                Kal
-              </span>
+              <Logo
+                size={24}
+                className="group-hover:scale-110 transition-transform"
+              />
             </Link>
 
             {/* Desktop Navigation */}

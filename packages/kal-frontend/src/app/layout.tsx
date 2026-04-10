@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 
 import "./globals.css";
@@ -13,14 +13,28 @@ const inter = Inter({ subsets: ["latin"] });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
+export const viewport: Viewport = {
+  themeColor: "#10b981",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  applicationName: "Kalori API",
   title: {
     default: "Kalori API - Malaysian Food Nutrition Database & API",
     template: "%s | Kalori API",
   },
   description:
     "Free Malaysian food nutrition API with 1000+ foods. Access calorie, protein, carb, and fat data for natural and halal foods. Perfect for developers building health & fitness apps.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Kalori API",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   keywords: [
     "Malaysian food API",
     "calorie API",
@@ -36,6 +50,11 @@ export const metadata: Metadata = {
   authors: [{ name: "Kalori API Team" }],
   creator: "Kalori API",
   publisher: "Kalori API",
+  icons: {
+    icon: "/assets/icon-svg.svg",
+    shortcut: "/assets/icon-svg.svg",
+    apple: "/assets/apple-touch-icon.png",
+  },
   openGraph: {
     type: "website",
     locale: "en_MY",

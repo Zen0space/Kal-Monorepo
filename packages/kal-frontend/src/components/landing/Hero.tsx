@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { CountUp } from "@/components/ui/CountUp";
+import { Logo } from "@/components/ui/Logo";
 import { trpc } from "@/lib/trpc";
 
 const fadeUp = {
@@ -32,10 +33,7 @@ export function Hero() {
             animate="visible"
             custom={0.05}
           >
-            <div className="w-4 h-4 rounded-full bg-accent" />
-            <span className="text-5xl md:text-6xl font-bold text-content-primary tracking-tight">
-              Kal
-            </span>
+            <Logo size={48} />
           </motion.div>
 
           {/* Headline — gradient text */}

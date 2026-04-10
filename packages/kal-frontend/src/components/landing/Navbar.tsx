@@ -8,6 +8,7 @@ import { Menu, X } from "react-feather";
 import { scrolledAtom } from "@/atoms/scroll";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { Logo } from "@/components/ui/Logo";
 
 const navLinks = [
   { label: "Features", href: "#features" },
@@ -37,8 +38,10 @@ export function Navbar({ onSignIn }: NavbarProps) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-3 h-3 rounded-full bg-accent group-hover:scale-110 transition-transform" />
-            <span className="text-xl font-bold text-content-primary">Kal</span>
+            <Logo
+              size={24}
+              className="group-hover:scale-110 transition-transform"
+            />
           </Link>
 
           {/* Desktop Navigation */}

@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { Container } from "@/components/ui/Container";
+import { Logo } from "@/components/ui/Logo";
 
 export function Footer() {
   return (
@@ -13,10 +14,10 @@ export function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-2.5 h-2.5 rounded-full bg-accent group-hover:scale-110 transition-transform" />
-              <span className="text-lg font-semibold text-content-primary">
-                Kal
-              </span>
+              <Logo
+                size={24}
+                className="group-hover:scale-110 transition-transform"
+              />
             </Link>
 
             {/* Legal Links */}
