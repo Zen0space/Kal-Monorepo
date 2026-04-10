@@ -4,33 +4,52 @@ All notable changes to Kal will be documented in this file.
 
 ---
 
+## [1.2.0] - 2026-04-11
+
+### New
+
+- **Redesigned mobile navigation** — a new bottom tab bar lets you switch between Home, API Keys, Logs, Setup, and Settings with one tap
+- **New top bar on mobile** — a cleaner header with the Kal logo and a quick shortcut to open the AI assistant
+- **Quick links on Setup** — easily jump to API Reference and Food List right from the Setup page
+- **Quick links on Settings** — access Changelog and Review & Bug from the Settings page
+- **Back navigation** — API Reference and Food List pages now have a back button to return to Setup
+- **New fonts** — refreshed look with JetBrains Mono throughout the app and Space Grotesk for headings
+- Announcements are now visible on most mobile pages
+
+### Improved
+
+- Tab bars on Setup and API Reference scroll smoothly on smaller screens
+- Cleaner scrolling experience across the API Reference page
+- Opening the AI assistant on mobile is now one tap from the top bar
+
+---
+
 ## [1.1.0] - 2026-04-07
 
-### Added
+### New
 
-- **Subscription billing** — upgrade to Tier 1 (RM45/mo) or Tier 2 (RM75/mo) for higher rate limits and priority support
-- **Public pricing page** (`/pricing`) — view all plans and pricing without signing in; sign in to subscribe directly
-- Manage your subscription, update payment methods, and view invoices from the billing portal
-- Pricing link in the landing page navbar
-- Upgrade and billing management buttons in dashboard settings
+- **Subscription plans** — upgrade to Tier 1 (RM45/mo) or Tier 2 (RM75/mo) for higher usage limits and priority support
+- **Pricing page** — view all plans and compare features before signing in
+- Manage your subscription, update payment methods, and view invoices from Settings
+- Pricing link added to the main navigation
 
 ### Fixed
 
-- Fixed an issue where accounts with no email could fail to be created
+- Resolved an issue where some accounts could not be created
 
 ---
 
 ## [1.0.2] - 2026-04-07
 
-### Added
+### New
 
-- Per-minute usage progress bar in the Rate Limits documentation tab — see your real-time minute-level usage alongside daily limits
-- Numbered page navigation on the Food Database — quickly jump to any page instead of clicking through one at a time
-- Live reset countdown timers on dashboard usage cards — see exactly when your daily, monthly, and per-minute limits reset
+- Per-minute usage bar in the Rate Limits section — see how close you are to your minute-by-minute limit
+- Page numbers on the Food Database — jump directly to any page
+- Live countdown timers on the dashboard showing when your usage limits reset
 
 ### Fixed
 
-- Corrected example Food IDs in the Setup page API quick reference to match actual records
+- Example Food IDs in the Setup guide now match real records
 
 ---
 
@@ -38,26 +57,20 @@ All notable changes to Kal will be documented in this file.
 
 ### Fixed
 
-- Rate limit usage stats now only count successful requests — previously, rate-limited (429) responses were still counted against your usage, which made your dashboard stats appear higher than actual usage
-- Improved error tracking in request logs with clearer error messages for failed requests
+- Usage stats now only count successful requests — your dashboard numbers are more accurate
+- Clearer error messages in request logs
 
 ---
 
 ## [1.0.0] - 2026-03-17
 
-### Added
+### New
 
-- API v1 with versioned endpoints (`/api/v1/*`)
-- Food database with comprehensive nutritional data
-- API key management dashboard
-- Request logging and analytics
-- Setup wizard with code examples
-- Feedback and bug reporting system
-- Collapsible sidebar with mobile-responsive drawer
-
-### Changed
-
-- Migrated all API endpoints to versioned paths
-- Improved dashboard performance and loading states
+- Malaysian food nutrition API with search, filtering, and detailed nutritional data
+- Dashboard to create and manage your API keys
+- Request logs and usage analytics
+- Step-by-step setup guide with ready-to-use code examples
+- Built-in feedback and bug reporting
+- Mobile-friendly responsive design
 
 ---

@@ -30,8 +30,14 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "Fira Code", "monospace"],
+        sans: ["var(--font-mono)", "JetBrains Mono", "monospace"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
+        display: [
+          "var(--font-display)",
+          "Space Grotesk",
+          "system-ui",
+          "sans-serif",
+        ],
       },
       animation: {
         "fade-in": "fadeIn 0.5s ease-out",

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
 import { ChatWidget } from "@/components/chat/ChatWidget";
@@ -9,7 +9,15 @@ import { ToastProvider } from "@/contexts/ToastContext";
 import { AuthProvider } from "@/lib/auth-context";
 import { TRPCProvider } from "@/lib/trpc-provider";
 
-const inter = Inter({ subsets: ["latin"] });
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display",
+});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -101,8 +109,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html
+      lang="en"
+      className={`${jetbrainsMono.variable} ${spaceGrotesk.variable}`}
+    >
+      <body className="font-mono">
         <ToastProvider>
           <AuthProvider logtoId={null}>
             <TRPCProvider>

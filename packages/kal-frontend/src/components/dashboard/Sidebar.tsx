@@ -695,10 +695,18 @@ export function Sidebar() {
 // =========================================================================
 // Dashboard Layout wrapper
 // =========================================================================
+/** Pages where the announcement carousel is hidden on mobile (too content-heavy). */
+const HIDE_CAROUSEL_MOBILE = [
+  "/dashboard/setup",
+  "/dashboard/docs",
+  "/dashboard/foods",
+];
+
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isMobile, shouldAutoCollapse, isMounted } = useSidebarLayout();
   const [collapsed, setCollapsed] = useAtom(sidebarCollapsedAtom);
   const hasInitialized = useRef(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (isMounted && !hasInitialized.current) {
@@ -711,14 +719,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const mainMargin =
     isMounted && isMobile ? "ml-0 pt-14 pb-16" : collapsed ? "ml-16" : "ml-64";
 
+  // Show carousel everywhere on desktop; on mobile, hide on content-heavy pages
+  const hideCarousel =
+    isMounted && isMobile && HIDE_CAROUSEL_MOBILE.includes(pathname);
+
   return (
     <div className="min-h-screen bg-dark">
       <Sidebar />
       <main
         className={`transition-[margin] duration-300 ease-in-out ${mainMargin}`}
       >
-        {/* Hide announcement carousel on mobile PWA — bottom nav handles navigation */}
-        {!(isMounted && isMobile) && <AnnouncementCarousel />}
+        {!hideCarousel && <AnnouncementCarousel />}
         {children}
       </main>
     </div>
