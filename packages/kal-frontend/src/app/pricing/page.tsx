@@ -1,5 +1,4 @@
-import { signIn } from "@logto/next/server-actions";
-import { getLogtoContext } from "@logto/next/server-actions";
+import { signIn, getLogtoContext } from "@logto/next/server-actions";
 
 import PricingClient from "./client";
 

@@ -1,0 +1,26 @@
+interface LogoProps {
+  size?: number;
+  className?: string;
+}
+
+export function Logo({ size = 24, className }: LogoProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 160 160"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <g fill="#1F8B44">
+        <rect x="10" y="10" width="40" height="40" rx="8" />
+        <rect x="10" y="60" width="40" height="40" rx="8" />
+        <rect x="10" y="110" width="40" height="40" rx="8" />
+        <rect x="60" y="35" width="40" height="40" rx="8" />
+        <rect x="60" y="85" width="40" height="40" rx="8" />
+        <rect x="110" y="10" width="40" height="40" rx="8" />
+        <rect x="110" y="110" width="40" height="40" rx="8" />
+      </g>
+    </svg>
+  );
+}

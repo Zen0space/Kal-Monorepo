@@ -4,10 +4,10 @@ import { RATE_LIMITS, TIER_PRICING } from "kal-shared";
 import type { UserTier } from "kal-shared";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { ArrowLeft, Check, Zap } from "react-feather";
 
 import { Container } from "@/components/ui/Container";
+import { Logo } from "@/components/ui/Logo";
 import { AuthUpdater, useAuth } from "@/lib/auth-context";
 import { trpc } from "@/lib/trpc";
 
@@ -80,10 +80,10 @@ function PricingPage({
         <Container>
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-2.5 h-2.5 rounded-full bg-accent group-hover:scale-110 transition-transform" />
-              <span className="text-lg font-semibold text-content-primary">
-                Kal
-              </span>
+              <Logo
+                size={24}
+                className="group-hover:scale-110 transition-transform"
+              />
             </Link>
             <div className="flex gap-6 text-sm text-content-muted">
               <Link
@@ -121,8 +121,10 @@ function PricingNavbar({
       <Container>
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-3 h-3 rounded-full bg-accent group-hover:scale-110 transition-transform" />
-            <span className="text-xl font-bold text-content-primary">Kal</span>
+            <Logo
+              size={24}
+              className="group-hover:scale-110 transition-transform"
+            />
           </Link>
 
           <div className="hidden md:flex items-center gap-8">

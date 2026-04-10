@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import {
   useMotionValue,
   useSpring,
   useInView,
   type SpringOptions,
 } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 
 interface CountUpProps {
   value: number;

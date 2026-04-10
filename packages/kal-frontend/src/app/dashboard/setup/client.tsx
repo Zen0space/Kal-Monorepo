@@ -14,7 +14,6 @@ import {
   Terminal,
 } from "react-feather";
 
-import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { AuthUpdater, useAuth } from "@/lib/auth-context";
 import { API_URL_DISPLAY } from "@/lib/site-config";
 import { trpc } from "@/lib/trpc";
@@ -747,7 +746,6 @@ function InteractiveEndpoints({ apiKey }: { apiKey: string }) {
 // ─── Main content ─────────────────────────────────────────────────────────────
 
 function SetupContent() {
-  const { isMobile } = useBreakpoint();
   const [activeTab, setActiveTab] = useState<TabType>("playground");
   const { copy, isCopied } = useCopy();
   const [sharedApiKey, setSharedApiKey] = useState("");

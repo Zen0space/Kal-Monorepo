@@ -49,5 +49,9 @@ packages/kal-backend/tests/
 .eslintcache
 .cache/
 
+# Serwist (generated service worker)
+**/public/sw*
+**/public/swe-worker*
+
 # Private docs with real values
 docs/*.local.md
