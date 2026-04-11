@@ -2,7 +2,11 @@ import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
+import { BreakpointProvider } from "@/components/BreakpointProvider";
 import { ChatWidget } from "@/components/chat/ChatWidget";
+import { PushPermissionPrompt } from "@/components/PushPermissionPrompt";
+import { PushStateProvider } from "@/components/PushStateProvider";
+import { PwaInstallTracker } from "@/components/PwaInstallTracker";
 import { ScrollProvider } from "@/components/ScrollProvider";
 import { ToastContainer } from "@/components/ui/Toast";
 import { ToastProvider } from "@/contexts/ToastContext";
@@ -71,21 +75,12 @@ export const metadata: Metadata = {
     title: "Kalori API - Malaysian Food Nutrition Database",
     description:
       "Free API for Malaysian food nutrition data. 1000+ foods with calories, protein, carbs & fat. Build amazing health apps!",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Kalori API - Malaysian Food Nutrition Database",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Kalori API - Malaysian Food Nutrition Database",
     description:
       "Free API for Malaysian food nutrition data. 1000+ foods with calories, protein, carbs & fat.",
-    images: ["/og-image.png"],
   },
   robots: {
     index: true,
@@ -117,6 +112,10 @@ export default function RootLayout({
         <ToastProvider>
           <AuthProvider logtoId={null}>
             <TRPCProvider>
+              <BreakpointProvider />
+              <PushStateProvider />
+              <PwaInstallTracker />
+              <PushPermissionPrompt />
               <div className="flex h-screen overflow-hidden">
                 {/* Main content — scrollable, takes remaining space */}
                 <ScrollProvider>{children}</ScrollProvider>

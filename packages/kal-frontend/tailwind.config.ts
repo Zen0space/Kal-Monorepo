@@ -48,6 +48,7 @@ const config: Config = {
         "float-slow": "floatSlow 20s ease-in-out infinite",
         "float-slower": "floatSlower 25s ease-in-out infinite",
         "gradient-border": "gradientBorder 3s linear infinite",
+        breathe: "breathe 2s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -90,6 +91,10 @@ const config: Config = {
           "0%": { backgroundPosition: "0% 50%" },
           "50%": { backgroundPosition: "100% 50%" },
           "100%": { backgroundPosition: "0% 50%" },
+        },
+        breathe: {
+          "0%, 100%": { transform: "scale(1)", opacity: "0.7" },
+          "50%": { transform: "scale(1.08)", opacity: "1" },
         },
       },
     },

@@ -7,6 +7,8 @@ import { feedbackRouter } from "./feedback.js";
 import { foodRouter } from "./food.js";
 import { halalRouter } from "./halal.js";
 import { platformSettingsRouter } from "./platform-settings.js";
+import { pushRouter } from "./push.js";
+import { pwaRouter } from "./pwa.js";
 import { requestLogsRouter } from "./request-logs.js";
 import { subscriptionRouter } from "./subscription.js";
 import { userRouter } from "./user.js";
@@ -22,6 +24,8 @@ export const appRouter = router({
   requestLogs: requestLogsRouter,
   adminLogs: adminLogsRouter,
   subscription: subscriptionRouter,
+  push: pushRouter,
+  pwa: pwaRouter,
 });
 
 // Export type for client
