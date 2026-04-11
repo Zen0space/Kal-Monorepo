@@ -6,6 +6,7 @@ import type { Db } from "mongodb";
 
 import { getDB } from "../lib/db.js";
 import { logger } from "../lib/logger.js";
+import { checkRateLimitAlerts } from "../lib/rate-limit-alerts.js";
 
 import { checkRateLimit, getRateLimitHeaders } from "./rate-limit.js";
 
@@ -156,6 +157,16 @@ export function validateApiKeyMiddleware(
         });
         return;
       }
+
+      // Fire-and-forget: send push notifications if usage hits 80% or 100%
+      checkRateLimitAlerts(
+        db,
+        userId,
+        result.user.tier,
+        rateResult.dailyCount ?? 0,
+        rateResult.dailyLimit ?? 0,
+        rateResult.monthlyLimit ?? 0
+      ).catch(() => {});
 
       // Attach user and timing to request for downstream use
       (req as Request & { apiUser?: User; startTime?: number; keyPrefix?: string }).apiUser = result.user;
