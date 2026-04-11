@@ -11,6 +11,7 @@ const withSerwist = withSerwistInit({
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["kal-shared"],
+  allowedDevOrigins: ["192.168.100.69"],
   async headers() {
     return [
       {

@@ -1,11 +1,13 @@
 "use client";
 
+import { useAtom, useAtomValue } from "jotai";
 import { RATE_LIMITS } from "kal-shared";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
+  Bell,
   Clock,
   CreditCard,
   ExternalLink,
@@ -19,7 +21,19 @@ import {
   Zap,
 } from "react-feather";
 
+import {
+  pushIosNotInstalledAtom,
+  pushPermissionAtom,
+  pushSubscribedAtom,
+  pushSupportedAtom,
+} from "@/atoms/push-state";
 import { AuthUpdater, useAuth } from "@/lib/auth-context";
+import {
+  getPermissionState,
+  subscribeToPush,
+  unsubscribeFromPush,
+  serializeSubscription,
+} from "@/lib/push-notifications";
 import { trpc } from "@/lib/trpc";
 
 interface SettingsClientProps {
@@ -521,6 +535,9 @@ function SettingsContent({
           </div>
         </div>
 
+        {/* ─── ROW 4: Push Notifications (spans full width) ─── */}
+        <PushNotificationCard />
+
         {/* ─── MOBILE ONLY: Resources Card (Changelog + Feedback) ─── */}
         <div className="md:hidden md:col-span-2 bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 hover:border-white/[0.1] transition-all duration-200">
           {/* Card header */}
@@ -562,6 +579,137 @@ function SettingsContent({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ================================================================
+   Push Notification Card — toggle subscription
+   ================================================================ */
+function PushNotificationCard() {
+  // Read shared push state from PushStateProvider atoms
+  const supported = useAtomValue(pushSupportedAtom);
+  const [subscribed, setSubscribed] = useAtom(pushSubscribedAtom);
+  const [permission, setPermission] = useAtom(pushPermissionAtom);
+  const iosNotInstalled = useAtomValue(pushIosNotInstalledAtom);
+  const [loading, setLoading] = useState(false);
+
+  const { data: vapidData } = trpc.push.getVapidPublicKey.useQuery(undefined, {
+    enabled: supported,
+  });
+  const subscribeMutation = trpc.push.subscribe.useMutation();
+  const unsubscribeMutation = trpc.push.unsubscribe.useMutation();
+
+  const handleToggle = useCallback(async () => {
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      if (subscribed) {
+        // Unsubscribe
+        const endpoint = await unsubscribeFromPush();
+        if (endpoint) {
+          await unsubscribeMutation.mutateAsync({ endpoint });
+        }
+        setSubscribed(false);
+      } else {
+        // Subscribe
+        if (!vapidData?.vapidPublicKey) {
+          console.error("[Push] No VAPID public key available");
+          return;
+        }
+
+        const subscription = await subscribeToPush(vapidData.vapidPublicKey);
+        if (subscription) {
+          const serialized = serializeSubscription(subscription);
+          await subscribeMutation.mutateAsync({
+            endpoint: serialized.endpoint,
+            keys: serialized.keys,
+            userAgent: navigator.userAgent,
+          });
+          setSubscribed(true);
+        }
+
+        // Update permission state after request
+        setPermission(getPermissionState());
+      }
+    } catch (error) {
+      console.error("[Push] Toggle failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, subscribed, vapidData, subscribeMutation, unsubscribeMutation, setSubscribed, setPermission]);
+
+  // Don't render if push is not supported at all
+  if (!supported) return null;
+
+  const isDenied = permission === "denied";
+
+  return (
+    <div className="md:col-span-2 bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 md:p-6 hover:border-white/[0.1] transition-all duration-200">
+      {/* Card header */}
+      <div className="flex items-center gap-2 mb-5">
+        <div className="w-7 h-7 rounded-lg bg-accent/[0.08] flex items-center justify-center">
+          <Bell size={14} className="text-accent/70" />
+        </div>
+        <h2 className="text-xs font-semibold text-content-muted uppercase tracking-wider">
+          Push Notifications
+        </h2>
+      </div>
+
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-1">
+          <div className="w-10 h-10 rounded-xl bg-accent/[0.06] flex items-center justify-center flex-shrink-0">
+            <Bell
+              size={18}
+              className={subscribed ? "text-accent" : "text-content-secondary"}
+            />
+          </div>
+          <div>
+            <p className="text-content-primary text-sm font-medium">
+              {subscribed
+                ? "Notifications enabled"
+                : "Enable push notifications"}
+            </p>
+            <p className="text-content-muted text-xs mt-0.5">
+              {isDenied
+                ? "Notifications are blocked. Please allow them in your browser settings."
+                : iosNotInstalled
+                  ? "On iOS, install the app to your Home Screen first to enable notifications."
+                  : subscribed
+                    ? "You will receive important updates even when the app is closed."
+                    : "Get notified about important updates and announcements."}
+            </p>
+          </div>
+        </div>
+
+        {/* Toggle switch */}
+        <button
+          onClick={handleToggle}
+          disabled={loading || isDenied || iosNotInstalled}
+          className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:ring-offset-2 focus:ring-offset-transparent
+            ${subscribed ? "bg-accent" : "bg-white/[0.1]"}
+            ${loading || isDenied || iosNotInstalled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+          aria-label={
+            subscribed ? "Disable notifications" : "Enable notifications"
+          }
+        >
+          <span
+            className={`inline-block h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-200
+              ${subscribed ? "translate-x-6" : "translate-x-1"}`}
+          />
+        </button>
+      </div>
+
+      {/* Status indicator */}
+      {subscribed && (
+        <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-xs text-content-muted">
+            This device is receiving notifications
+          </span>
+        </div>
+      )}
     </div>
   );
 }

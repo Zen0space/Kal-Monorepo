@@ -12,7 +12,7 @@ import { API_BASE_PATH } from "kal-shared";
 import swaggerUi from "swagger-ui-express";
 
 import { createContext } from "./lib/context.js";
-import { connectDB } from "./lib/db.js";
+import { connectDB, getDB } from "./lib/db.js";
 import { logtoConfig, validateLogtoConfig } from "./lib/logto.js";
 import { openApiSpec } from "./lib/openapi.js";
 import {
