@@ -139,10 +139,17 @@ export function createApiRequestLogger(options: LoggerOptions = {}) {
         error = `HTTP ${statusCode}`;
       }
 
+      // Per-doc TTL: 429 rate-limited requests expire in 30 days, others in 90 days
+      const TTL_SUCCESS_MS = 90 * 24 * 60 * 60 * 1000;
+      const TTL_RATE_LIMITED_MS = 30 * 24 * 60 * 60 * 1000;
+      const ttlMs = statusCode === 429 ? TTL_RATE_LIMITED_MS : TTL_SUCCESS_MS;
+      const now = new Date();
+
       // Build log entry
       const logEntry = {
         requestId,
-        timestamp: new Date(),
+        timestamp: now,
+        expiresAt: new Date(now.getTime() + ttlMs),
         userId,
         apiKeyPrefix,
         type,
