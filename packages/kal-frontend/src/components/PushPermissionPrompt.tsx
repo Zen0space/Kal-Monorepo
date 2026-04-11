@@ -4,21 +4,17 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell } from "react-feather";
 
-import { pushPromptCheckedAtom, pushPromptVisibleAtom } from "@/atoms/push-prompt";
+import { pushPromptEligibleAtom, pushPromptVisibleAtom } from "@/atoms/push-prompt";
 import {
   pushPermissionAtom,
-  pushStateCheckedAtom,
   pushSubscribedAtom,
-  pushSupportedAtom,
 } from "@/atoms/push-state";
 import { useAuth } from "@/lib/auth-context";
 import { serializeSubscription, subscribeToPush } from "@/lib/push-notifications";
 import {
   recordDismissal,
   recordSubscription,
-  shouldShowPrompt,
 } from "@/lib/push-prompt-storage";
-import { isStandaloneMode } from "@/lib/pwa-install-tracker";
 import { trpc } from "@/lib/trpc";
 
 const SHOW_DELAY_MS = 2000;
@@ -27,12 +23,12 @@ const SHOW_DELAY_MS = 2000;
  * PushPermissionPrompt
  *
  * Bottom-sheet overlay that prompts PWA users to enable push notifications.
- * Reads push capability from shared atoms (set by PushStateProvider).
+ * Eligibility is computed reactively via pushPromptEligibleAtom (no useEffect).
  *
  * Renders nothing unless ALL conditions are met:
  * - Running in standalone mode (installed PWA)
  * - User is authenticated
- * - Push is supported (requires HTTPS — won't work on HTTP LAN IPs)
+ * - Push is supported (requires HTTPS)
  * - Permission is "default" (not granted/denied)
  * - localStorage throttle passes (7-day cooldown, max 3 dismissals)
  * - Not already subscribed
@@ -41,17 +37,13 @@ const SHOW_DELAY_MS = 2000;
  */
 export function PushPermissionPrompt() {
   const { logtoId } = useAuth();
+  const eligible = useAtomValue(pushPromptEligibleAtom);
   const [visible, setVisible] = useAtom(pushPromptVisibleAtom);
-  const [promptChecked, setPromptChecked] = useAtom(pushPromptCheckedAtom);
   const [animateIn, setAnimateIn] = useState(false);
   const [loading, setLoading] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const shownRef = useRef(false);
 
-  // Shared push state from PushStateProvider
-  const pushStateReady = useAtomValue(pushStateCheckedAtom);
-  const supported = useAtomValue(pushSupportedAtom);
-  const permission = useAtomValue(pushPermissionAtom);
-  const subscribed = useAtomValue(pushSubscribedAtom);
   const setSubscribed = useSetAtom(pushSubscribedAtom);
   const setPermission = useSetAtom(pushPermissionAtom);
 
@@ -61,26 +53,14 @@ export function PushPermissionPrompt() {
   const subscribeMutation = trpc.push.subscribe.useMutation();
   const trackEvent = trpc.push.trackPromptEvent.useMutation();
 
-  // ── Condition check: should we show the prompt? ───────────────────────────
+  // ── Show prompt after delay when eligible ───────────────────────────────
+  // Minimal useEffect — only handles the 2s entrance delay (cosmetic timing).
+  // All condition logic lives in the pushPromptEligibleAtom.
   useEffect(() => {
-    if (typeof window === "undefined" || promptChecked) return;
-    if (!logtoId) return;
-    if (!pushStateReady) return;
+    if (!logtoId || !eligible || shownRef.current) return;
 
-    // Mark as checked immediately to prevent re-runs
-    setPromptChecked(true);
-
-    const standalone = isStandaloneMode();
-    const throttleOk = shouldShowPrompt();
-
-    if (!standalone) return;
-    if (!supported) return;
-    if (permission !== "default") return;
-    if (!throttleOk) return;
-    if (subscribed) return;
-
-    // All passed — show after delay
     timerRef.current = setTimeout(() => {
+      shownRef.current = true;
       setVisible(true);
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -92,7 +72,7 @@ export function PushPermissionPrompt() {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [logtoId, promptChecked, pushStateReady, supported, permission, subscribed, setVisible, setPromptChecked]);
+  }, [logtoId, eligible, setVisible]);
 
   // ── Dismiss handler ──────────────────────────────────────────────────────
   const handleDismiss = useCallback(() => {
