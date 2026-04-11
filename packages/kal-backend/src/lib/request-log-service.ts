@@ -18,6 +18,9 @@ export interface ApiRequestLog {
   requestId: string;
   timestamp: Date;
 
+  // TTL — per-doc expiration (429s: 30 days, success: 90 days)
+  expiresAt: Date;
+
   // User/Auth info
   userId: string | null;
   apiKeyPrefix: string | null;
