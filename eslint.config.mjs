@@ -26,6 +26,7 @@ export default [
       "**/postcss.config.js",
       "**/tailwind.config.ts",
       "**/baml_client/**",
+      "**/public/sw.js",
     ],
   },
 

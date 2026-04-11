@@ -1,5 +1,4 @@
-import { getLogtoContext } from "@logto/next/server-actions";
-import { signIn } from "@logto/next/server-actions";
+import { getLogtoContext, signIn } from "@logto/next/server-actions";
 
 import { FinalCTA } from "@/components/landing/CTA";
 import { FAQ } from "@/components/landing/FAQ";
@@ -9,9 +8,9 @@ import { Hero } from "@/components/landing/Hero";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Navbar } from "@/components/landing/Navbar";
 import { ProblemSolution } from "@/components/landing/ProblemSolution";
-import { PwaAuthRedirect } from "@/components/PwaAuthRedirect";
 import { SampleFoods } from "@/components/landing/SampleFoods";
 import { Testimonials } from "@/components/landing/Testimonials";
+import { PwaAuthRedirect } from "@/components/PwaAuthRedirect";
 import { getLogtoConfig } from "@/lib/logto";
 
 export default async function LandingPage() {
@@ -34,7 +33,6 @@ export default async function LandingPage() {
       <main className="min-h-screen bg-dark relative overflow-hidden">
         {/* Server-rendered splash — visible from first paint, no JS needed */}
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-dark">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/assets/icon-svg.svg"
             alt=""

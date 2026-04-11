@@ -1,7 +1,7 @@
 "use client";
 
+import { useAtom, useAtomValue } from "jotai";
 import { RATE_LIMITS } from "kal-shared";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";

@@ -8,7 +8,7 @@ import { atom } from "jotai";
 export const pushSupportedAtom = atom(false);
 
 /** Current notification permission state */
-export const pushPermissionAtom = atom<NotificationPermission | "unsupported">("default");
+export const pushPermissionAtom = atom<globalThis.NotificationPermission | "unsupported">("default");
 
 /** Whether the user is currently subscribed to push notifications */
 export const pushSubscribedAtom = atom(false);
