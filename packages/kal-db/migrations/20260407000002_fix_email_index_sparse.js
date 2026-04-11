@@ -8,6 +8,15 @@
  */
 
 export const up = async (db, client) => {
+  const indexes = await db.collection("users").indexes();
+  const hasEmailIndex = indexes.some((idx) => idx.key?.email === 1);
+
+  if (hasEmailIndex) {
+    // Index already exists (possibly replaced by a later migration) — skip
+    console.log("✅ email index already exists, skipping sparse migration");
+    return;
+  }
+
   // Drop the old non-sparse unique index
   await db
     .collection("users")
